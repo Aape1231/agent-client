@@ -1436,8 +1436,8 @@
       if (hasPie && !o.legend) o.legend = { bottom: 0 };
       serArr.forEach(se => {
         if (!se || se.type !== 'pie') return;
-        if (!se.label) se.label = { show: true, formatter: '{d}%' };
-        if (se.label && !se.label.color) se.label.color = tx;
+        if (!se.label) { se.label = { show: true, position: 'inside', formatter: '{d}%', color: '#ffffff', fontSize: 11 }; if (!se.labelLine) se.labelLine = { show: false }; if (se.minShowLabelAngle == null) se.minShowLabelAngle = 10; }
+        else if (!se.label.color) se.label.color = tx;
         if (!se.center && o.legend) se.center = ['50%', '45%'];
       });
       const legends = o.legend ? (Array.isArray(o.legend) ? o.legend : [o.legend]) : [];
