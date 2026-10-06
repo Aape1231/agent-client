@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content" />
-  <title>Assistant Client (v12.0)</title>
+  <title>Assistant Client (v13.0)</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
   <script src="https://cdn.jsdelivr.net/npm/marked@12.0.2/marked.min.js"></script>
@@ -109,6 +109,22 @@
     .user-bubble .md-output a.md-download { background: rgba(255,255,255,0.18); border-color: rgba(255,255,255,0.5); }
     .user-bubble .md-output :not(pre) > code { background: rgba(255,255,255,0.22); color: #fff; }
     .user-bubble .md-output blockquote { border-left-color: rgba(255,255,255,0.5); color: rgba(255,255,255,0.85); }
+
+    /* ===== v13: canvas / raw viewer ===== */
+    .canvas-card{margin:10px 0;border:1px solid rgba(128,128,128,.35);border-radius:12px;overflow:hidden;background:#fff}
+    .dark .canvas-card{background:#0f172a}
+    .canvas-bar{display:flex;align-items:center;gap:8px;padding:8px 10px;font-size:12px;border-bottom:1px solid rgba(128,128,128,.25);background:rgba(128,128,128,.08)}
+    .canvas-bar .ttl{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:600}
+    .canvas-bar button{border:1px solid rgba(128,128,128,.35);border-radius:8px;padding:3px 9px;font-size:12px;background:transparent;color:inherit;cursor:pointer;white-space:nowrap}
+    .canvas-bar button:hover{background:rgba(128,128,128,.15)}
+    .canvas-frame{display:block;width:100%;height:640px;border:0;resize:vertical;overflow:auto;background:#fff}
+    .canvas-card.full{position:fixed;inset:0;z-index:60;margin:0;border-radius:0;display:flex;flex-direction:column}
+    .canvas-card.full .canvas-frame{flex:1;height:auto;resize:none}
+    .canvas-note{padding:6px 10px;font-size:11px;opacity:.7;border-top:1px solid rgba(128,128,128,.2)}
+    .asst-files{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0 2px}
+    .asst-files button{display:inline-flex;align-items:center;gap:6px;font-size:12px;padding:4px 10px;border-radius:999px;border:1px solid rgba(128,128,128,.4);background:transparent;color:inherit;cursor:pointer;max-width:100%}
+    .asst-files button:hover{background:rgba(128,128,128,.15)}
+    #raw-pre{margin:0;padding:16px;max-height:70vh;overflow:auto;font-size:12px;line-height:1.5;white-space:pre-wrap;word-break:break-all}
     /* ===== v11: Apple style / mobile / navigation ===== */
     html, body { height: 100%; overflow: hidden; overscroll-behavior: none; }
     body { -webkit-font-smoothing: antialiased; }
@@ -521,6 +537,13 @@
     </div>
   </div>
 
+  <dialog id="raw-modal" class="rounded-xl backdrop:bg-black/60 w-[92%] max-w-4xl p-0 bg-slate-900 text-slate-100 shadow-2xl border border-slate-700">
+    <div class="flex items-center justify-between px-4 py-3 border-b border-slate-700">
+      <div class="text-sm font-semibold">原始回應 JSON <span id="raw-hint" class="text-xs text-slate-400 font-normal ml-2"></span></div>
+      <div class="flex gap-2"><button type="button" id="raw-copy" class="text-xs px-3 py-1 rounded border border-slate-600 hover:bg-slate-700">複製</button><button type="button" id="raw-close" class="text-xs px-3 py-1 rounded border border-slate-600 hover:bg-slate-700">關閉</button></div>
+    </div>
+    <pre id="raw-pre"></pre>
+  </dialog>
   <dialog id="code-modal" class="rounded-xl backdrop:bg-black/60 w-[90%] max-w-4xl p-0 bg-slate-900 text-slate-100 shadow-2xl border border-slate-700">
     <div class="flex flex-col max-h-[85vh]">
       <div class="flex items-center justify-between p-4 border-b border-slate-700 bg-slate-800/50">
@@ -689,11 +712,11 @@
       const contentPy = `[{"type": "text", "text": prompt}${files.length ? `, *[{"type":"file","file": f} for f in files]` : ''}]`;
       const threadArg = payload.thread_id ? `, thread_id="${payload.thread_id}"` : '';
 
-      const curl = `curl -X POST "${url}" \\\n  -H "Authorization: Bearer ${state.apiKey}" \\\n  -H "Content-Type: application/json" \\\n  -d '${pretty}'`;
+      const curl = `curl -X POST "${url}" \\\n  -H "Authorization: Bearer YOUR_API_KEY" \\\n  -H "Content-Type: application/json" \\\n  -d '${pretty}'`;
       
-      const python = `from openai import OpenAI\n\nclient = OpenAI(\n    api_key="${state.apiKey}",\n    base_url="${upstreamBase()}"\n)\n\nprompt = ${pyPrompt}\nfiles = ${pyFiles}\n\nresponse = client.chat.completions.create(\n    model="${payload.model}",\n    messages=[\n        {"role": "user", "content": ${contentPy}}\n    ]${threadArg}\n)\n\nprint(response.choices[0].message.content)`;
+      const python = `from openai import OpenAI\n\nclient = OpenAI(\n    api_key="YOUR_API_KEY",\n    base_url="${upstreamBase()}"\n)\n\nprompt = ${pyPrompt}\nfiles = ${pyFiles}\n\nresponse = client.chat.completions.create(\n    model="${payload.model}",\n    messages=[\n        {"role": "user", "content": ${contentPy}}\n    ]${threadArg}\n)\n\nprint(response.choices[0].message.content)`;
       
-      const js = `const response = await fetch("${url}", {\n  method: "POST",\n  headers: {\n    "Authorization": "Bearer ${state.apiKey}",\n    "Content-Type": "application/json"\n  },\n  body: JSON.stringify(${pretty})\n});\n\nconst data = await response.json();\nconsole.log(data);`;
+      const js = `const response = await fetch("${url}", {\n  method: "POST",\n  headers: {\n    "Authorization": "Bearer YOUR_API_KEY",\n    "Content-Type": "application/json"\n  },\n  body: JSON.stringify(${pretty})\n});\n\nconst data = await response.json();\nconsole.log(data);`;
 
       return { curl, python, js };
     }
@@ -782,6 +805,7 @@
             }
             files.forEach(f => restored.set(f.id, f));
           }
+          if (msg.role === 'assistant') { state.pendingRaw = msg; state.pendingFiles = extractServerFiles(msg); }
           appendMessage(msg.role, content, files);
         });
         state.loadingHistory = false;
@@ -839,6 +863,7 @@
         if (choice.message.content) reply = Array.isArray(choice.message.content) ? choice.message.content.map(c => c.text ? c.text.value : '').join('\n') : choice.message.content;
         
         removeThinking(loadingId);
+        state.pendingRaw = res; state.pendingFiles = extractServerFiles(choice.message || {});
         appendMessage('assistant', reply, [], payload);
       } catch (err) {
         removeThinking(loadingId);
@@ -924,7 +949,7 @@
     }
 
     // --- v10: Stop / Edit / Rename ---
-    Object.assign(state, { isSending: false, abortCtrl: null, editing: false, lastUserText: '', threads: [], uploading: new Map() });
+    Object.assign(state, { pendingRaw: null, pendingFiles: null, isSending: false, abortCtrl: null, editing: false, lastUserText: '', threads: [], uploading: new Map() });
 
     function setSending(on) {
       state.isSending = on;
@@ -1054,6 +1079,121 @@
       showToast(`下載失敗：${lastErr ? lastErr.message : ''}（後端可能未提供檔案下載端點）`, 'error');
     }
 
+
+    // ===================== v13: Canvas 報表 / 原始 JSON =====================
+    const CANVAS_LIBS = {
+      'echarts.min.js': 'https://cdn.jsdelivr.net/npm/echarts@5.5.1/dist/echarts.min.js',
+      'echarts.js': 'https://cdn.jsdelivr.net/npm/echarts@5.5.1/dist/echarts.js',
+      'chart.umd.js': 'https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.js',
+      'chart.min.js': 'https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.js',
+      'd3.min.js': 'https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js',
+      'plotly.min.js': 'https://cdn.jsdelivr.net/npm/plotly.js-dist-min@2.35.2/plotly.min.js',
+      'mermaid.min.js': 'https://cdn.jsdelivr.net/npm/mermaid@10.9.1/dist/mermaid.min.js'
+    };
+    function looksLikeHtmlDoc(t) {
+      t = String(t || '').trim();
+      return t.length > 120 && (/^<!doctype html/i.test(t) || /^<html[\s>]/i.test(t) || (/<body[\s>]/i.test(t) && /<\/body>/i.test(t)) || (/<script[\s>]/i.test(t) && /<(div|canvas|svg|table|section|main)[\s>]/i.test(t) && t.startsWith('<')));
+    }
+    // 把 agent 自己的資源路徑（例如 /static/canvas-lib/echarts.min.js）換成可在沙箱載入的網址
+    function prepareCanvasHtml(html) {
+      let apiOrigin = ''; try { apiOrigin = new URL(upstreamBase()).origin; } catch (e) {}
+      let out = String(html).replace(/(\s(?:src|href)\s*=\s*)(['"])\/static\/canvas-lib\/([^'"?#]+)(?:[?#][^'"]*)?\2/gi, (m, pre, q, name) => {
+        const url = CANVAS_LIBS[name] || (apiOrigin ? apiOrigin + '/static/canvas-lib/' + name : '');
+        return url ? `${pre}${q}${url}${q}` : m;
+      });
+      const csp = "default-src 'none'; script-src 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://unpkg.com " + apiOrigin + "; style-src 'unsafe-inline' https://fonts.googleapis.com https://cdn.jsdelivr.net; font-src data: https://fonts.gstatic.com https://cdn.jsdelivr.net; img-src data: blob: https:; connect-src 'none'; form-action 'none'; base-uri 'none'";
+      const meta = `<meta http-equiv="Content-Security-Policy" content="${csp}">`;
+      if (/<head[^>]*>/i.test(out)) return out.replace(/<head[^>]*>/i, m => m + meta);
+      if (/<html[^>]*>/i.test(out)) return out.replace(/<html[^>]*>/i, m => m + '<head>' + meta + '</head>');
+      return '<!doctype html><html><head><meta charset="utf-8">' + meta + '</head><body>' + out + '</body></html>';
+    }
+    function canvasTitle(html) { const m = /<title[^>]*>([\s\S]*?)<\/title>/i.exec(html); return (m && m[1].trim()) || 'Canvas 報表'; }
+    function buildCanvasCard(html, filenameHint) {
+      const title = canvasTitle(html);
+      const card = document.createElement('div'); card.className = 'canvas-card';
+      card.innerHTML = `<div class="canvas-bar"><span class="ttl"></span><button type="button" data-a="full">全螢幕</button><button type="button" data-a="tab">新分頁</button><button type="button" data-a="dl">下載 HTML</button><button type="button" data-a="src">原始碼</button></div><iframe class="canvas-frame" sandbox="allow-scripts allow-popups" referrerpolicy="no-referrer" loading="lazy"></iframe><div class="canvas-note">此報表在隔離沙箱中執行（無法讀取你的 API Key、無法對外連線）。</div>`;
+      card.querySelector('.ttl').textContent = '📊 ' + title;
+      const frame = card.querySelector('iframe'); frame.srcdoc = prepareCanvasHtml(html);
+      if (html.startsWith('<!--v13-chart-->')) { frame.style.height = '380px'; card.querySelector('.canvas-note').textContent = '圖表在隔離沙箱中以 ECharts 繪製。'; }
+      const name = (filenameHint || title).replace(/[\\/:*?"<>|]/g, '_').replace(/\.(html?|txt)$/i, '') + '.html';
+      card.querySelector('.canvas-bar').addEventListener('click', (e) => {
+        const a = e.target.closest('button')?.dataset.a; if (!a) return;
+        if (a === 'full') { const on = card.classList.toggle('full'); e.target.textContent = on ? '離開全螢幕' : '全螢幕'; }
+        else if (a === 'tab') { const u = URL.createObjectURL(new Blob([prepareCanvasHtml(html)], { type: 'text/html' })); window.open(u, '_blank', 'noopener'); setTimeout(() => URL.revokeObjectURL(u), 60000); }
+        else if (a === 'dl') { const u = URL.createObjectURL(new Blob([html], { type: 'text/html' })); const l = document.createElement('a'); l.href = u; l.download = name; document.body.appendChild(l); l.click(); l.remove(); setTimeout(() => URL.revokeObjectURL(u), 10000); }
+        else if (a === 'src') { openRawModal(html, '報表 HTML 原始碼'); }
+      });
+      return card;
+    }
+    function parseEchartsOption(code) {
+      let c = String(code).trim();
+      const m = /^(?:(?:const|let|var)\s+)?option\s*=\s*([\s\S]*?);?\s*$/.exec(c);
+      if (m) c = m[1].trim();
+      if (!c.startsWith('{')) return null;
+      try {
+        const o = JSON.parse(c);
+        if (o && typeof o === 'object' && (Array.isArray(o.series) || (o.series && typeof o.series === 'object'))) return o;
+      } catch (e) {}
+      return null;
+    }
+    function chartDocHtml(opt) {
+      const data = JSON.stringify(opt).replace(/</g, '\\u003c');
+      return '<!--v13-chart--><!doctype html><html><head><meta charset="utf-8"><title>' + (opt.title && opt.title.text ? String(opt.title.text).replace(/[<>&]/g, '') : '圖表') + '</title>' +
+        '<script src="https://cdn.jsdelivr.net/npm/echarts@5.5.1/dist/echarts.min.js"><\/script>' +
+        '<style>html,body{margin:0;height:100%;background:#fff}#c{width:100%;height:100%}</style></head><body><div id="c"></div>' +
+        '<script type="application/json" id="d">' + data + '<\/script>' +
+        '<script>var o=JSON.parse(document.getElementById("d").textContent);var ch=echarts.init(document.getElementById("c"));ch.setOption(o);window.addEventListener("resize",function(){ch.resize()});<\/script></body></html>';
+    }
+    // 從回覆文字抽出 HTML 報表（```html 區塊，或整段/內嵌的 <!DOCTYPE html>…</html>）
+    function extractCanvasFromText(text) {
+      let t = String(text ?? ''); const docs = [];
+      if (!t.includes('\n') && t.includes('\\n')) t = t.replace(/(?:\\r)?\\n/g, '\n');
+      t = t.replace(/```(?:html?|HTML)[^\n]*\n([\s\S]*?)```/g, (m, code) => { if (looksLikeHtmlDoc(code)) { docs.push(code); return '\n\n[[CANVAS:' + (docs.length - 1) + ']]\n\n'; } return m; });
+      // ECharts option：```javascript / js / json / echarts 區塊，內容為 option = {...} 或純 JSON（含 series）
+      t = t.replace(/```(?:javascript|js|json|echarts)[^\n]*\n([\s\S]*?)```/gi, (m, code) => {
+        const opt = parseEchartsOption(code);
+        if (!opt) return m;
+        docs.push(chartDocHtml(opt)); return '\n\n[[CANVAS:' + (docs.length - 1) + ']]\n\n';
+      });
+      t = t.replace(/<!doctype html[\s\S]*?<\/html>/gi, m => { if (looksLikeHtmlDoc(m)) { docs.push(m); return '\n\n[[CANVAS:' + (docs.length - 1) + ']]\n\n'; } return m; });
+      return { text: t, docs };
+    }
+    async function fetchFileText(id) {
+      let lastErr;
+      for (const path of [`/v1/files/${encodeURIComponent(id)}/content`, `/v1/files/${encodeURIComponent(id)}/download`]) {
+        try { const r = await fetch(getBase() + path, { headers: upstreamAuthHeaders(getBase() + path) }); if (r.ok) return await r.text(); lastErr = new Error('HTTP ' + r.status); } catch (e) { lastErr = e; }
+      }
+      throw lastErr || new Error('無法取得檔案內容');
+    }
+    function renderAssistantFiles(files, container) {
+      if (!files || !files.length) return;
+      const box = document.createElement('div'); box.className = 'asst-files';
+      files.forEach(f => {
+        const b = document.createElement('button'); b.type = 'button';
+        const isHtml = /\.(html?|txt)$/i.test(f.filename || '');
+        b.innerHTML = `<i class="fa-solid fa-paperclip"></i><span class="truncate"></span>` + (isHtml ? '<span style="opacity:.7">（點擊預覽）</span>' : '<i class="fa-solid fa-download" style="opacity:.7"></i>');
+        b.querySelector('.truncate').textContent = f.filename || String(f.id);
+        b.addEventListener('click', async () => {
+          if (!isHtml) return downloadFile(f.id, f.filename);
+          try {
+            showToast('讀取報表中...', 'info'); const txt = await fetchFileText(f.id);
+            if (!looksLikeHtmlDoc(txt)) return downloadFile(f.id, f.filename);
+            const card = buildCanvasCard(txt, f.filename); box.after(card); card.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+          } catch (e) { showToast('預覽失敗：' + e.message, 'error'); }
+        });
+        box.appendChild(b);
+      });
+      container.appendChild(box);
+    }
+    function openRawModal(obj, hint) {
+      const m = document.getElementById('raw-modal');
+      document.getElementById('raw-hint').textContent = hint || '';
+      document.getElementById('raw-pre').textContent = typeof obj === 'string' ? obj : JSON.stringify(obj, null, 2);
+      m.showModal();
+    }
+    document.getElementById('raw-close').addEventListener('click', () => document.getElementById('raw-modal').close());
+    document.getElementById('raw-copy').addEventListener('click', () => { navigator.clipboard.writeText(document.getElementById('raw-pre').textContent); showToast('已複製', 'info'); });
+
     // --- Helper Functions ---
     function appendMessage(role, text, attachments = [], requestPayload = null) {
       const div = document.createElement('div');
@@ -1079,6 +1219,7 @@
              <div class="absolute -bottom-7 right-0 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                <button class="copy-btn text-xs text-slate-400 hover:text-primary-600 p-1 bg-slate-100 dark:bg-slate-700 rounded" title="複製內容"><i class="fa-regular fa-copy"></i></button>
                ${role === 'user' ? `<button class="edit-btn text-xs text-slate-400 hover:text-primary-600 p-1 bg-slate-100 dark:bg-slate-700 rounded" title="編輯後重新送出"><i class="fa-solid fa-pen"></i></button>` : ''}
+               ${role === 'assistant' && state.pendingRaw ? `<button class="raw-btn text-xs text-slate-400 hover:text-primary-600 p-1 bg-slate-100 dark:bg-slate-700 rounded font-mono" title="檢視原始回應 JSON">{ }</button>` : ''}
                ${requestPayload ? `<button class="code-btn text-xs text-slate-400 hover:text-primary-600 p-1 bg-slate-100 dark:bg-slate-700 rounded font-mono font-bold" title="檢視 API 程式碼">&lt; &gt;</button>` : ''}
              </div>
            </div>
@@ -1086,13 +1227,32 @@
       `;
       
       const mdEl = div.querySelector('.md-output');
+      const raw = state.pendingRaw; state.pendingRaw = null;
+      const origText = text;
+      let canvasDocs = [];
+      if (role === 'assistant') {
+        const ex = extractCanvasFromText(text);
+        if (ex.docs.length) { canvasDocs = ex.docs; text = ex.text; }
+      }
       mdEl.innerHTML = renderMarkdown(text);
       enhanceMarkdown(mdEl);
+      if (canvasDocs.length) {
+        // 以報表卡片取代佔位文字
+        const holders = Array.from(mdEl.querySelectorAll('p')).filter(p => /^\[\[CANVAS:\d+\]\]$/.test(p.textContent.trim()));
+        canvasDocs.forEach((html, i) => {
+          const card = buildCanvasCard(html);
+          const h = holders.find(p => p.textContent.trim() === `[[CANVAS:${i}]]`);
+          if (h) h.replaceWith(card); else mdEl.appendChild(card);
+        });
+      }
+      if (role === 'assistant' && state.pendingFiles && state.pendingFiles.length) renderAssistantFiles(state.pendingFiles, mdEl);
+      state.pendingFiles = null;
+      div.querySelector('.raw-btn')?.addEventListener('click', () => openRawModal(raw, '用來確認 API 實際回傳的格式'));
       if (role === 'user' && text) state.lastUserText = text;
       div.querySelector('.edit-btn')?.addEventListener('click', () => startEdit(text, attachments));
       div.querySelectorAll('.attach-chip').forEach(btn => btn.addEventListener('click', () => downloadFile(btn.dataset.id, btn.dataset.name)));
 
-      div.querySelector('.copy-btn')?.addEventListener('click', () => { navigator.clipboard.writeText(text); showToast('已複製內容', 'info'); });
+      div.querySelector('.copy-btn')?.addEventListener('click', () => { navigator.clipboard.writeText(origText); showToast('已複製內容', 'info'); });
       if(requestPayload) {
         div.querySelector('.code-btn')?.addEventListener('click', () => showCodeModal(requestPayload));
       }
