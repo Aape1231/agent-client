@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content" />
-  <title>Assistant Client (v13.0)</title>
+  <title>My Agent 客戶端</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
   <script src="https://cdn.jsdelivr.net/npm/marked@12.0.2/marked.min.js"></script>
@@ -124,6 +124,70 @@
     .asst-files{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0 2px}
     .asst-files button{display:inline-flex;align-items:center;gap:6px;font-size:12px;padding:4px 10px;border-radius:999px;border:1px solid rgba(128,128,128,.4);background:transparent;color:inherit;cursor:pointer;max-width:100%}
     .asst-files button:hover{background:rgba(128,128,128,.15)}
+
+    /* ===== v14: 原生儀表板渲染器 ===== */
+    .wide-msg > div { max-width: min(1180px, 98%) !important; width: 100%; }
+    .wide-msg .shadow-sm.relative { padding-left: 14px !important; padding-right: 14px !important; }
+    #report-btn.on { background: #4f46e5; color: #fff; border-radius: 12px; }
+    html.dark #report-btn.on { background: #0a84ff; }
+    #report-btn.on:hover { color: #fff; }
+    .rp-chip { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; padding: 1px 8px; border-radius: 999px; background: rgba(255,255,255,.22); margin-bottom: 6px; }
+    .rp { --bg:#f5f6fa; --card:#fff; --bd:#e4e7ee; --tx:#0f172a; --mut:#64748b; --acc:#4f46e5; --good:#059669; --warn:#d97706; --bad:#dc2626; --info:#2563eb; --hd:#f1f3f9;
+      container-type: inline-size; position: relative; margin: 10px 0; padding: 20px; border-radius: 18px; border: 1px solid var(--bd); background: var(--bg); color: var(--tx); font-size: 14px; line-height: 1.5; text-align: left; }
+    html.dark .rp { --bg:#0b1220; --card:#121c33; --bd:#26324d; --tx:#e6eaf2; --mut:#93a0b8; --acc:#818cf8; --good:#34d399; --warn:#fbbf24; --bad:#f87171; --info:#60a5fa; --hd:#18233f; }
+    .rp * { box-sizing: border-box; }
+    .rp-head { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 16px; }
+    .rp-head .rp-t { flex: 1; min-width: 0; }
+    .rp-title { font-size: 22px; font-weight: 700; letter-spacing: .2px; line-height: 1.25; margin: 0; }
+    .rp-sub { color: var(--mut); font-size: 13px; margin-top: 4px; }
+    .rp-tools { display: flex; gap: 6px; flex-shrink: 0; }
+    .rp-tools button, .rp-mini { border: 1px solid var(--bd); background: var(--card); color: var(--mut); border-radius: 8px; padding: 3px 10px; font-size: 12px; cursor: pointer; white-space: nowrap; }
+    .rp-tools button:hover, .rp-mini:hover { color: var(--tx); border-color: var(--acc); }
+    .rp-sec { margin-top: 18px; }
+    .rp-sec-t { font-size: 12px; font-weight: 600; letter-spacing: .08em; color: var(--mut); margin: 0 0 8px; text-transform: uppercase; }
+    .rp-kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; }
+    .rp-kpi { position: relative; background: var(--card); border: 1px solid var(--bd); border-radius: 14px; padding: 14px 14px 12px 16px; overflow: hidden; }
+    .rp-kpi::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background: var(--k, var(--acc)); }
+    .rp-kpi .l { color: var(--mut); font-size: 12px; margin-bottom: 4px; }
+    .rp-kpi .v { font-size: 26px; font-weight: 700; line-height: 1.15; font-variant-numeric: tabular-nums; word-break: break-all; }
+    .rp-kpi .v small { font-size: 13px; font-weight: 500; color: var(--mut); margin-left: 3px; }
+    .rp-kpi .d { display: inline-block; margin-top: 6px; font-size: 12px; font-weight: 600; padding: 1px 8px; border-radius: 999px; color: var(--k, var(--mut)); background: color-mix(in srgb, var(--k, var(--mut)) 14%, transparent); }
+    .rp-kpi .n { color: var(--mut); font-size: 11.5px; margin-top: 4px; }
+    .tone-good { --k: var(--good); } .tone-bad { --k: var(--bad); } .tone-warn { --k: var(--warn); } .tone-info { --k: var(--info); } .tone-neutral { --k: var(--mut); }
+    .rp-alerts { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px; }
+    .rp-alert { background: var(--card); border: 1px solid var(--bd); border-left: 4px solid var(--k, var(--info)); border-radius: 12px; padding: 10px 14px; }
+    .rp-alert b { display: block; font-size: 13.5px; margin-bottom: 2px; color: var(--k, var(--tx)); }
+    .rp-alert span { color: var(--mut); font-size: 12.5px; }
+    .rp-charts { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 12px; }
+    .rp-card { background: var(--card); border: 1px solid var(--bd); border-radius: 14px; padding: 14px; min-width: 0; }
+    .rp-card.s-full { grid-column: span 12; } .rp-card.s-two { grid-column: span 8; } .rp-card.s-half { grid-column: span 6; } .rp-card.s-third { grid-column: span 4; }
+    .rp-card-h { display: flex; align-items: flex-start; gap: 8px; margin-bottom: 6px; }
+    .rp-card-h .t { flex: 1; min-width: 0; font-weight: 600; font-size: 14px; }
+    .rp-card-h .s { color: var(--mut); font-size: 12px; font-weight: 400; margin-top: 1px; }
+    .rp-chart { width: 100%; min-height: 120px; }
+    .rp-err { color: var(--bad); font-size: 12.5px; padding: 8px 0; }
+    .rp-loading { color: var(--mut); font-size: 12.5px; padding: 8px 0; }
+    .rp-tbl-tools { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+    .rp-tbl-tools input { flex: 1; max-width: 260px; border: 1px solid var(--bd); background: var(--bg); color: var(--tx); border-radius: 8px; padding: 4px 10px; font-size: 12.5px; outline: none; }
+    .rp-tbl-tools input:focus { border-color: var(--acc); }
+    .rp-tbl-wrap { overflow: auto; max-height: 440px; border: 1px solid var(--bd); border-radius: 10px; }
+    .rp .rp-tbl { border-collapse: separate; border-spacing: 0; width: 100%; font-size: 13px; }
+    .rp .rp-tbl th { position: sticky; top: 0; z-index: 1; background: var(--hd); color: var(--mut); font-weight: 600; font-size: 12px; text-align: left; padding: 8px 12px; border: 0; border-bottom: 1px solid var(--bd); white-space: nowrap; cursor: pointer; user-select: none; }
+    .rp .rp-tbl th:hover { color: var(--tx); }
+    .rp .rp-tbl th .ar { opacity: .7; margin-left: 4px; font-size: 10px; }
+    .rp .rp-tbl td { padding: 7px 12px; border: 0; border-bottom: 1px solid var(--bd); vertical-align: middle; }
+    .rp .rp-tbl tr:last-child td { border-bottom: 0; }
+    .rp .rp-tbl { min-width: 100%; width: max-content; }
+    .rp .rp-tbl tbody tr:hover td { background: color-mix(in srgb, var(--acc) 6%, transparent); }
+    .rp .rp-tbl td.num, .rp .rp-tbl th.num { text-align: right; font-variant-numeric: tabular-nums; }
+    .rp .tag { display: inline-block; font-size: 11.5px; font-weight: 600; padding: 1px 9px; border-radius: 999px; color: var(--k, var(--mut)); background: color-mix(in srgb, var(--k, var(--mut)) 15%, transparent); white-space: nowrap; }
+    .rp .rp-notes { background: var(--card); border: 1px solid var(--bd); border-radius: 14px; padding: 12px 18px 12px 34px; margin: 0; color: var(--mut); font-size: 12.5px; }
+    .rp .rp-notes li { margin: 3px 0; list-style: disc; }
+    .rp-foot { margin-top: 14px; font-size: 11px; color: var(--mut); opacity: .8; }
+    .rp.full { position: fixed; inset: 0; z-index: 60; margin: 0; border-radius: 0; overflow: auto; padding: 24px clamp(16px, 4vw, 56px); }
+    @container (max-width: 760px) { .rp-card.s-two, .rp-card.s-half, .rp-card.s-third { grid-column: span 12; } .rp-title { font-size: 19px; } .rp-kpi .v { font-size: 22px; } }
+    @container (max-width: 480px) { .rp { padding: 12px; } .rp-kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; } }
+    .prev-btn { margin-left: 6px; font-size: 12px; padding: 1px 9px; border-radius: 999px; border: 1px solid #93c5fd; background: transparent; color: inherit; cursor: pointer; }
     #raw-pre{margin:0;padding:16px;max-height:70vh;overflow:auto;font-size:12px;line-height:1.5;white-space:pre-wrap;word-break:break-all}
     /* ===== v11: Apple style / mobile / navigation ===== */
     html, body { height: 100%; overflow: hidden; overscroll-behavior: none; }
@@ -237,7 +301,7 @@
         </button>
         <div class="flex items-center gap-2">
           <div class="w-8 h-8 bg-primary-600 rounded-lg flex items-center justify-center text-white font-bold text-lg">A</div>
-          <h1 class="font-semibold text-lg tracking-tight hidden sm:block">Assistant Client</h1>
+          <h1 class="font-semibold text-lg tracking-tight hidden sm:block">My Agent 客戶端</h1>
         </div>
       </div>
 
@@ -322,6 +386,7 @@
               <input type="file" id="chat-file-input" class="hidden" multiple />
               <button id="camera-btn" type="button" class="p-3 text-slate-500 hover:text-primary-600 dark:text-slate-400 self-end transition-colors" title="拍照並附加" aria-label="拍照並附加"><i class="fa-solid fa-camera"></i></button>
               <input type="file" id="camera-input" accept="image/*" capture="environment" class="hidden" />
+              <button id="report-btn" type="button" class="p-3 text-slate-500 hover:text-primary-600 dark:text-slate-400 self-end transition-colors" title="報表模式：要求 agent 以儀表板格式回覆，前端自動排版" aria-label="報表模式" aria-pressed="false"><i class="fa-solid fa-chart-line"></i></button>
               <textarea id="user-input" rows="1" class="flex-1 bg-transparent border-none focus:ring-0 text-slate-800 dark:text-slate-100 placeholder-slate-400 resize-none py-3 px-2 max-h-40" placeholder="輸入訊息... (Shift+Enter 換行)"></textarea>
               <button id="send-btn" class="p-3 bg-primary-600 text-white rounded-xl shadow-md hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all active:scale-95 self-end">
                 <i class="fa-solid fa-paper-plane"></i>
@@ -458,8 +523,8 @@
         </div>
       </div>
 
-      <div id="view-settings" class="absolute inset-0 overflow-y-auto bg-white dark:bg-slate-900 hidden z-0 flex items-center justify-center p-4">
-        <div class="w-full max-w-lg bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-700 p-8 space-y-6">
+      <div id="view-settings" class="absolute inset-0 overflow-y-auto bg-white dark:bg-slate-900 hidden z-0 flex flex-col items-center p-4">
+        <div class="w-full max-w-lg my-auto bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-700 p-8 space-y-6">
           <div class="text-center">
             <h2 class="text-2xl font-bold text-slate-900 dark:text-white">連線設定</h2>
             <p class="text-slate-500 text-sm mt-1">配置 Assistant API 的端點與金鑰</p>
@@ -501,9 +566,28 @@
             <label class="flex items-center gap-2 cursor-pointer"><input type="radio" name="send-mode" value="enter" /> Enter 送出（Shift+Enter 換行）</label>
             <label class="flex items-center gap-2 cursor-pointer"><input type="radio" name="send-mode" value="mod" /> ⌘/Ctrl + Enter 送出（Enter 換行，適合長篇提示詞）</label>
           </fieldset>
+          <div>
+            <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">報表模式指令（開啟報表模式時附加在訊息後，要求 agent 輸出儀表板 JSON）</label>
+            <textarea id="report-instr-input" rows="9" spellcheck="false" class="w-full p-3 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none font-mono text-xs"></textarea>
+            <button id="report-instr-reset" type="button" class="mt-1 text-xs underline text-slate-500 hover:text-primary-600">還原預設指令</button>
+          </div>
           <div class="flex gap-3 pt-2">
             <button onclick="switchView('chat')" class="flex-1 px-4 py-3 border border-slate-300 dark:border-slate-600 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700 font-medium transition-colors">取消</button>
             <button id="save-settings-btn" class="flex-1 px-4 py-3 bg-primary-600 hover:bg-primary-700 text-white rounded-xl font-medium shadow-lg shadow-primary-500/30 transition-all active:scale-95">儲存並連線</button>
+          </div>
+        </div>
+
+        <div id="changelog" class="w-full max-w-lg mt-6 mb-10 px-2 text-sm text-slate-600 dark:text-slate-300">
+          <h3 class="font-semibold text-slate-800 dark:text-slate-100 mb-2">版本紀錄 <span class="text-xs font-normal text-slate-400">目前版本 v14.0</span></h3>
+          <div class="space-y-3">
+            <div><div class="font-medium text-slate-700 dark:text-slate-200">v14.0 <span class="text-xs text-slate-400">2026-10-06</span></div>
+              <ul class="list-disc pl-5 space-y-0.5"><li>原生儀表板渲染：agent 回覆 <code>dashboard</code> JSON，自動排成 KPI 卡、警示、ECharts 圖表與可排序／搜尋的明細表（深淺色、手機版皆可）</li><li>報表模式：輸入框圖表按鈕，開啟後自動附上報表輸出指令（可在上方設定頁編輯）</li><li>沙箱 HTML 報表可載入 https 圖表函式庫；資源連結旁新增「預覽」本機 HTML</li><li>連線失敗時的錯誤訊息更明確；名稱改為「My Agent 客戶端」</li></ul></div>
+            <div><div class="font-medium text-slate-700 dark:text-slate-200">v13.0 <span class="text-xs text-slate-400">2026-10-06</span></div>
+              <ul class="list-disc pl-5 space-y-0.5"><li>Canvas：HTML 報表與 ECharts option 於隔離沙箱渲染（全螢幕／新分頁／下載）</li><li>助理訊息新增 <code>{ }</code> 檢視原始回應 JSON；程式碼範例改用 <code>YOUR_API_KEY</code></li></ul></div>
+            <div><div class="font-medium text-slate-700 dark:text-slate-200">v12.0</div>
+              <ul class="list-disc pl-5 space-y-0.5"><li>預設直連 API（不需中繼），可託管於 GitHub Pages；SBX／PRD 一鍵切換</li></ul></div>
+            <div><div class="font-medium text-slate-700 dark:text-slate-200">v9–v11</div>
+              <ul class="list-disc pl-5 space-y-0.5"><li>Markdown 渲染、程式碼複製、深色模式；檔案上傳／下載／持續附加；停止、編輯重送、對話重新命名與標題推導</li></ul></div>
           </div>
         </div>
       </div>
@@ -744,9 +828,15 @@
       const url = `${getBase()}${path}`;
       const headers = upstreamAuthHeaders(url);
       if (!isFormData) headers['Content-Type'] = 'application/json';
-      const res = await fetch(url, { method, headers, body: body ? (isFormData ? body : JSON.stringify(body)) : undefined, signal: signal || undefined });
+      let res;
+      try { res = await fetch(url, { method, headers, body: body ? (isFormData ? body : JSON.stringify(body)) : undefined, signal: signal || undefined }); }
+      catch (e) {
+        if (e && e.name === 'AbortError') throw e;
+        let host = url; try { host = new URL(url).host; } catch (x) {}
+        throw new Error(`無法連線到 ${host}（網路／VPN／防火牆、憑證或 CORS 被擋）。可在瀏覽器網址列開 ${getBase()}/v1/threads，看到 401 代表網路可達`);
+      }
       if (res.status === 401 && res.headers.get('X-Relay-Auth') === 'required') { location.href = '/login'; throw new Error('登入已過期，請重新登入'); }
-      if (!res.ok) { const err = await res.json().catch(() => ({})); throw new Error(err.error?.message || (typeof err.error === 'string' ? err.error : '') || `HTTP ${res.status}`); }
+      if (!res.ok) { const err = await res.json().catch(() => ({})); { const m = err.error?.message || (typeof err.error === 'string' ? err.error : ''); throw new Error(m ? `HTTP ${res.status}：${m}` : `HTTP ${res.status}`); } }
       return await res.json();
     }
 
@@ -800,7 +890,7 @@
           if (msg.role === 'user') {
             files = extractServerFiles(msg);
             if (!files.length) {
-              const i = recs.findIndex(r => r.text === String(content || '').trim());
+              const i = recs.findIndex(r => r.text === stripReport(content));
               if (i >= 0) { files = recs[i].files; recs.splice(i, 1); }
             }
             files.forEach(f => restored.set(f.id, f));
@@ -819,8 +909,10 @@
 
     async function sendMessage() {
       if (state.isSending) return;
-      const text = els.userInput.value.trim();
+      const typedText = els.userInput.value.trim();
+      const reportOn = isReportMode();
       const hasFiles = state.selectedFiles.size > 0;
+      const text = typedText || ((reportOn && hasFiles) ? REPORT_DEFAULT_TEXT : '');
       if (state.uploading.size) return showToast('檔案上傳中，請稍候再送出', 'info');
       if (!text && !hasFiles) return;
       if (!state.assistantId) return showToast('請先設定 Assistant ID', 'error');
@@ -838,13 +930,14 @@
       [60, 250].forEach(ms => setTimeout(() => { if (!state.editing && els.userInput.value.trim() === text) { els.userInput.value = ''; autoResizeInput(); } }, ms));
       
       const content = [];
-      if (text) content.push({ type: 'text', text: text });
+      if (text) content.push({ type: 'text', text: reportOn ? text + '\n\n<report_mode>\n' + reportInstr() + '\n</report_mode>' : text });
       state.selectedFiles.forEach((meta, id) => content.push({ type: 'file', file: { file_id: id, filename: meta.filename } }));
 
       const payload = { model: state.assistantId, messages: [{ role: 'user', content: content }] };
       if (state.currentThreadId) payload.thread_id = state.currentThreadId;
 
       const sentNewFiles = Array.from(state.selectedFiles.values()).filter(f => !f.carried).map(f => ({ id: f.id, filename: f.filename }));
+      state.pendingReportChip = reportOn;
       appendMessage('user', text, sentNewFiles);
       const loadingId = showThinking();
       // 續問時仍需把檔案再帶一次：保留檔案為「持續附加」，可用 ✕ 移除
@@ -938,6 +1031,12 @@
         let u; try { u = new URL(a.href, location.href); } catch (e) { return; }
         const isFile = DOWNLOAD_RE.test(u.pathname + u.search) || /\/files\/[^/]+(\/content)?\/?$/i.test(u.pathname) || /download/i.test(a.textContent + a.href);
         if (isFile) a.classList.add('md-download');
+        if (/\/resource\//i.test(u.pathname) || /\.html?$/i.test(u.pathname) || /\.html?$/i.test(a.textContent.trim())) {
+          const pb = document.createElement('button'); pb.type = 'button'; pb.className = 'prev-btn'; pb.textContent = '預覽';
+          pb.title = '先下載該 HTML 檔，再按此選擇檔案，直接在這裡預覽';
+          pb.addEventListener('click', () => pickLocalHtml(a.closest('p,li') || a.parentNode, a.textContent));
+          a.after(pb);
+        }
         if (apiOrigin && u.origin === apiOrigin) {
           a.addEventListener('click', async (e) => {
             e.preventDefault();
@@ -1101,7 +1200,7 @@
         const url = CANVAS_LIBS[name] || (apiOrigin ? apiOrigin + '/static/canvas-lib/' + name : '');
         return url ? `${pre}${q}${url}${q}` : m;
       });
-      const csp = "default-src 'none'; script-src 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://unpkg.com " + apiOrigin + "; style-src 'unsafe-inline' https://fonts.googleapis.com https://cdn.jsdelivr.net; font-src data: https://fonts.gstatic.com https://cdn.jsdelivr.net; img-src data: blob: https:; connect-src 'none'; form-action 'none'; base-uri 'none'";
+      const csp = "default-src 'none'; script-src 'unsafe-inline' 'unsafe-eval' https:; style-src 'unsafe-inline' https:; font-src data: https:; img-src data: blob: https:; connect-src 'none'; form-action 'none'; base-uri 'none'";
       const meta = `<meta http-equiv="Content-Security-Policy" content="${csp}">`;
       if (/<head[^>]*>/i.test(out)) return out.replace(/<head[^>]*>/i, m => m + meta);
       if (/<html[^>]*>/i.test(out)) return out.replace(/<html[^>]*>/i, m => m + '<head>' + meta + '</head>');
@@ -1148,9 +1247,23 @@
     function extractCanvasFromText(text) {
       let t = String(text ?? ''); const docs = [];
       if (!t.includes('\n') && t.includes('\\n')) t = t.replace(/(?:\\r)?\\n/g, '\n');
+      const ph = () => '\n\n[[CANVAS:' + (docs.length - 1) + ']]\n\n';
+      // v14: ```dashboard 區塊（agent 依報表模式指令輸出的 JSON 規格）
+      t = t.replace(/```(?:dashboard|report|ais-dashboard)[^\n]*\n([\s\S]*?)```/gi, (m, code) => {
+        const sp = parseDashboardSpec(code);
+        if (sp) { docs.push({ dash: sp }); return ph(); }
+        return '\n\n> ⚠️ 儀表板 JSON 解析失敗（格式不正確或輸出被截斷），以下為原始內容：\n\n' + m;
+      });
+      t = t.replace(/```(?:dashboard|report|ais-dashboard)[^\n]*\n(?![\s\S]*```)([\s\S]*)$/i, (m, code) => {
+        const sp = parseDashboardSpec(code);
+        if (sp) { docs.push({ dash: sp }); return ph(); }
+        return '\n\n> ⚠️ 儀表板 JSON 不完整（輸出可能被截斷），以下為原始內容：\n\n' + m + '\n```';
+      });
       t = t.replace(/```(?:html?|HTML)[^\n]*\n([\s\S]*?)```/g, (m, code) => { if (looksLikeHtmlDoc(code)) { docs.push(code); return '\n\n[[CANVAS:' + (docs.length - 1) + ']]\n\n'; } return m; });
       // ECharts option：```javascript / js / json / echarts 區塊，內容為 option = {...} 或純 JSON（含 series）
       t = t.replace(/```(?:javascript|js|json|echarts)[^\n]*\n([\s\S]*?)```/gi, (m, code) => {
+        const sp = parseDashboardSpec(code);
+        if (sp && isDashboardLike(sp)) { docs.push({ dash: sp }); return '\n\n[[CANVAS:' + (docs.length - 1) + ']]\n\n'; }
         const opt = parseEchartsOption(code);
         if (!opt) return m;
         docs.push(chartDocHtml(opt)); return '\n\n[[CANVAS:' + (docs.length - 1) + ']]\n\n';
@@ -1194,8 +1307,318 @@
     document.getElementById('raw-close').addEventListener('click', () => document.getElementById('raw-modal').close());
     document.getElementById('raw-copy').addEventListener('click', () => { navigator.clipboard.writeText(document.getElementById('raw-pre').textContent); showToast('已複製', 'info'); });
 
+    // ===================== v14: 原生儀表板渲染 + 報表模式 =====================
+    const rpLs = (k) => { try { return localStorage.getItem(k); } catch (e) { return null; } };
+    const rpLsSet = (k, v) => { try { if (v == null) localStorage.removeItem(k); else localStorage.setItem(k, v); } catch (e) {} };
+    const RP_FENCE = '`'.repeat(3);
+    const REPORT_DEFAULT_TEXT = '請根據上傳的資料建立營運報表。';
+    const REPORT_INSTR_DEFAULT = [
+      '你正在為「前端報表模式」產生報表。請嚴格遵守以下規則：',
+      '1. 先用 2–4 句繁體中文總結重點結論（不要用表格重複 KPI）。',
+      '2. 接著輸出「恰好一個」程式碼區塊，語言標記為 dashboard（' + RP_FENCE + 'dashboard），內容是純 JSON：不可有註解、不可有結尾逗號、不可有 JavaScript 函式。前端會把它渲染成儀表板。',
+      '3. 不要產生任何檔案、不要輸出 HTML、不要使用 canvas／HTML 報表技能。所有數字必須由上傳資料實際計算（可用 Python），不可捏造；資料需先聚合：每張圖 ≤60 個資料點、每張表 ≤15 列。',
+      '',
+      'JSON 結構：',
+      '{"title":"","subtitle":"資料期間／來源","kpis":[{"label":"","value":"","unit":"","delta":"+3.2%","tone":"good|bad|warn|info|neutral","note":""}],"alerts":[{"title":"","text":"","level":"bad|warn|info|good"}],"charts":[{"title":"","subtitle":"","size":"full|two-thirds|half|third","height":300,"option":{}}],"tables":[{"title":"","columns":["欄位",{"label":"金額","type":"num"}],"rows":[["A",123]]}],"notes":["資料口徑／假設"]}',
+      '- value 可為數字或字串；tone 代表好壞（例如成本上升應標 bad）。',
+      '- option 為 ECharts option（純 JSON）：必須包含 series；座標軸、圖例、tooltip 皆用 JSON 設定；formatter 只能用字串模板（如 "{b}: {c}"）；不要設定 title（卡片已有標題）、不要設定顏色主題（前端自動套用深淺色）。',
+      '- 表格欄位 type 可用 text／num／pct／tag；pct 欄請直接給百分比數值（12.3 代表 12.3%）；tag 欄請用簡短狀態詞（如 正常／注意／異常）。',
+      '版面順序：KPI 6–8 個 → 警示 ≤4 則 → 圖表 4–8 張（趨勢、結構、排名、分布混搭）→ 明細表 1–3 張 → 備註。'
+    ].join('\n');
+    function isReportMode() { return rpLs('reportMode') === '1'; }
+    function reportInstr() { return (rpLs('reportInstr') || '').trim() || REPORT_INSTR_DEFAULT; }
+    function hasReportTag(t) { return /<report_mode>[\s\S]*<\/report_mode>/.test(String(t || '')); }
+    function stripReport(t) { return String(t == null ? '' : t).replace(/\n*<report_mode>[\s\S]*?<\/report_mode>\s*/g, '').trim(); }
+
+    // ---- 規格解析 / 正規化 ----
+    function parseDashboardSpec(code) {
+      const c = String(code || '').trim().replace(/^﻿/, '');
+      const tryParse = (s) => { try { const o = JSON.parse(s); return (o && typeof o === 'object' && !Array.isArray(o)) ? o : null; } catch (e) { return null; } };
+      const noTrail = c.replace(/,(\s*[}\]])/g, '$1');
+      return tryParse(c) || tryParse(noTrail) || tryParse(repairTruncatedJson(noTrail));
+    }
+    // 輸出被截斷時，盡量補齊未閉合的字串／括號
+    function repairTruncatedJson(c) {
+      const st = []; let inStr = false, esc = false;
+      for (let i = 0; i < c.length; i++) {
+        const ch = c[i];
+        if (inStr) { if (esc) esc = false; else if (ch === '\\') esc = true; else if (ch === '"') inStr = false; continue; }
+        if (ch === '"') inStr = true; else if (ch === '{') st.push('}'); else if (ch === '[') st.push(']'); else if (ch === '}' || ch === ']') st.pop();
+      }
+      let out = c; if (inStr) out += '"';
+      out = out.replace(/[,:\s]+$/, '').replace(/,\s*"[^"]*"$/, '');
+      return out + st.reverse().join('');
+    }
+    function isDashboardLike(o) { return !!o && !o.series && (Array.isArray(o.kpis) || Array.isArray(o.kpi) || Array.isArray(o.charts) || Array.isArray(o.tables)); }
+    function normalizeDashSpec(s) {
+      const arr = (a, n) => Array.isArray(a) ? a.filter(x => x && typeof x === 'object').slice(0, n) : [];
+      const charts = arr(s.charts, 12).map(c => ({ title: c.title, subtitle: c.subtitle, size: c.size, height: c.height, option: c.option || c.echarts || c.spec })).filter(c => c.option && typeof c.option === 'object');
+      const tables = arr(s.tables, 6).map(t => {
+        let cols = Array.isArray(t.columns) ? t.columns : [];
+        const rowsIn = Array.isArray(t.rows) ? t.rows.slice(0, 200) : [];
+        if (!cols.length && rowsIn[0] && typeof rowsIn[0] === 'object' && !Array.isArray(rowsIn[0])) cols = Object.keys(rowsIn[0]);
+        cols = cols.map(c => (c && typeof c === 'object') ? { label: String(c.label ?? c.title ?? c.key ?? ''), key: c.key, type: String(c.type || '') } : { label: String(c), key: undefined, type: '' });
+        const rows = rowsIn.map(r => Array.isArray(r) ? r : ((r && typeof r === 'object') ? cols.map(c => r[c.key ?? c.label]) : [r]));
+        return { title: t.title, columns: cols, rows };
+      }).filter(t => t.columns.length);
+      return {
+        title: String(s.title || '營運報表'), subtitle: s.subtitle ? String(s.subtitle) : '',
+        kpis: arr(s.kpis || s.kpi, 12), alerts: arr(s.alerts, 8), charts, tables,
+        notes: (Array.isArray(s.notes) ? s.notes : []).map(String).slice(0, 12)
+      };
+    }
+
+    // ---- 小工具 ----
+    const RP_TONES = ['good', 'bad', 'warn', 'info', 'neutral'];
+    function rpTone(t) {
+      t = String(t || '').toLowerCase().trim();
+      const map = { red: 'bad', critical: 'bad', error: 'bad', danger: 'bad', high: 'bad', yellow: 'warn', warning: 'warn', orange: 'warn', medium: 'warn', green: 'good', ok: 'good', success: 'good', blue: 'info', gray: 'neutral', grey: 'neutral', up: 'good', down: 'bad' };
+      t = map[t] || t; return RP_TONES.includes(t) ? t : '';
+    }
+    function rpEl(tag, cls, text) { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = String(text); return e; }
+    function rpFmt(v) {
+      if (typeof v === 'number' && isFinite(v)) return Math.abs(v) >= 1000 ? v.toLocaleString('en-US', { maximumFractionDigits: 2 }) : String(Math.round(v * 100) / 100);
+      return v == null ? '' : String(v);
+    }
+    function rpTagTone(v) {
+      const s = String(v == null ? '' : v);
+      if (/異常|嚴重|高風險|紅|危|延遲|逾期|不良|超標|缺料|停線|失敗|critical|alert|bad|high/i.test(s)) return 'bad';
+      if (/注意|警|黃|待|偏|關注|medium|warn/i.test(s)) return 'warn';
+      if (/正常|良好|達標|綠|通過|完成|低風險|穩定|ok|good|normal/i.test(s)) return 'good';
+      return 'neutral';
+    }
+    const rpIsDark = () => document.documentElement.classList.contains('dark');
+
+    // ---- ECharts（動態載入、主題套用）----
+    let _ecPromise = null;
+    function loadECharts() {
+      if (window.echarts) return Promise.resolve(window.echarts);
+      if (_ecPromise) return _ecPromise;
+      const urls = [CANVAS_LIBS['echarts.min.js'], 'https://cdnjs.cloudflare.com/ajax/libs/echarts/5.5.1/echarts.min.js', 'https://unpkg.com/echarts@5.5.1/dist/echarts.min.js'];
+      _ecPromise = (async () => {
+        for (const u of urls) {
+          try {
+            await new Promise((res, rej) => { const s = document.createElement('script'); s.src = u; s.onload = res; s.onerror = () => { s.remove(); rej(new Error('load')); }; document.head.appendChild(s); });
+            if (window.echarts) return window.echarts;
+          } catch (e) { /* 換下一個 CDN */ }
+        }
+        _ecPromise = null; throw new Error('無法載入圖表函式庫 ECharts（請確認可連線 cdn.jsdelivr.net）');
+      })();
+      return _ecPromise;
+    }
+    const RP_PALETTE = ['#6366f1', '#06b6d4', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#14b8a6', '#84cc16', '#f97316'];
+    function rpStripFns(o, depth) {
+      if (!o || typeof o !== 'object' || depth > 12) return;
+      Object.keys(o).forEach(k => {
+        const v = o[k];
+        if (typeof v === 'string' && k === 'formatter' && /^\s*(function\b|\(?[\w\s,]*\)?\s*=>)/.test(v)) delete o[k];
+        else if (v && typeof v === 'object') rpStripFns(v, depth + 1);
+      });
+    }
+    function rpThemed(base, dark) {
+      const o = JSON.parse(JSON.stringify(base));
+      rpStripFns(o, 0);
+      const mut = dark ? '#93a0b8' : '#64748b', tx = dark ? '#e6eaf2' : '#0f172a', line = dark ? '#26324d' : '#e4e7ee';
+      delete o.title;
+      o.backgroundColor = 'transparent';
+      if (!o.color) o.color = RP_PALETTE;
+      o.textStyle = Object.assign({}, o.textStyle, { color: mut });
+      const axisFix = (a) => {
+        if (!a || typeof a !== 'object') return;
+        a.axisLabel = Object.assign({}, a.axisLabel, { color: mut });
+        a.nameTextStyle = Object.assign({}, a.nameTextStyle, { color: mut });
+        a.axisLine = a.axisLine || {}; a.axisLine.lineStyle = Object.assign({ color: line }, a.axisLine.lineStyle);
+        a.splitLine = a.splitLine || {}; a.splitLine.lineStyle = Object.assign({ color: line }, a.splitLine.lineStyle);
+      };
+      ['xAxis', 'yAxis', 'angleAxis', 'radiusAxis'].forEach(k => { const a = o[k]; if (Array.isArray(a)) a.forEach(axisFix); else axisFix(a); });
+      const legends = o.legend ? (Array.isArray(o.legend) ? o.legend : [o.legend]) : [];
+      legends.forEach(l => { l.textStyle = Object.assign({}, l.textStyle, { color: mut }); if (!l.type) l.type = 'scroll'; if (l.top === undefined && l.bottom === undefined) l.top = 0; });
+      const legBottom = legends.some(l => l.bottom !== undefined);
+      if ((o.xAxis || o.yAxis) && !Array.isArray(o.grid)) {
+        o.grid = Object.assign({ left: 12, right: 20, top: legends.length && !legBottom ? 44 : 24, bottom: legBottom ? 40 : 8, containLabel: true }, o.grid);
+      }
+      const series = Array.isArray(o.series) ? o.series : (o.series ? [o.series] : []);
+      const t0 = series[0] && series[0].type;
+      const tt = Array.isArray(o.tooltip) ? o.tooltip[0] : (o.tooltip || {});
+      tt.confine = true; tt.backgroundColor = dark ? '#1b2740' : '#ffffff'; tt.borderColor = line;
+      tt.textStyle = Object.assign({}, tt.textStyle, { color: tx });
+      if (!tt.trigger) tt.trigger = (t0 === 'bar' || t0 === 'line') ? 'axis' : 'item';
+      o.tooltip = tt;
+      if (o.animationDuration == null) o.animationDuration = 600;
+      return o;
+    }
+    const RP_LIVE = new Set(); let rpObs = null;
+    function rpEnsureObs() {
+      if (rpObs) return;
+      rpObs = new MutationObserver(() => {
+        const d = rpIsDark();
+        RP_LIVE.forEach(r => {
+          if (!r.el.isConnected) { try { r.chart.dispose(); } catch (e) {} try { r.ro.disconnect(); } catch (e) {} RP_LIVE.delete(r); return; }
+          try { r.chart.setOption(rpThemed(r.base, d), true); } catch (e) {}
+        });
+      });
+      rpObs.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+    }
+    function rpPrune() { RP_LIVE.forEach(r => { if (!r.el.isConnected) { try { r.chart.dispose(); } catch (e) {} try { r.ro.disconnect(); } catch (e) {} RP_LIVE.delete(r); } }); }
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') document.querySelectorAll('.rp.full').forEach(r => r.querySelector('[data-fs]')?.click()); });
+
+    // ---- 表格（排序 / 搜尋）----
+    function rpTable(t) {
+      const card = rpEl('div', 'rp-card');
+      const h = rpEl('div', 'rp-card-h'); h.appendChild(rpEl('div', 't', t.title || '明細')); card.appendChild(h);
+      const cols = t.columns, rows = t.rows;
+      cols.forEach((c, j) => {
+        if (!c.type) { const vals = rows.map(r => r[j]).filter(v => v != null && v !== ''); c.type = (vals.length && vals.every(v => typeof v === 'number')) ? 'num' : 'text'; }
+      });
+      let sortCol = -1, dir = 1, q = '';
+      const tools = rpEl('div', 'rp-tbl-tools'); const cnt = rpEl('span', 'rp-mini'); cnt.style.cursor = 'default'; cnt.style.marginLeft = 'auto';
+      if (rows.length > 8) { const inp = document.createElement('input'); inp.type = 'search'; inp.placeholder = '搜尋…'; inp.addEventListener('input', () => { q = inp.value.trim().toLowerCase(); render(); }); tools.appendChild(inp); }
+      tools.appendChild(cnt); card.appendChild(tools);
+      const wrap = rpEl('div', 'rp-tbl-wrap'); const table = rpEl('table', 'rp-tbl'); const thead = document.createElement('thead'); const trh = document.createElement('tr');
+      const numeric = (c) => c.type === 'num' || c.type === 'pct';
+      cols.forEach((c, j) => {
+        const th = rpEl('th', numeric(c) ? 'num' : '', c.label); const ar = rpEl('span', 'ar', ''); th.appendChild(ar);
+        th.addEventListener('click', () => { if (sortCol === j) dir = -dir; else { sortCol = j; dir = numeric(c) ? -1 : 1; } render(); });
+        trh.appendChild(th);
+      });
+      thead.appendChild(trh); table.appendChild(thead); const tbody = document.createElement('tbody'); table.appendChild(tbody); wrap.appendChild(table); card.appendChild(wrap);
+      function render() {
+        let list = rows.filter(r => !q || r.some(v => String(v == null ? '' : v).toLowerCase().includes(q)));
+        if (sortCol >= 0) {
+          const c = cols[sortCol];
+          list = list.slice().sort((a, b) => {
+            const x = a[sortCol], y = b[sortCol];
+            if (numeric(c)) { const nx = parseFloat(String(x).replace(/[,%\s]/g, '')), ny = parseFloat(String(y).replace(/[,%\s]/g, '')); if (!isNaN(nx) && !isNaN(ny)) return (nx - ny) * dir; }
+            return String(x == null ? '' : x).localeCompare(String(y == null ? '' : y), 'zh-Hant') * dir;
+          });
+        }
+        trh.querySelectorAll('th').forEach((th, j) => { th.querySelector('.ar').textContent = j === sortCol ? (dir > 0 ? '▲' : '▼') : ''; });
+        tbody.textContent = '';
+        list.forEach(r => {
+          const tr = document.createElement('tr');
+          cols.forEach((c, j) => {
+            const td = document.createElement('td'); const v = r[j];
+            if (c.type === 'tag' && v != null && v !== '') { td.appendChild(rpEl('span', 'tag tone-' + rpTagTone(v), v)); }
+            else if (c.type === 'pct') { td.className = 'num'; td.textContent = typeof v === 'number' ? (Math.round(v * 100) / 100) + '%' : (v == null ? '' : String(v)); }
+            else { if (c.type === 'num') td.className = 'num'; td.textContent = rpFmt(v); }
+            tr.appendChild(td);
+          });
+          tbody.appendChild(tr);
+        });
+        cnt.textContent = list.length === rows.length ? ('共 ' + rows.length + ' 列') : (list.length + ' / ' + rows.length + ' 列');
+      }
+      render();
+      return card;
+    }
+
+    // ---- 儀表板主體 ----
+    function buildDashboard(rawSpec) {
+      rpPrune();
+      const spec = normalizeDashSpec(rawSpec);
+      const root = rpEl('div', 'rp');
+      const head = rpEl('div', 'rp-head'); const tcol = rpEl('div', 'rp-t');
+      tcol.appendChild(rpEl('div', 'rp-title', spec.title)); if (spec.subtitle) tcol.appendChild(rpEl('div', 'rp-sub', spec.subtitle));
+      const tools = rpEl('div', 'rp-tools');
+      const bFull = rpEl('button', '', '全螢幕'); bFull.type = 'button'; bFull.dataset.fs = '1';
+      const bJson = rpEl('button', '', '規格 JSON'); bJson.type = 'button';
+      tools.append(bFull, bJson); head.append(tcol, tools); root.appendChild(head);
+      bFull.addEventListener('click', () => { const on = root.classList.toggle('full'); bFull.textContent = on ? '離開全螢幕' : '全螢幕'; });
+      bJson.addEventListener('click', () => openRawModal(rawSpec, '儀表板規格（agent 輸出的 JSON）'));
+      const section = (title, node, first) => { const s = rpEl('div', 'rp-sec'); if (first) s.style.marginTop = '0'; if (title) s.appendChild(rpEl('div', 'rp-sec-t', title)); s.appendChild(node); root.appendChild(s); };
+
+      if (spec.kpis.length) {
+        const g = rpEl('div', 'rp-kpis');
+        spec.kpis.forEach(k => {
+          const d = String(k.delta == null ? '' : k.delta).trim();
+          const tone = rpTone(k.tone) || (/^[+＋▲↑]/.test(d) ? 'good' : (/^[-−–▼↓]/.test(d) ? 'bad' : ''));
+          const c = rpEl('div', 'rp-kpi' + (tone ? ' tone-' + tone : ''));
+          c.appendChild(rpEl('div', 'l', k.label));
+          const v = rpEl('div', 'v', rpFmt(k.value)); if (k.unit) v.appendChild(rpEl('small', '', k.unit)); c.appendChild(v);
+          if (d) c.appendChild(rpEl('span', 'd', d));
+          if (k.note) c.appendChild(rpEl('div', 'n', k.note));
+          g.appendChild(c);
+        });
+        section('', g, true);
+      }
+      if (spec.alerts.length) {
+        const g = rpEl('div', 'rp-alerts');
+        spec.alerts.forEach(a => { const c = rpEl('div', 'rp-alert tone-' + (rpTone(a.level || a.tone) || 'info')); c.appendChild(rpEl('b', '', a.title || '提醒')); if (a.text) c.appendChild(rpEl('span', '', a.text)); g.appendChild(c); });
+        section('重點警示', g);
+      }
+      if (spec.charts.length) {
+        const g = rpEl('div', 'rp-charts');
+        const sizeMap = { full: 's-full', 'two-thirds': 's-two', two: 's-two', half: 's-half', third: 's-third' };
+        spec.charts.forEach((c, i) => {
+          const sz = sizeMap[String(c.size || '').toLowerCase()] || (spec.charts.length === 1 ? 's-full' : 's-half');
+          const card = rpEl('div', 'rp-card ' + sz); const h = rpEl('div', 'rp-card-h'); const tt = rpEl('div', 't');
+          tt.appendChild(document.createTextNode(c.title || ('圖表 ' + (i + 1)))); if (c.subtitle) tt.appendChild(rpEl('div', 's', c.subtitle));
+          const png = rpEl('button', 'rp-mini', 'PNG'); png.type = 'button'; png.title = '下載圖片';
+          h.append(tt, png); card.appendChild(h);
+          const box = rpEl('div', 'rp-chart'); box.style.height = Math.max(160, Math.min(720, Number(c.height) || 300)) + 'px';
+          box.appendChild(rpEl('div', 'rp-loading', '圖表載入中…')); card.appendChild(box); g.appendChild(card);
+          loadECharts().then(ec => {
+            box.textContent = '';
+            const chart = ec.init(box, null, { renderer: 'canvas' });
+            try { chart.setOption(rpThemed(c.option, rpIsDark()), true); }
+            catch (e) { chart.dispose(); box.textContent = ''; box.appendChild(rpEl('div', 'rp-err', '此圖表設定無法渲染：' + e.message)); return; }
+            const ro = new ResizeObserver(() => { try { chart.resize(); } catch (e) {} }); ro.observe(box);
+            RP_LIVE.add({ chart, el: box, ro, base: c.option }); rpEnsureObs();
+            png.addEventListener('click', () => {
+              const u = chart.getDataURL({ pixelRatio: 2, backgroundColor: rpIsDark() ? '#121c33' : '#ffffff' });
+              const l = document.createElement('a'); l.href = u; l.download = (c.title || 'chart').replace(/[\\/:*?"<>|]/g, '_') + '.png'; document.body.appendChild(l); l.click(); l.remove();
+            });
+          }).catch(e => { box.textContent = ''; box.appendChild(rpEl('div', 'rp-err', e.message)); });
+        });
+        section('圖表分析', g);
+      }
+      if (spec.tables.length) {
+        const wrap = rpEl('div', ''); wrap.style.display = 'grid'; wrap.style.gap = '12px';
+        spec.tables.forEach(t => wrap.appendChild(rpTable(t)));
+        section('明細', wrap);
+      }
+      if (spec.notes.length) {
+        const ul = rpEl('ul', 'rp-notes');
+        spec.notes.forEach(n => {
+          const li = document.createElement('li');
+          if (window.marked && window.DOMPurify) { try { li.innerHTML = DOMPurify.sanitize(marked.parseInline(n), { ALLOWED_TAGS: ['b', 'strong', 'i', 'em', 'code', 'a', 'br', 'del'], ALLOWED_ATTR: ['href'] }); } catch (e) { li.textContent = n; } } else li.textContent = n;
+          ul.appendChild(li);
+        });
+        section('備註', ul);
+      }
+      root.appendChild(rpEl('div', 'rp-foot', '由 agent 輸出的規格在本機渲染，未載入任何外部報表程式碼。'));
+      return root;
+    }
+
+    // ---- 本機 HTML 預覽（資源連結因無 CORS 無法直接讀取時的替代方案）----
+    function pickLocalHtml(afterEl, nameHint) {
+      const inp = document.createElement('input'); inp.type = 'file'; inp.accept = '.html,.htm,text/html';
+      inp.addEventListener('change', async () => {
+        const f = inp.files && inp.files[0]; if (!f) return;
+        try {
+          const txt = await f.text();
+          if (!looksLikeHtmlDoc(txt)) return showToast('這個檔案看起來不是 HTML 報表', 'error');
+          const card = buildCanvasCard(txt, f.name || nameHint); afterEl.after(card); card.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+        } catch (e) { showToast('讀取失敗：' + e.message, 'error'); }
+      });
+      inp.click();
+    }
+
+    // ---- 報表模式 UI ----
+    (function initReportUi() {
+      const btn = document.getElementById('report-btn');
+      const syncBtn = () => { const on = isReportMode(); btn.classList.toggle('on', on); btn.setAttribute('aria-pressed', on ? 'true' : 'false'); };
+      btn.addEventListener('click', () => { rpLsSet('reportMode', isReportMode() ? '0' : '1'); syncBtn(); showToast(isReportMode() ? '報表模式：開（回覆將以儀表板呈現）' : '報表模式：關', 'info'); });
+      syncBtn();
+      const ta = document.getElementById('report-instr-input');
+      ta.value = reportInstr();
+      ta.addEventListener('input', () => { const v = ta.value.trim(); rpLsSet('reportInstr', (!v || v === REPORT_INSTR_DEFAULT) ? null : v); });
+      document.getElementById('report-instr-reset').addEventListener('click', () => { rpLsSet('reportInstr', null); ta.value = REPORT_INSTR_DEFAULT; showToast('已還原預設指令', 'info'); });
+    })();
+
     // --- Helper Functions ---
     function appendMessage(role, text, attachments = [], requestPayload = null) {
+      let reportChip = false;
+      if (role === 'user') { if (hasReportTag(text)) { text = stripReport(text); reportChip = true; } else if (state.pendingReportChip) reportChip = true; state.pendingReportChip = false; }
       const div = document.createElement('div');
       div.className = `flex w-full mb-6 ${role === 'user' ? 'justify-end' : 'justify-start'}`;
       div.dataset.role = role;
@@ -1227,6 +1650,7 @@
       `;
       
       const mdEl = div.querySelector('.md-output');
+      if (reportChip) mdEl.insertAdjacentHTML('beforebegin', '<div class="rp-chip">📊 報表模式</div>');
       const raw = state.pendingRaw; state.pendingRaw = null;
       const origText = text;
       let canvasDocs = [];
@@ -1239,8 +1663,9 @@
       if (canvasDocs.length) {
         // 以報表卡片取代佔位文字
         const holders = Array.from(mdEl.querySelectorAll('p')).filter(p => /^\[\[CANVAS:\d+\]\]$/.test(p.textContent.trim()));
-        canvasDocs.forEach((html, i) => {
-          const card = buildCanvasCard(html);
+        div.firstElementChild.classList.add('wide-msg');
+        canvasDocs.forEach((d, i) => {
+          const card = (typeof d === 'string') ? buildCanvasCard(d) : buildDashboard(d.dash);
           const h = holders.find(p => p.textContent.trim() === `[[CANVAS:${i}]]`);
           if (h) h.replaceWith(card); else mdEl.appendChild(card);
         });
@@ -1443,7 +1868,7 @@
             const list = d.data || [];
             const m = list.find(x => x.role === 'user') || list[0];
             if (!m) continue;
-            let title = contentToText(m).replace(/[#>*`_\[\]]/g, '').replace(/\s+/g, ' ').trim();
+            let title = stripReport(contentToText(m)).replace(/[#>*`_\[\]]/g, '').replace(/\s+/g, ' ').trim();
             if (!title) { const f = extractServerFiles(m); if (f.length) title = '（附件）' + f[0].filename; }
             if (!title) continue;
             setDerivedTitle(t.id, title.slice(0, 28));
