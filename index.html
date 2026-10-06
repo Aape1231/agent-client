@@ -1,0 +1,1486 @@
+<!DOCTYPE html>
+<html lang="zh-TW" class="h-full antialiased">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content" />
+  <title>Assistant Client (v12.0)</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+  <script src="https://cdn.jsdelivr.net/npm/marked@12.0.2/marked.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/dompurify@3.1.6/dist/purify.min.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: { sans: ['-apple-system', 'BlinkMacSystemFont', '"SF Pro Text"', '"PingFang TC"', '"Helvetica Neue"', '"Noto Sans TC"', 'sans-serif'] },
+          colors: {
+            // Apple 風格灰階：整組取代 slate，所有既有 class 自動跟著換色
+            slate: { 50: '#f5f5f7', 100: '#ececf0', 200: '#e3e3e8', 300: '#d2d2d7', 400: '#8e8e93', 500: '#6e6e73', 600: '#48484a', 700: '#2c2c2e', 800: '#1c1c1e', 900: '#000000' },
+            // 主色改為近黑；iOS 藍只保留給連結、聚焦與少量強調
+            primary: { 50: '#f2f2f7', 100: '#e5e5ea', 500: '#0071e3', 600: '#1d1d1f', 700: '#000000' }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar { width: 8px; height: 8px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+    .dark ::-webkit-scrollbar-thumb { background: #475569; }
+    ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+    
+    /* Utility */
+    .typing .dot { animation: typing 1.4s infinite ease-in-out both; }
+    .typing .dot:nth-child(1) { animation-delay: -0.32s; }
+    .typing .dot:nth-child(2) { animation-delay: -0.16s; }
+    @keyframes typing { 0%, 80%, 100% { transform: scale(0); } 40% { transform: scale(1); } }
+    
+    /* Markdown Styles */
+    .markdown-body pre { background: #1e293b; color: #f8fafc; padding: 1rem; border-radius: 0.5rem; overflow-x: auto; margin: 0.8rem 0; }
+    .markdown-body code { background: #e2e8f0; color: #0f172a; padding: 0.2rem 0.4rem; border-radius: 0.25rem; font-size: 0.875em; }
+    .dark .markdown-body code { background: #334155; color: #e2e8f0; }
+    .markdown-body p { margin-bottom: 0.75rem; line-height: 1.7; }
+    .markdown-body ul { list-style-type: disc; padding-left: 1.5rem; margin-bottom: 0.75rem; }
+    
+    /* Docs Table Styles */
+    .docs-table { width: 100%; border-collapse: collapse; margin: 1rem 0; font-size: 0.9rem; }
+    .docs-table th, .docs-table td { border: 1px solid #e2e8f0; padding: 0.75rem; text-align: left; }
+    .docs-table th { background-color: #f8fafc; font-weight: 600; color: #475569; }
+    .dark .docs-table th, .dark .docs-table td { border-color: #334155; }
+    .dark .docs-table th { background-color: #1e293b; color: #94a3b8; }
+    .docs-badge { display: inline-block; padding: 0.1rem 0.4rem; border-radius: 0.25rem; font-size: 0.75rem; font-weight: 600; }
+    .badge-req { background: #fee2e2; color: #991b1b; } /* Required */
+    .badge-opt { background: #f1f5f9; color: #64748b; } /* Optional */
+    /* ===== Chat Markdown Output (v9) — Tailwind preflight 會清掉 h/ol/table/a 樣式，這裡補回 ===== */
+    .md-output { line-height: 1.7; overflow-wrap: anywhere; }
+    .md-output > :first-child { margin-top: 0 !important; }
+    .md-output > :last-child { margin-bottom: 0 !important; }
+    .md-output h1, .md-output h2, .md-output h3, .md-output h4, .md-output h5, .md-output h6 { font-weight: 600; line-height: 1.3; margin: 1.25em 0 0.5em; }
+    .md-output h1 { font-size: 1.5em; }
+    .md-output h2 { font-size: 1.3em; padding-bottom: 0.25em; border-bottom: 1px solid #e2e8f0; }
+    .md-output h3 { font-size: 1.15em; }
+    .md-output h4, .md-output h5, .md-output h6 { font-size: 1em; }
+    .dark .md-output h2 { border-bottom-color: #334155; }
+    .md-output p { margin: 0 0 0.75em; }
+    .md-output ul, .md-output ol { padding-left: 1.5rem; margin: 0 0 0.75em; }
+    .md-output ul { list-style: disc; }
+    .md-output ol { list-style: decimal; }
+    .md-output li { margin: 0.25em 0; }
+    .md-output li > ul, .md-output li > ol { margin: 0.25em 0 0; }
+    .md-output li > p { margin: 0; }
+    .md-output strong { font-weight: 700; }
+    .md-output em { font-style: italic; }
+    .md-output del { text-decoration: line-through; opacity: 0.7; }
+    .md-output a { color: #2563eb; text-decoration: underline; text-underline-offset: 2px; text-decoration-thickness: 1px; cursor: pointer; }
+    .md-output a:hover { color: #1d4ed8; text-decoration-thickness: 2px; }
+    .dark .md-output a { color: #60a5fa; }
+    .dark .md-output a:hover { color: #93c5fd; }
+    .md-output blockquote { border-left: 4px solid #cbd5e1; padding: 0.25em 1em; margin: 0 0 0.75em; color: #64748b; }
+    .dark .md-output blockquote { border-left-color: #475569; color: #94a3b8; }
+    .md-output hr { border: 0; border-top: 1px solid #cbd5e1; margin: 1.25em 0; }
+    .dark .md-output hr { border-top-color: #475569; }
+    .md-output img { max-width: 100%; height: auto; border-radius: 0.5rem; margin: 0.5em 0; }
+    .md-output :not(pre) > code { background: #e2e8f0; color: #0f172a; padding: 0.15em 0.4em; border-radius: 0.25rem; font-size: 0.875em; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+    .dark .md-output :not(pre) > code { background: #334155; color: #e2e8f0; }
+    .md-output pre { position: relative; background: #0d1117; color: #e6edf3; padding: 1rem; border-radius: 0.5rem; overflow-x: auto; margin: 0.75em 0; font-size: 0.875em; line-height: 1.55; }
+    .md-output pre code { background: none !important; color: inherit !important; padding: 0; font-size: inherit; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+    .md-output pre code.hljs { padding: 0; background: none; }
+    .md-output .code-copy-btn { position: absolute; top: 0.4rem; right: 0.4rem; font-size: 0.7rem; padding: 0.2rem 0.5rem; border-radius: 0.375rem; background: rgba(148,163,184,0.2); color: #cbd5e1; opacity: 0; transition: opacity .15s; cursor: pointer; border: 0; }
+    .md-output pre:hover .code-copy-btn, .md-output .code-copy-btn:focus-visible { opacity: 1; }
+    .md-output .md-table-wrap { overflow-x: auto; margin: 0.75em 0; }
+    .md-output table { border-collapse: collapse; width: max-content; min-width: 100%; font-size: 0.9em; }
+    .md-output th, .md-output td { border: 1px solid #e2e8f0; padding: 0.5rem 0.75rem; text-align: left; vertical-align: top; }
+    .md-output th { background: #f1f5f9; font-weight: 600; color: #475569; }
+    .dark .md-output th, .dark .md-output td { border-color: #334155; }
+    .dark .md-output th { background: #1e293b; color: #cbd5e1; }
+    /* 下載連結：以按鈕樣式呈現 */
+    .md-output a.md-download { display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.25rem 0.7rem; margin: 0.15rem 0; border: 1px solid #93c5fd; border-radius: 9999px; background: #eff6ff; color: #1d4ed8; text-decoration: none; font-weight: 500; font-size: 0.9em; }
+    .md-output a.md-download::before { content: "\f019"; font-family: "Font Awesome 6 Free"; font-weight: 900; font-size: 0.85em; }
+    .md-output a.md-download:hover { background: #dbeafe; text-decoration: none; }
+    .dark .md-output a.md-download { background: rgba(59,130,246,0.15); border-color: #3b82f6; color: #93c5fd; }
+    .dark .md-output a.md-download:hover { background: rgba(59,130,246,0.28); }
+    /* 使用者氣泡（藍底白字）內的覆寫 */
+    .user-bubble .md-output a, .user-bubble .md-output a:hover { color: #fff; }
+    .user-bubble .md-output a.md-download { background: rgba(255,255,255,0.18); border-color: rgba(255,255,255,0.5); }
+    .user-bubble .md-output :not(pre) > code { background: rgba(255,255,255,0.22); color: #fff; }
+    .user-bubble .md-output blockquote { border-left-color: rgba(255,255,255,0.5); color: rgba(255,255,255,0.85); }
+    /* ===== v11: Apple style / mobile / navigation ===== */
+    html, body { height: 100%; overflow: hidden; overscroll-behavior: none; }
+    body { -webkit-font-smoothing: antialiased; }
+    #app { position: fixed; inset: 0; width: 100%; height: 100%; overflow: hidden; }
+    @supports (height: 100dvh) { #app { height: 100dvh; } }
+    #view-chat { overflow: hidden; }
+    #chat-window { overflow-x: hidden; overscroll-behavior: contain; touch-action: pan-y; scroll-padding-top: 16px; -webkit-overflow-scrolling: touch; }
+    #chat-window > div { min-width: 0; }
+    #chat-window .flex.w-full > div { min-width: 0; }
+    .md-output { min-width: 0; max-width: 100%; }
+    .input-bar { padding-bottom: calc(1rem + env(safe-area-inset-bottom, 0px)); }
+
+    html header.h-16 { height: calc(4rem + env(safe-area-inset-top, 0px)); padding-top: env(safe-area-inset-top, 0px); background: rgba(255,255,255,.72); -webkit-backdrop-filter: saturate(180%) blur(20px); backdrop-filter: saturate(180%) blur(20px); border-bottom: 1px solid rgba(0,0,0,.08); box-shadow: none; }
+    html.dark header.h-16 { background: rgba(28,28,30,.72); border-bottom-color: rgba(255,255,255,.1); }
+    html .rounded-md { border-radius: 8px; }
+    html .rounded-lg { border-radius: 10px; }
+    html .rounded-xl { border-radius: 14px; }
+    html .shadow-inner { box-shadow: none; }
+    html .shadow-sm { box-shadow: 0 1px 2px rgba(0,0,0,.05); }
+    html .shadow-md { box-shadow: 0 2px 8px rgba(0,0,0,.08); }
+    html .shadow-lg { box-shadow: 0 8px 24px rgba(0,0,0,.12); }
+    html .shadow-xl { box-shadow: 0 12px 40px rgba(0,0,0,.18); }
+    html.dark .bg-primary-600 { background-color: #0a84ff; }
+    html.dark .hover\:bg-primary-700:hover { background-color: #409cff; }
+    html.dark .hover\:text-primary-600:hover { color: #2997ff; }
+    #threads-list > div.border-l-4 { border-left-width: 0; }
+    #toast-container > div { background: rgba(28,28,30,.92) !important; -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); border-radius: 14px; }
+    #toast-container > div.bg-red-500 { background: rgba(255,59,48,.95) !important; }
+    .md-output a { color: #0071e3; }
+    .md-output a:hover { color: #0058b0; }
+    .dark .md-output a { color: #2997ff; }
+    .dark .md-output a:hover { color: #6cb8ff; }
+    .md-output a.md-download { background: #f5f5f7; border-color: #d2d2d7; color: #1d1d1f; }
+    .md-output a.md-download:hover { background: #ececf0; }
+    .dark .md-output a.md-download { background: #2c2c2e; border-color: #48484a; color: #f5f5f7; }
+    .dark .md-output a.md-download:hover { background: #3a3a3c; }
+    .md-output blockquote { border-left-color: #d2d2d7; }
+    .md-output th { background: #f5f5f7; }
+
+    /* --- sidebar: resize / collapse (desktop) --- */
+    #sidebar-resizer { position: absolute; top: 0; right: -4px; width: 8px; height: 100%; cursor: col-resize; z-index: 30; touch-action: none; }
+    #sidebar-resizer::after { content: ""; position: absolute; left: 3px; top: 0; width: 2px; height: 100%; background: transparent; transition: background .15s; }
+    #sidebar-resizer:hover::after, #sidebar-resizer.dragging::after { background: #0071e3; }
+    body.sb-dragging { cursor: col-resize; user-select: none; -webkit-user-select: none; }
+    @media (min-width: 1024px) {
+      #sidebar { width: var(--sb-w, 288px); flex: none; }
+      #sidebar.sb-mini { width: 56px; }
+      #sidebar.sb-mini .sb-hide-mini, #sidebar.sb-mini #threads-list, #sidebar.sb-mini #sidebar-resizer { display: none !important; }
+      #sidebar.sb-mini > div:first-child { justify-content: center; padding-left: 0; padding-right: 0; }
+      #sidebar.sb-mini #sidebar-collapse i { transform: rotate(180deg); }
+      #sidebar.sb-mini #new-thread-btn, #sidebar.sb-mini #file-manager-btn { padding-left: 0; padding-right: 0; justify-content: center; gap: 0; }
+    }
+
+    /* --- conversation navigator --- */
+    #msg-rail { position: absolute; right: 6px; top: 50%; transform: translateY(-50%); z-index: 15; display: none; flex-direction: column; align-items: center; max-height: 64%; padding: 4px 2px; border-radius: 14px; background: rgba(255,255,255,.78); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); box-shadow: 0 0 0 1px rgba(0,0,0,.07); }
+    html.dark #msg-rail { background: rgba(44,44,46,.78); box-shadow: 0 0 0 1px rgba(255,255,255,.1); }
+    @media (min-width: 768px) { #msg-rail.has-items { display: flex; } }
+    #msg-rail .rail-scroll { overflow-y: auto; scrollbar-width: none; display: flex; flex-direction: column; align-items: center; flex: 1; min-height: 0; position: relative; }
+    #msg-rail .rail-scroll::-webkit-scrollbar { display: none; }
+    .rail-btn { width: 22px; height: 20px; flex: none; display: flex; align-items: center; justify-content: center; background: none; border: 0; color: #8e8e93; cursor: pointer; font-size: 11px; }
+    .rail-btn:hover { color: #1d1d1f; }
+    html.dark .rail-btn:hover { color: #f5f5f7; }
+    .rail-dot { width: 22px; height: 14px; flex: none; display: flex; align-items: center; justify-content: center; background: none; border: 0; cursor: pointer; padding: 0; }
+    .rail-dot::before { content: ""; width: 6px; height: 6px; border-radius: 99px; background: #c7c7cc; transition: all .15s; }
+    .rail-dot:hover::before { background: #6e6e73; transform: scale(1.35); }
+    .rail-dot.active::before { background: #1d1d1f; width: 8px; height: 8px; }
+    html.dark .rail-dot::before { background: #636366; }
+    html.dark .rail-dot:hover::before { background: #aeaeb2; }
+    html.dark .rail-dot.active::before { background: #f5f5f7; }
+    #rail-tip { position: fixed; z-index: 70; transform: translateY(-50%); max-width: 280px; padding: 6px 10px; border-radius: 10px; background: rgba(28,28,30,.94); color: #fff; font-size: 12px; line-height: 1.35; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; pointer-events: none; opacity: 0; transition: opacity .12s; }
+    #rail-tip.show { opacity: 1; }
+    #rail-fab { position: absolute; right: 12px; bottom: calc(var(--inputbar-h, 96px) + 12px); z-index: 15; display: none; width: 40px; height: 40px; border-radius: 99px; border: 0; align-items: center; justify-content: center; background: rgba(255,255,255,.85); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); box-shadow: 0 2px 10px rgba(0,0,0,.15); color: #1d1d1f; cursor: pointer; }
+    html.dark #rail-fab { background: rgba(58,58,60,.88); color: #f5f5f7; }
+    @media (max-width: 767px) { #rail-fab.has-items { display: flex; } }
+    #rail-backdrop { display: none; position: fixed; inset: 0; z-index: 59; background: rgba(0,0,0,.35); }
+    #rail-backdrop.open { display: block; }
+    #rail-sheet { display: none; position: fixed; left: 0; right: 0; bottom: 0; z-index: 60; max-height: 65dvh; max-height: 65vh; flex-direction: column; border-radius: 20px 20px 0 0; background: #fff; box-shadow: 0 -8px 30px rgba(0,0,0,.2); padding-bottom: env(safe-area-inset-bottom, 0px); }
+    @supports (height: 65dvh) { #rail-sheet { max-height: 65dvh; } }
+    html.dark #rail-sheet { background: #1c1c1e; }
+    #rail-sheet.open { display: flex; }
+    .rail-sheet-head { display: flex; align-items: center; justify-content: space-between; padding: 14px 16px 10px; font-size: 15px; }
+    .rail-sheet-head span { display: flex; align-items: center; gap: 4px; }
+    .rail-sheet-head button { background: none; border: 0; padding: 6px 10px; border-radius: 8px; font-size: 13px; color: #0071e3; cursor: pointer; }
+    html.dark .rail-sheet-head button { color: #2997ff; }
+    #sheet-list { overflow-y: auto; padding: 0 8px 12px; overscroll-behavior: contain; }
+    .sheet-item { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; width: 100%; text-align: left; background: none; border: 0; padding: 10px 12px; border-radius: 10px; font-size: 14px; line-height: 1.4; color: inherit; cursor: pointer; }
+    .sheet-item.active { background: #f2f2f7; font-weight: 600; }
+    html.dark .sheet-item.active { background: #2c2c2e; }
+
+    /* --- camera button (touch devices only) --- */
+    #camera-btn { display: none; }
+    @media (pointer: coarse) { #camera-btn { display: inline-flex; align-items: center; } }
+
+    /* --- mobile --- */
+    @media (max-width: 767px) {
+      #toast-container { left: 16px; right: 16px; bottom: calc(96px + env(safe-area-inset-bottom, 0px)); }
+      #toast-container > div { min-width: 0 !important; }
+      #chat-window { padding-left: 12px; padding-right: 12px; }
+      #chat-window .max-w-\[85\%\] { max-width: 92%; }
+    }
+  </style>
+</head>
+<body class="h-full bg-slate-50 text-slate-800 dark:bg-slate-900 dark:text-slate-200 overflow-hidden selection:bg-primary-100 selection:text-primary-700">
+
+  <div id="app" class="h-full flex flex-col">
+    <header class="h-16 shrink-0 bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 px-4 flex items-center justify-between z-20 shadow-sm">
+      <div class="flex items-center gap-4">
+        <button id="sidebar-toggle" class="lg:hidden p-2 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition-colors">
+          <i class="fa-solid fa-bars"></i>
+        </button>
+        <div class="flex items-center gap-2">
+          <div class="w-8 h-8 bg-primary-600 rounded-lg flex items-center justify-center text-white font-bold text-lg">A</div>
+          <h1 class="font-semibold text-lg tracking-tight hidden sm:block">Assistant Client</h1>
+        </div>
+      </div>
+
+      <nav class="hidden md:flex bg-slate-100 dark:bg-slate-700 p-1 rounded-lg">
+        <button data-view="chat" class="nav-tab px-4 py-1.5 text-sm font-medium rounded-md transition-all text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white" onclick="switchView('chat')">
+          <i class="fa-regular fa-comments mr-1.5"></i>對話
+        </button>
+        <button data-view="docs" class="nav-tab px-4 py-1.5 text-sm font-medium rounded-md transition-all text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white" onclick="switchView('docs')">
+          <i class="fa-solid fa-book mr-1.5"></i>API 說明
+        </button>
+        <button data-view="settings" class="nav-tab px-4 py-1.5 text-sm font-medium rounded-md transition-all text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white" onclick="switchView('settings')">
+          <i class="fa-solid fa-sliders mr-1.5"></i>設定
+        </button>
+      </nav>
+
+      <div class="flex items-center gap-2">
+        <button id="theme-toggle" class="w-9 h-9 rounded-full bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors">
+          <i class="fa-solid fa-moon dark:hidden"></i>
+          <i class="fa-solid fa-sun hidden dark:inline"></i>
+        </button>
+        <button class="md:hidden p-2 text-slate-500" onclick="switchView('settings')"><i class="fa-solid fa-gear"></i></button>
+      </div>
+    </header>
+
+    <main class="flex-1 min-h-0 relative overflow-hidden">
+      
+      <div id="view-chat" class="absolute inset-0 flex transition-opacity duration-300 z-10 bg-slate-50 dark:bg-slate-900">
+        <aside id="sidebar" class="w-72 bg-white dark:bg-slate-800 border-r border-slate-200 dark:border-slate-700 flex flex-col absolute lg:relative h-full z-20 transform -translate-x-full lg:translate-x-0 transition-transform duration-300 shadow-xl lg:shadow-none">
+          <div class="p-4 border-b border-slate-200 dark:border-slate-700 flex justify-between items-center gap-2">
+            <h2 class="sb-hide-mini font-medium text-slate-500 dark:text-slate-400 text-sm uppercase tracking-wider">歷史對話</h2>
+            <button id="sidebar-collapse" type="button" class="hidden lg:inline-flex w-8 h-8 items-center justify-center rounded-md text-slate-400 hover:text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors" title="收合 / 展開側欄 (Ctrl/⌘+B)" aria-label="收合或展開側欄"><i class="fa-solid fa-angles-left"></i></button>
+            <button id="sidebar-close" class="lg:hidden text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark"></i></button>
+          </div>
+          <div class="p-3">
+            <button id="new-thread-btn" title="新對話" class="w-full flex items-center justify-center gap-2 bg-primary-600 hover:bg-primary-700 text-white py-2.5 rounded-lg font-medium transition-all shadow-sm active:scale-[0.98]">
+              <i class="fa-solid fa-plus"></i><span class="sb-hide-mini">新對話</span>
+            </button>
+          </div>
+          <div id="threads-list" class="flex-1 overflow-y-auto p-2 space-y-1">
+            </div>
+          <div class="p-3 border-t border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50">
+             <button id="file-manager-btn" title="檔案管理庫" class="w-full flex items-center gap-3 px-3 py-2 text-sm text-slate-600 dark:text-slate-300 hover:bg-white dark:hover:bg-slate-700 rounded-md border border-slate-200 dark:border-slate-600 transition-colors">
+               <i class="fa-solid fa-folder-open text-primary-500"></i><span class="sb-hide-mini">檔案管理庫</span>
+             </button>
+          </div>
+          <div id="sidebar-resizer" class="hidden lg:block" role="separator" aria-orientation="vertical" aria-label="拖曳調整側欄寬度" title="拖曳調整寬度，雙擊還原"></div>
+        </aside>
+        <div id="sidebar-backdrop" class="fixed inset-0 bg-black/50 z-10 lg:hidden hidden backdrop-blur-sm"></div>
+
+        <section id="chat-section" class="relative flex-1 flex flex-col min-w-0 bg-slate-50 dark:bg-slate-900">
+          <div id="drop-overlay" class="hidden absolute inset-0 z-30 items-center justify-center bg-primary-50/90 dark:bg-slate-900/90 border-2 border-dashed border-primary-500 text-primary-700 dark:text-primary-300 text-lg font-medium pointer-events-none"><i class="fa-solid fa-cloud-arrow-up mr-2"></i>放開以上傳並附加檔案</div>
+          <div id="msg-rail" role="navigation" aria-label="對話定位點">
+            <button type="button" class="rail-btn" id="rail-top" title="回到頂端" aria-label="回到頂端"><i class="fa-solid fa-angle-up"></i></button>
+            <div class="rail-scroll" id="rail-dots"></div>
+            <button type="button" class="rail-btn" id="rail-bottom" title="跳到最新" aria-label="跳到最新"><i class="fa-solid fa-angle-down"></i></button>
+          </div>
+          <div id="rail-tip" role="tooltip"></div>
+          <button type="button" id="rail-fab" aria-label="對話目錄" title="對話目錄"><i class="fa-solid fa-list-ul"></i></button>
+          <div id="rail-backdrop"></div>
+          <div id="rail-sheet" role="dialog" aria-label="對話目錄">
+            <div class="rail-sheet-head"><strong>對話目錄</strong><span><button type="button" id="sheet-top">頂端</button><button type="button" id="sheet-bottom">最新</button><button type="button" id="sheet-close" aria-label="關閉"><i class="fa-solid fa-xmark"></i></button></span></div>
+            <div id="sheet-list"></div>
+          </div>
+          <div id="chat-window" class="flex-1 overflow-y-auto p-4 md:p-6 space-y-6 scroll-smooth">
+            <div class="flex flex-col items-center justify-center h-full text-slate-400 dark:text-slate-500 opacity-60">
+              <i class="fa-regular fa-comments text-5xl mb-4"></i>
+              <p>開始一個新對話或選擇左側歷史紀錄</p>
+            </div>
+          </div>
+          
+          <div class="input-bar p-4 bg-white dark:bg-slate-800 border-t border-slate-200 dark:border-slate-700">
+            <div id="edit-banner" class="hidden max-w-4xl mx-auto mb-2 flex-wrap items-center justify-between gap-x-3 gap-y-1 px-3 py-2 rounded-lg bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-900/50 text-xs text-amber-800 dark:text-amber-200">
+              <span><i class="fa-solid fa-pen mr-1"></i>編輯訊息：修改後將作為新訊息送出（原訊息與回覆會保留在對話中）</span>
+              <span class="flex items-center gap-3 shrink-0">
+                <label class="flex items-center gap-1 cursor-pointer"><input type="checkbox" id="edit-newthread" /> 以新對話送出</label>
+                <button id="edit-cancel" type="button" class="underline hover:no-underline">取消</button>
+              </span>
+            </div>
+            <div id="selected-files-area" class="flex flex-wrap gap-2 mb-2 empty:hidden"></div>
+            <div class="relative max-w-4xl mx-auto flex gap-3 items-end bg-slate-100 dark:bg-slate-700/50 p-2 rounded-2xl border border-transparent focus-within:border-primary-500 focus-within:bg-white dark:focus-within:bg-slate-800 transition-all shadow-inner">
+              <button id="attach-btn" type="button" class="p-3 text-slate-500 hover:text-primary-600 dark:text-slate-400 dark:hover:text-primary-400 self-end transition-colors" title="上傳檔案並附加到訊息 (也可拖曳或貼上)" aria-label="附加檔案"><i class="fa-solid fa-paperclip"></i></button>
+              <input type="file" id="chat-file-input" class="hidden" multiple />
+              <button id="camera-btn" type="button" class="p-3 text-slate-500 hover:text-primary-600 dark:text-slate-400 self-end transition-colors" title="拍照並附加" aria-label="拍照並附加"><i class="fa-solid fa-camera"></i></button>
+              <input type="file" id="camera-input" accept="image/*" capture="environment" class="hidden" />
+              <textarea id="user-input" rows="1" class="flex-1 bg-transparent border-none focus:ring-0 text-slate-800 dark:text-slate-100 placeholder-slate-400 resize-none py-3 px-2 max-h-40" placeholder="輸入訊息... (Shift+Enter 換行)"></textarea>
+              <button id="send-btn" class="p-3 bg-primary-600 text-white rounded-xl shadow-md hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all active:scale-95 self-end">
+                <i class="fa-solid fa-paper-plane"></i>
+              </button>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <div id="view-docs" class="absolute inset-0 overflow-y-auto bg-white dark:bg-slate-900 hidden z-0 pb-20">
+        <div class="max-w-5xl mx-auto p-6 md:p-10">
+          <div class="mb-8 pb-4 border-b border-slate-200 dark:border-slate-700">
+            <h1 class="text-3xl font-bold text-slate-900 dark:text-white mb-2">Assistant API 規格說明</h1>
+            <p class="text-slate-500 dark:text-slate-400">基於 OpenAI 相容架構的內部助理 API 介面文件。</p>
+          </div>
+          
+          <div class="flex flex-col lg:flex-row gap-8">
+            <div class="lg:w-64 shrink-0">
+               <div class="sticky top-6 p-4 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
+                <h3 class="font-semibold text-sm uppercase text-slate-500 dark:text-slate-400 mb-3 tracking-wider">目錄</h3>
+                <ul class="space-y-2 text-sm">
+                  <li><a href="#doc-auth" class="block text-slate-700 dark:text-slate-300 hover:text-primary-600">認證與 Base URL</a></li>
+                  <li><a href="#doc-chat" class="block text-slate-700 dark:text-slate-300 hover:text-primary-600">Chat Completions</a></li>
+                  <li><a href="#doc-threads" class="block text-slate-700 dark:text-slate-300 hover:text-primary-600">Threads</a></li>
+                  <li><a href="#doc-files" class="block text-slate-700 dark:text-slate-300 hover:text-primary-600">Files</a></li>
+                  <li><a href="#doc-ratelimit" class="block text-slate-700 dark:text-slate-300 hover:text-primary-600">Rate Limits</a></li>
+                  <li><a href="#doc-errors" class="block text-slate-700 dark:text-slate-300 hover:text-primary-600">錯誤代碼</a></li>
+                </ul>
+              </div>
+            </div>
+
+            <div class="flex-1 space-y-12 markdown-body">
+              
+              <section id="doc-auth">
+                <h2 class="text-2xl font-bold text-slate-900 dark:text-white">認證與基礎資訊</h2>
+                <div class="mt-4 p-4 rounded-lg bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-900/50">
+                  <p class="text-sm">Header: <code>Authorization: Bearer &lt;api_key&gt;</code></p>
+                </div>
+                <h3 class="text-lg font-semibold mt-4">API Base URL</h3>
+                <table class="docs-table">
+                  <tr><th>環境</th><th>URL</th></tr>
+                  <tr><td>Sandbox (SBX)</td><td><code>https://rtgapp.profetai.com:4231/public/kits/openai</code></td></tr>
+                  <tr><td>Production (PRD)</td><td><code>https://rtgapp.profetai.com:4234/public/kits/openai</code></td></tr>
+                </table>
+              </section>
+
+              <section id="doc-chat">
+                 <h2 class="text-2xl font-bold text-slate-900 dark:text-white">Chat Completions</h2>
+                 <p class="text-sm text-slate-500 font-mono mb-2">POST /v1/chat/completions</p>
+                 <table class="docs-table">
+                  <thead><tr><th>欄位</th><th>型別</th><th>必填</th><th>說明</th></tr></thead>
+                  <tbody>
+                    <tr><td><code>model</code></td><td>string</td><td><span class="badge-req">是</span></td><td>Assistant ID (支援 <code>assistant:</code> 前綴)</td></tr>
+                    <tr><td><code>messages</code></td><td>array</td><td><span class="badge-req">是</span></td><td>對話內容 (Role: user/assistant)</td></tr>
+                    <tr><td><code>thread_id</code></td><td>string</td><td><span class="badge-opt">否</span></td><td>Session ID (支援 <code>thread-</code> 前綴)</td></tr>
+                    <tr><td><code>stream</code></td><td>boolean</td><td><span class="badge-opt">否</span></td><td>(目前 Controller 固定回 JSON)</td></tr>
+                    <tr><td><code>tools</code></td><td>array</td><td><span class="badge-opt">否</span></td><td>保留欄位 (目前 Service 未使用)</td></tr>
+                  </tbody>
+                </table>
+                <h4 class="font-semibold mt-4">Response Choice 欄位</h4>
+                <ul class="text-sm">
+                  <li><code>message.content</code>: 輸出文字</li>
+                  <li><code>finish_reason</code>: 固定 <code>stop</code></li>
+                  <li><code>usage</code>: Token 統計資訊 (若可取得)</li>
+                </ul>
+              </section>
+
+              <section id="doc-threads">
+                <h2 class="text-2xl font-bold text-slate-900 dark:text-white">Threads (Sessions)</h2>
+                
+                <h3 class="text-lg font-semibold mt-4">List Threads</h3>
+                <p class="text-sm text-slate-500 font-mono">GET /v1/threads</p>
+                <table class="docs-table">
+                  <tr><th>參數</th><th>說明</th><th>預設</th></tr>
+                  <tr><td><code>limit</code></td><td>數量限制</td><td>50</td></tr>
+                  <tr><td><code>order</code></td><td>排序</td><td>desc</td></tr>
+                </table>
+
+                <h3 class="text-lg font-semibold mt-4">List Messages</h3>
+                <p class="text-sm text-slate-500 font-mono">GET /v1/threads/{thread_id}/messages</p>
+                <table class="docs-table">
+                  <tr><th>參數</th><th>說明</th></tr>
+                  <tr><td><code>limit</code></td><td>數量限制 (預設 50)</td></tr>
+                  <tr><td><code>order</code></td><td>排序 (預設 asc)</td></tr>
+                  <tr><td><code>after</code></td><td>Pagination cursor</td></tr>
+                  <tr><td><code>before</code></td><td>Pagination cursor</td></tr>
+                </table>
+
+                <h3 class="text-lg font-semibold mt-4">Delete Thread</h3>
+                <p class="text-sm text-slate-500 font-mono">DELETE /v1/threads/{thread_id}</p>
+              </section>
+
+              <section id="doc-files">
+                <h2 class="text-2xl font-bold text-slate-900 dark:text-white">Files (檔案)</h2>
+                <p class="text-sm text-slate-500 font-mono">POST /v1/files</p>
+                <p class="text-sm mb-2">Content-Type: <code>multipart/form-data</code></p>
+                <table class="docs-table">
+                  <tr><th>欄位</th><th>型別</th><th>必填</th><th>說明</th></tr>
+                  <tr><td><code>file</code></td><td>File</td><td><span class="badge-req">是</span></td><td>實體檔案</td></tr>
+                  <tr><td><code>purpose</code></td><td>string</td><td><span class="badge-opt">否</span></td><td>預設 <code>assistants</code></td></tr>
+                  <tr><td><code>is_temp</code></td><td>boolean</td><td><span class="badge-opt">否</span></td><td>預設 <code>false</code></td></tr>
+                </table>
+              </section>
+
+              <section id="doc-ratelimit">
+                <h2 class="text-2xl font-bold text-slate-900 dark:text-white">Rate Limits</h2>
+                <p class="text-sm">成功或超額回應皆會包含以下 Headers:</p>
+                <ul class="text-sm font-mono bg-slate-100 dark:bg-slate-800 p-4 rounded mt-2">
+                  <li>X-RateLimit-Limit-Requests</li>
+                  <li>X-RateLimit-Remaining-Requests</li>
+                  <li>X-RateLimit-Reset-Requests</li>
+                </ul>
+              </section>
+
+              <section id="doc-errors">
+                <h2 class="text-2xl font-bold text-slate-900 dark:text-white">錯誤代碼說明</h2>
+                <table class="docs-table">
+                  <thead><tr><th>HTTP</th><th>Code</th><th>說明</th></tr></thead>
+                  <tbody>
+                    <tr><td>401</td><td>invalid_api_key</td><td>API Key 無效</td></tr>
+                    <tr><td>403</td><td>api_key_disabled</td><td>API Key 已被停用</td></tr>
+                    <tr><td>429</td><td>rate_limit_exceeded</td><td>超過請求速率限制 (請等待 Retry-After 秒數)</td></tr>
+                    <tr><td>429</td><td>controller_throttle</td><td>Controller 忙碌中</td></tr>
+                    <tr><td>503</td><td>database_busy</td><td>資料庫連線超過閥值</td></tr>
+                    <tr><td>503</td><td>database_saturated</td><td>資料庫連線已滿</td></tr>
+                    <tr><td>504</td><td>database_timeout</td><td>資料庫查詢逾時</td></tr>
+                    <tr><td>503</td><td>chat_interrupted</td><td>等待可用插槽時被中斷</td></tr>
+                  </tbody>
+                </table>
+              </section>
+
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="view-settings" class="absolute inset-0 overflow-y-auto bg-white dark:bg-slate-900 hidden z-0 flex items-center justify-center p-4">
+        <div class="w-full max-w-lg bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-700 p-8 space-y-6">
+          <div class="text-center">
+            <h2 class="text-2xl font-bold text-slate-900 dark:text-white">連線設定</h2>
+            <p class="text-slate-500 text-sm mt-1">配置 Assistant API 的端點與金鑰</p>
+          </div>
+          <div class="space-y-4">
+            <div>
+              <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">環境 (Base URL)</label>
+              <div class="relative">
+                <select id="env-preset" class="w-full p-3 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none">
+                  <option value="https://rtgapp.profetai.com:4231/public/kits/openai">Sandbox (SBX)</option>
+                  <option value="https://rtgapp.profetai.com:4234/public/kits/openai">Production (PRD)</option>
+                  <option value="custom">自定義...</option>
+                </select>
+              </div>
+              <input id="custom-url-input" type="url" class="mt-2 w-full p-3 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg hidden focus:ring-2 focus:ring-primary-500 outline-none" placeholder="https://..." />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Assistant ID (Model)</label>
+              <input id="assistant-id-input" type="text" placeholder="ASST_xxx" class="w-full p-3 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none" />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">API Key</label>
+              <div class="relative">
+                <input id="api-key-input" type="password" placeholder="ask_..." class="w-full p-3 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none" />
+                <button id="toggle-key-visibility" class="absolute right-3 top-3 text-slate-400 hover:text-slate-600"><i class="fa-regular fa-eye"></i></button>
+              </div>
+            </div>
+          </div>
+          <label class="flex items-start gap-2 text-sm text-slate-600 dark:text-slate-300 cursor-pointer">
+            <input type="checkbox" id="temp-upload-input" class="mt-1" />
+            <span>聊天框上傳的檔案設為暫存（<code>is_temp=true</code>，不留在檔案管理庫）</span>
+          </label>
+          <label class="flex items-start gap-2 text-sm text-slate-600 dark:text-slate-300 cursor-pointer">
+            <input type="checkbox" id="sticky-files-input" class="mt-1" />
+            <span>同一對話中持續附加檔案（後續提問會自動再帶上該對話已上傳的檔案，可在輸入框上方個別移除）</span>
+          </label>
+          <fieldset class="text-sm text-slate-600 dark:text-slate-300 space-y-1">
+            <legend class="mb-1 font-medium">送出方式</legend>
+            <label class="flex items-center gap-2 cursor-pointer"><input type="radio" name="send-mode" value="enter" /> Enter 送出（Shift+Enter 換行）</label>
+            <label class="flex items-center gap-2 cursor-pointer"><input type="radio" name="send-mode" value="mod" /> ⌘/Ctrl + Enter 送出（Enter 換行，適合長篇提示詞）</label>
+          </fieldset>
+          <div class="flex gap-3 pt-2">
+            <button onclick="switchView('chat')" class="flex-1 px-4 py-3 border border-slate-300 dark:border-slate-600 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700 font-medium transition-colors">取消</button>
+            <button id="save-settings-btn" class="flex-1 px-4 py-3 bg-primary-600 hover:bg-primary-700 text-white rounded-xl font-medium shadow-lg shadow-primary-500/30 transition-all active:scale-95">儲存並連線</button>
+          </div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <div id="file-drawer" class="fixed inset-0 z-50 hidden" aria-labelledby="slide-over-title" role="dialog" aria-modal="true">
+    <div class="absolute inset-0 bg-gray-500 bg-opacity-75 transition-opacity backdrop-blur-sm" id="file-drawer-backdrop"></div>
+    <div class="fixed inset-y-0 right-0 z-10 flex max-w-full pl-10">
+      <div class="pointer-events-auto w-screen max-w-2xl transform transition ease-in-out duration-500 sm:duration-700 translate-x-full" id="file-drawer-panel">
+        <div class="flex h-full flex-col overflow-y-scroll bg-white dark:bg-slate-900 shadow-xl">
+          <div class="px-4 py-6 sm:px-6 border-b border-slate-200 dark:border-slate-700">
+            <div class="flex items-start justify-between">
+              <h2 class="text-lg font-semibold leading-6 text-slate-900 dark:text-white">檔案管理庫</h2>
+              <button id="file-drawer-close" class="rounded-md bg-white dark:bg-slate-800 text-slate-400 hover:text-slate-500"><i class="fa-solid fa-xmark text-xl"></i></button>
+            </div>
+            <div class="mt-4 flex gap-2">
+              <label class="flex items-center justify-center gap-2 px-4 py-2 bg-primary-600 text-white text-sm font-medium rounded-md hover:bg-primary-700 cursor-pointer shadow-sm">
+                <i class="fa-solid fa-cloud-arrow-up"></i> 上傳檔案
+                <input type="file" id="file-upload-input" class="hidden" />
+              </label>
+              <button id="refresh-files-btn" class="px-4 py-2 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 rounded-md text-sm font-medium hover:bg-slate-50 dark:hover:bg-slate-800">
+                <i class="fa-solid fa-rotate"></i> 重整
+              </button>
+            </div>
+          </div>
+          <div class="relative mt-6 flex-1 px-4 sm:px-6"><div id="files-list" class="space-y-2"></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <dialog id="code-modal" class="rounded-xl backdrop:bg-black/60 w-[90%] max-w-4xl p-0 bg-slate-900 text-slate-100 shadow-2xl border border-slate-700">
+    <div class="flex flex-col max-h-[85vh]">
+      <div class="flex items-center justify-between p-4 border-b border-slate-700 bg-slate-800/50">
+        <h3 class="text-lg font-semibold text-white">API Request Code</h3>
+        <button id="code-modal-close" class="w-8 h-8 rounded-lg hover:bg-slate-700 flex items-center justify-center text-slate-400 hover:text-white transition-colors"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="p-2 border-b border-slate-700 bg-slate-900 sticky top-0">
+        <div class="flex gap-2" role="tablist">
+          <button class="code-tab px-4 py-2 text-sm rounded-md font-medium transition-colors bg-primary-600 text-white" data-target="curl">cURL</button>
+          <button class="code-tab px-4 py-2 text-sm rounded-md font-medium transition-colors text-slate-400 hover:bg-slate-800" data-target="python">Python</button>
+          <button class="code-tab px-4 py-2 text-sm rounded-md font-medium transition-colors text-slate-400 hover:bg-slate-800" data-target="js">JavaScript</button>
+        </div>
+      </div>
+      <div class="overflow-auto p-4 flex-1 bg-[#0d1117]">
+        <pre class="code-pane text-sm font-mono text-green-400" data-lang="curl"></pre>
+        <pre class="code-pane hidden text-sm font-mono text-blue-300" data-lang="python"></pre>
+        <pre class="code-pane hidden text-sm font-mono text-yellow-200" data-lang="js"></pre>
+      </div>
+      <div class="p-4 border-t border-slate-700 bg-slate-800/50 flex justify-end">
+        <button id="copy-code-btn" class="px-4 py-2 bg-slate-700 hover:bg-slate-600 rounded-lg text-sm text-white font-medium transition-colors flex items-center gap-2">
+          <i class="fa-regular fa-copy"></i> 複製程式碼
+        </button>
+      </div>
+    </div>
+  </dialog>
+
+  <div id="toast-container" class="fixed bottom-6 right-6 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+  <script>
+    // --- State Management ---
+    const DEFAULTS = {
+      baseUrl: 'https://rtgapp.profetai.com:4231/public/kits/openai',
+      assistantId: '',
+      apiKey: ''
+    };
+
+    let state = {
+      baseUrl: (() => {   // v12：直連 API；舊版存下的「中繼」設定自動換回直連
+        let b = localStorage.getItem('baseUrl') || DEFAULTS.baseUrl;
+        const m = /^@relay\/(sbx|prd)$/.exec(b);
+        if (m) { b = m[1] === 'prd' ? 'https://rtgapp.profetai.com:4234/public/kits/openai' : DEFAULTS.baseUrl; try { localStorage.setItem('baseUrl', b); } catch (e) {} }
+        return b;
+      })(),
+      assistantId: localStorage.getItem('assistantId') || DEFAULTS.assistantId,
+      apiKey: localStorage.getItem('apiKey') || DEFAULTS.apiKey,
+      currentThreadId: null,
+      selectedFiles: new Map(), 
+      isDark: localStorage.getItem('darkMode') === 'true'
+    };
+
+    // --- DOM Elements ---
+    const els = {
+      app: document.getElementById('app'),
+      views: {
+        chat: document.getElementById('view-chat'),
+        docs: document.getElementById('view-docs'),
+        settings: document.getElementById('view-settings')
+      },
+      navTabs: document.querySelectorAll('.nav-tab'),
+      themeToggle: document.getElementById('theme-toggle'),
+      sidebar: document.getElementById('sidebar'),
+      sidebarToggle: document.getElementById('sidebar-toggle'),
+      sidebarClose: document.getElementById('sidebar-close'),
+      sidebarBackdrop: document.getElementById('sidebar-backdrop'),
+      chatWindow: document.getElementById('chat-window'),
+      userInput: document.getElementById('user-input'),
+      sendBtn: document.getElementById('send-btn'),
+      threadsList: document.getElementById('threads-list'),
+      newThreadBtn: document.getElementById('new-thread-btn'),
+      settings: {
+        envPreset: document.getElementById('env-preset'),
+        customUrl: document.getElementById('custom-url-input'),
+        asstId: document.getElementById('assistant-id-input'),
+        apiKey: document.getElementById('api-key-input'),
+        saveBtn: document.getElementById('save-settings-btn'),
+        toggleKey: document.getElementById('toggle-key-visibility')
+      },
+      fileDrawer: {
+        root: document.getElementById('file-drawer'),
+        panel: document.getElementById('file-drawer-panel'),
+        close: document.getElementById('file-drawer-close'),
+        backdrop: document.getElementById('file-drawer-backdrop'),
+        list: document.getElementById('files-list'),
+        upload: document.getElementById('file-upload-input'),
+        refresh: document.getElementById('refresh-files-btn'),
+        trigger: document.getElementById('file-manager-btn')
+      },
+      selectedFilesArea: document.getElementById('selected-files-area'),
+      codeModal: document.getElementById('code-modal'),
+      codeModalClose: document.getElementById('code-modal-close'),
+      copyCodeBtn: document.getElementById('copy-code-btn')
+    };
+
+    // --- Initialization ---
+    function init() {
+      document.documentElement.classList.toggle('dark', state.isDark);
+      els.settings.asstId.value = state.assistantId;
+      els.settings.apiKey.value = state.apiKey;
+      if (location.protocol === 'file:') Array.from(els.settings.envPreset.options).forEach(o => { if (o.value.startsWith('@relay/')) o.remove(); });
+      const isCustom = !Array.from(els.settings.envPreset.options).some(o => o.value === state.baseUrl);
+      if (isCustom) {
+        els.settings.envPreset.value = 'custom';
+        els.settings.customUrl.value = state.baseUrl;
+        els.settings.customUrl.classList.remove('hidden');
+      } else {
+        els.settings.envPreset.value = state.baseUrl;
+      }
+      updateRelayHint();
+      if (state.apiKey && state.baseUrl) loadThreads();
+      else { switchView('settings'); showToast('請先完成連線設定', 'info'); }
+    }
+
+    // --- UI Actions ---
+    function switchView(viewName) {
+      Object.values(els.views).forEach(el => { el.classList.add('hidden'); el.classList.remove('z-10'); });
+      els.views[viewName].classList.remove('hidden'); els.views[viewName].classList.add('z-10');
+      els.navTabs.forEach(btn => {
+        const isActive = btn.dataset.view === viewName;
+        if(isActive) btn.classList.add('bg-white', 'text-primary-600', 'shadow-sm', 'dark:bg-slate-600', 'dark:text-white');
+        else btn.classList.remove('bg-white', 'text-primary-600', 'shadow-sm', 'dark:bg-slate-600', 'dark:text-white');
+      });
+    }
+
+    function toggleTheme() {
+      state.isDark = !state.isDark;
+      localStorage.setItem('darkMode', state.isDark);
+      document.documentElement.classList.toggle('dark', state.isDark);
+    }
+
+    function toggleSidebar(show) {
+      if (show) { els.sidebar.classList.remove('-translate-x-full'); els.sidebarBackdrop.classList.remove('hidden'); }
+      else { els.sidebar.classList.add('-translate-x-full'); els.sidebarBackdrop.classList.add('hidden'); }
+    }
+
+    function showToast(message, type = 'success') {
+      const container = document.getElementById('toast-container');
+      const el = document.createElement('div');
+      const colors = { success: 'bg-emerald-500', error: 'bg-red-500', info: 'bg-blue-500' };
+      const icon = type === 'success' ? 'check' : type === 'error' ? 'circle-exclamation' : 'info-circle';
+      el.className = `${colors[type]} text-white px-4 py-3 rounded-lg shadow-lg flex items-center gap-3 transform transition-all duration-300 translate-y-10 opacity-0 min-w-[300px]`;
+      el.innerHTML = `<i class="fa-solid fa-${icon}"></i> <span class="text-sm font-medium">${message}</span>`;
+      container.appendChild(el);
+      requestAnimationFrame(() => el.classList.remove('translate-y-10', 'opacity-0'));
+      setTimeout(() => { el.classList.add('opacity-0', 'translate-y-4'); setTimeout(() => el.remove(), 300); }, 3000);
+    }
+
+    // --- Code Generation ---
+    function buildRequestSamples(payload){
+      const url = `${upstreamBase()}/v1/chat/completions`;
+      const pretty = JSON.stringify(payload, null, 2);
+      
+      let promptText = '';
+      let files = [];
+      try {
+        const c = payload.messages[0].content;
+        if(Array.isArray(c)){
+          c.forEach(p => {
+             if(p.type==='text') promptText += p.text;
+             if(p.type==='file') files.push(p.file);
+          });
+        } else promptText = c;
+      } catch(e){}
+
+      const pyPrompt = JSON.stringify(promptText);
+      const pyFiles = JSON.stringify(files);
+      const contentPy = `[{"type": "text", "text": prompt}${files.length ? `, *[{"type":"file","file": f} for f in files]` : ''}]`;
+      const threadArg = payload.thread_id ? `, thread_id="${payload.thread_id}"` : '';
+
+      const curl = `curl -X POST "${url}" \\\n  -H "Authorization: Bearer ${state.apiKey}" \\\n  -H "Content-Type: application/json" \\\n  -d '${pretty}'`;
+      
+      const python = `from openai import OpenAI\n\nclient = OpenAI(\n    api_key="${state.apiKey}",\n    base_url="${upstreamBase()}"\n)\n\nprompt = ${pyPrompt}\nfiles = ${pyFiles}\n\nresponse = client.chat.completions.create(\n    model="${payload.model}",\n    messages=[\n        {"role": "user", "content": ${contentPy}}\n    ]${threadArg}\n)\n\nprint(response.choices[0].message.content)`;
+      
+      const js = `const response = await fetch("${url}", {\n  method: "POST",\n  headers: {\n    "Authorization": "Bearer ${state.apiKey}",\n    "Content-Type": "application/json"\n  },\n  body: JSON.stringify(${pretty})\n});\n\nconst data = await response.json();\nconsole.log(data);`;
+
+      return { curl, python, js };
+    }
+
+    function showCodeModal(requestPayload) {
+      if(!requestPayload) return;
+      const samples = buildRequestSamples(requestPayload);
+      const panes = els.codeModal.querySelectorAll('.code-pane');
+      panes.forEach(p => {
+        const lang = p.dataset.lang;
+        if(lang === 'curl') p.textContent = samples.curl;
+        if(lang === 'python') p.textContent = samples.python;
+        if(lang === 'js') p.textContent = samples.js;
+      });
+      els.codeModal.showModal();
+    }
+
+    // --- API Logic ---
+    function upstreamAuthHeaders(url) {
+      if (String(url).startsWith(location.origin + '/relay/')) return { 'X-Upstream-Authorization': `Bearer ${state.apiKey}`, 'X-Requested-With': 'fetch' };
+      return { 'Authorization': `Bearer ${state.apiKey}` };
+    }
+    async function apiCall(path, method = 'GET', body = null, isFormData = false, signal = null) {
+      if (!state.apiKey) throw new Error('缺少 API Key');
+      const url = `${getBase()}${path}`;
+      const headers = upstreamAuthHeaders(url);
+      if (!isFormData) headers['Content-Type'] = 'application/json';
+      const res = await fetch(url, { method, headers, body: body ? (isFormData ? body : JSON.stringify(body)) : undefined, signal: signal || undefined });
+      if (res.status === 401 && res.headers.get('X-Relay-Auth') === 'required') { location.href = '/login'; throw new Error('登入已過期，請重新登入'); }
+      if (!res.ok) { const err = await res.json().catch(() => ({})); throw new Error(err.error?.message || (typeof err.error === 'string' ? err.error : '') || `HTTP ${res.status}`); }
+      return await res.json();
+    }
+
+    async function loadThreads() {
+      els.threadsList.innerHTML = '<div class="p-4 text-center text-slate-400 text-sm"><i class="fa-solid fa-spinner animate-spin"></i> 載入中...</div>';
+      try {
+        if (syncEnabled()) await syncPull();
+        const data = await apiCall('/v1/threads?limit=20');
+        state.threads = data.data || [];
+        renderThreads(); deriveTitles();
+      } catch (err) { els.threadsList.innerHTML = `<div class="p-4 text-center text-red-400 text-sm">載入失敗<br>${escapeHtml(err.message)}</div>`; }
+    }
+
+    function renderThreads() {
+      els.threadsList.innerHTML = '';
+      const list = state.threads || [];
+      if (!list.length) { els.threadsList.innerHTML = '<div class="p-4 text-center text-slate-400 text-sm">尚無對話</div>'; return; }
+      list.forEach(thread => {
+        const title = threadDisplayTitle(thread.id);
+        const el = document.createElement('div');
+        el.setAttribute('role', 'button'); el.tabIndex = 0; el.dataset.id = thread.id;
+        el.className = `w-full text-left p-3 pr-16 lg:pr-3 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 text-sm transition-colors mb-1 group relative cursor-pointer ${state.currentThreadId === thread.id ? 'bg-primary-50 dark:bg-slate-700 border-l-4 border-primary-500' : ''}`;
+        el.innerHTML = `<div class="font-mono text-xs text-slate-500 truncate mb-1">${escapeHtml(thread.id)}</div><div class="thread-title text-slate-700 dark:text-slate-300 truncate font-medium">${title ? escapeHtml(title) : '對話紀錄'}</div><div class="absolute right-2 top-1/2 -translate-y-1/2 flex items-center opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity"><span class="rename-thread-btn p-2 text-slate-400 hover:text-primary-600 cursor-pointer" title="重新命名"><i class="fa-regular fa-pen-to-square"></i></span><span class="delete-thread-btn p-2 text-red-400 hover:text-red-600 cursor-pointer" title="刪除"><i class="fa-regular fa-trash-can"></i></span></div>`;
+        el.onclick = (e) => {
+          if (e.target.closest('.thread-title-input')) return;
+          if (e.target.closest('.delete-thread-btn')) deleteThread(thread.id);
+          else if (e.target.closest('.rename-thread-btn')) startRename(el, thread.id);
+          else loadMessages(thread.id);
+        };
+        el.ondblclick = (e) => { if (!e.target.closest('.delete-thread-btn, .rename-thread-btn')) startRename(el, thread.id); };
+        el.onkeydown = (e) => { if (e.target === el && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); loadMessages(thread.id); } };
+        els.threadsList.appendChild(el);
+      });
+    }
+
+    async function loadMessages(threadId) {
+      state.currentThreadId = threadId;
+      Array.from(els.threadsList.children).forEach(child => { if(child.innerHTML.includes(threadId)) child.classList.add('bg-primary-50', 'dark:bg-slate-700', 'border-l-4', 'border-primary-500'); else child.classList.remove('bg-primary-50', 'dark:bg-slate-700', 'border-l-4', 'border-primary-500'); });
+      if(window.innerWidth < 1024) toggleSidebar(false);
+      els.chatWindow.innerHTML = '<div class="flex h-full items-center justify-center text-slate-400"><i class="fa-solid fa-spinner animate-spin text-2xl"></i></div>';
+      try {
+        const data = await apiCall(`/v1/threads/${threadId}/messages?order=asc`);
+        els.chatWindow.innerHTML = '';
+        if (data.data.length === 0) els.chatWindow.innerHTML = '<div class="p-6 text-center text-slate-400 text-sm">此對話尚無訊息</div>';
+        const recs = (readJSON('threadFiles')[threadId] || []).slice();
+        const restored = new Map();
+        state.loadingHistory = true;
+        data.data.forEach(msg => {
+          const content = Array.isArray(msg.content) ? msg.content.map(c => c.text ? c.text.value : '').join('\n') : msg.content;
+          let files = [];
+          if (msg.role === 'user') {
+            files = extractServerFiles(msg);
+            if (!files.length) {
+              const i = recs.findIndex(r => r.text === String(content || '').trim());
+              if (i >= 0) { files = recs[i].files; recs.splice(i, 1); }
+            }
+            files.forEach(f => restored.set(f.id, f));
+          }
+          appendMessage(msg.role, content, files);
+        });
+        state.loadingHistory = false;
+        recs.forEach(r => r.files.forEach(f => restored.set(f.id, f)));
+        state.selectedFiles.clear();
+        if (isStickyFiles()) restored.forEach((f, id) => state.selectedFiles.set(id, { id, filename: f.filename || nameForFile(id) || id, carried: true }));
+        renderSelectedFiles();
+        scrollToBottom(true);
+      } catch (err) { state.loadingHistory = false; showToast(`讀取訊息失敗: ${err.message}`, 'error'); }
+    }
+
+    async function sendMessage() {
+      if (state.isSending) return;
+      const text = els.userInput.value.trim();
+      const hasFiles = state.selectedFiles.size > 0;
+      if (state.uploading.size) return showToast('檔案上傳中，請稍候再送出', 'info');
+      if (!text && !hasFiles) return;
+      if (!state.assistantId) return showToast('請先設定 Assistant ID', 'error');
+      if (state.editing) {
+        if (document.getElementById('edit-newthread').checked) {
+          state.currentThreadId = null; els.chatWindow.innerHTML = '';
+          Array.from(els.threadsList.children).forEach(c => c.classList.remove('bg-primary-50', 'dark:bg-slate-700', 'border-l-4', 'border-primary-500'));
+        }
+        endEdit();
+      }
+
+      els.userInput.value = ''; els.userInput.style.height = 'auto';
+      const ctrl = new AbortController(); state.abortCtrl = ctrl; setSending(true);
+      // 保險：若輸入法在送出後才 commit 文字，再清一次
+      [60, 250].forEach(ms => setTimeout(() => { if (!state.editing && els.userInput.value.trim() === text) { els.userInput.value = ''; autoResizeInput(); } }, ms));
+      
+      const content = [];
+      if (text) content.push({ type: 'text', text: text });
+      state.selectedFiles.forEach((meta, id) => content.push({ type: 'file', file: { file_id: id, filename: meta.filename } }));
+
+      const payload = { model: state.assistantId, messages: [{ role: 'user', content: content }] };
+      if (state.currentThreadId) payload.thread_id = state.currentThreadId;
+
+      const sentNewFiles = Array.from(state.selectedFiles.values()).filter(f => !f.carried).map(f => ({ id: f.id, filename: f.filename }));
+      appendMessage('user', text, sentNewFiles);
+      const loadingId = showThinking();
+      // 續問時仍需把檔案再帶一次：保留檔案為「持續附加」，可用 ✕ 移除
+      if (isStickyFiles()) state.selectedFiles.forEach(m => { m.carried = true; }); else state.selectedFiles.clear();
+      renderSelectedFiles();
+
+      try {
+        const res = await apiCall('/v1/chat/completions', 'POST', payload, false, ctrl.signal);
+        if (!state.currentThreadId && res.thread_id) { state.currentThreadId = res.thread_id; if (text) setDerivedTitle(res.thread_id, text.replace(/\s+/g, ' ').slice(0, 28)); loadThreads(); }
+        
+        const recTid = payload.thread_id || res.thread_id;
+        if (sentNewFiles.length && recTid) recordThreadFiles(recTid, text, sentNewFiles);
+
+        let reply = '';
+        const choice = res.choices[0];
+        if (choice.message.content) reply = Array.isArray(choice.message.content) ? choice.message.content.map(c => c.text ? c.text.value : '').join('\n') : choice.message.content;
+        
+        removeThinking(loadingId);
+        appendMessage('assistant', reply, [], payload);
+      } catch (err) {
+        removeThinking(loadingId);
+        if (err.name === 'AbortError') {
+          appendSystemNote('⏹ 已停止等待本次回應（伺服器端是否同步中止取決於後端）');
+          if (!state.currentThreadId) setTimeout(loadThreads, 1500);
+        } else appendMessage('assistant', `❌ 錯誤: ${err.message}`);
+      } finally { state.abortCtrl = null; setSending(false); }
+    }
+
+    // --- Markdown Rendering (v9) ---
+    if (window.DOMPurify) {
+      DOMPurify.addHook('afterSanitizeAttributes', (node) => {
+        if (node.tagName === 'A') { node.setAttribute('target', '_blank'); node.setAttribute('rel', 'noopener noreferrer'); }
+      });
+    }
+    const escapeHtml = (s) => s.replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+    function renderMarkdown(text) {
+      let src = String(text ?? '');
+      // 有些後端會回傳字面上的 "\n"（反斜線+n）而非真正換行，這裡還原
+      if (!src.includes('\n') && src.includes('\\n')) src = src.replace(/(?:\\r)?\\n/g, '\n');
+      if (window.marked && window.DOMPurify) {
+        try {
+          const html = marked.parse(src, { gfm: true, breaks: true });
+          return DOMPurify.sanitize(html);
+        } catch (e) { console.warn('Markdown render failed', e); }
+      }
+      return `<p style="white-space:pre-wrap">${escapeHtml(src)}</p>`;
+    }
+
+    const DOWNLOAD_RE = /\.(pdf|docx?|xlsx?|xlsm|csv|tsv|pptx?|zip|7z|rar|tar|gz|txt|json|xml|md|png|jpe?g|gif|svg|webp|mp3|mp4|wav)(?:[?#].*)?$/i;
+
+    async function authDownload(url, hint, preferHint) {
+      const res = await fetch(url, { headers: upstreamAuthHeaders(url) });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const blob = await res.blob();
+      const cd = res.headers.get('Content-Disposition') || '';
+      const m = cd.match(/filename\*=UTF-8''([^;]+)|filename="?([^";]+)"?/i);
+      let name = m ? decodeURIComponent(m[1] || m[2]) : '';
+      if (preferHint && hint) name = hint.trim().replace(/[\\/:*?"<>|]/g, '_');
+      if (!name && hint && /^[^\\/:*?"<>|]{1,150}\.[A-Za-z0-9]{1,6}$/.test(hint.trim())) name = hint.trim();
+      if (!name) { try { name = decodeURIComponent(new URL(url).pathname.split('/').filter(Boolean).pop() || 'download'); } catch (e) { name = 'download'; } }
+      const obj = URL.createObjectURL(blob);
+      const a = document.createElement('a'); a.href = obj; a.download = name; document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(() => URL.revokeObjectURL(obj), 10000);
+    }
+
+    function enhanceMarkdown(root) {
+      // 表格：外包可橫向捲動的容器
+      root.querySelectorAll('table').forEach(t => {
+        if (t.parentElement.classList.contains('md-table-wrap')) return;
+        const wrap = document.createElement('div'); wrap.className = 'md-table-wrap';
+        t.parentNode.insertBefore(wrap, t); wrap.appendChild(t);
+      });
+      // 程式碼：語法上色 + 複製按鈕
+      root.querySelectorAll('pre').forEach(pre => {
+        const code = pre.querySelector('code');
+        if (code && window.hljs) { try { hljs.highlightElement(code); } catch (e) {} }
+        const btn = document.createElement('button');
+        btn.type = 'button'; btn.className = 'code-copy-btn'; btn.textContent = '複製';
+        btn.addEventListener('click', () => {
+          navigator.clipboard.writeText((code || pre).textContent);
+          btn.textContent = '已複製'; setTimeout(() => btn.textContent = '複製', 1500);
+        });
+        pre.appendChild(btn);
+      });
+      // 連結：檔案類連結以下載按鈕呈現；指向 API 網域的連結需帶 Authorization
+      let apiOrigin = '';
+      try { apiOrigin = new URL(upstreamBase()).origin; } catch (e) {}
+      root.querySelectorAll('a[href]').forEach(a => {
+        let u; try { u = new URL(a.href, location.href); } catch (e) { return; }
+        const isFile = DOWNLOAD_RE.test(u.pathname + u.search) || /\/files\/[^/]+(\/content)?\/?$/i.test(u.pathname) || /download/i.test(a.textContent + a.href);
+        if (isFile) a.classList.add('md-download');
+        if (apiOrigin && u.origin === apiOrigin) {
+          a.addEventListener('click', async (e) => {
+            e.preventDefault();
+            try { showToast('下載中...', 'info'); await authDownload(relayize(u.href), a.textContent); }
+            catch (err) { showToast(`下載失敗: ${err.message}`, 'error'); }
+          });
+        }
+      });
+    }
+
+    // --- v10: Stop / Edit / Rename ---
+    Object.assign(state, { isSending: false, abortCtrl: null, editing: false, lastUserText: '', threads: [], uploading: new Map() });
+
+    function setSending(on) {
+      state.isSending = on;
+      const b = els.sendBtn;
+      b.innerHTML = on ? '<i class="fa-solid fa-stop"></i>' : '<i class="fa-solid fa-paper-plane"></i>';
+      b.title = on ? '停止回應 (Esc)' : '送出 (Enter)';
+      b.setAttribute('aria-label', on ? '停止回應' : '送出');
+      b.classList.toggle('bg-red-500', on); b.classList.toggle('hover:bg-red-600', on);
+      b.classList.toggle('bg-primary-600', !on); b.classList.toggle('hover:bg-primary-700', !on);
+    }
+    function stopGeneration() { if (state.abortCtrl) state.abortCtrl.abort(); }
+    function appendSystemNote(text) {
+      const d = document.createElement('div');
+      d.className = 'w-full mb-6 text-center text-xs text-slate-400 dark:text-slate-500';
+      d.textContent = text;
+      els.chatWindow.appendChild(d); scrollToBottom();
+    }
+
+    function autoResizeInput() { els.userInput.style.height = 'auto'; els.userInput.style.height = Math.min(els.userInput.scrollHeight, 160) + 'px'; }
+    function startEdit(text, files = []) {
+      state.editing = true;
+      (files || []).forEach(f => { if (f && f.id && !state.selectedFiles.has(f.id)) state.selectedFiles.set(f.id, { id: f.id, filename: f.filename }); });
+      renderSelectedFiles();
+      document.getElementById('edit-banner').classList.remove('hidden');
+      document.getElementById('edit-banner').classList.add('flex');
+      els.userInput.value = text || ''; autoResizeInput(); els.userInput.focus();
+      els.userInput.setSelectionRange(els.userInput.value.length, els.userInput.value.length);
+    }
+    function endEdit() {
+      state.editing = false;
+      const banner = document.getElementById('edit-banner');
+      banner.classList.add('hidden'); banner.classList.remove('flex');
+      document.getElementById('edit-newthread').checked = false;
+    }
+    function cancelEdit() { endEdit(); els.userInput.value = ''; autoResizeInput(); }
+
+    const TITLES_KEY = 'threadTitles';
+    function readTitles() { try { return JSON.parse(localStorage.getItem(TITLES_KEY) || '{}') || {}; } catch (e) { return {}; } }
+    function getThreadTitle(id) { return readTitles()[id] || ''; }
+    function setThreadTitle(id, title) {
+      const t = readTitles();
+      if (title) t[id] = title; else delete t[id];
+      try { localStorage.setItem(TITLES_KEY, JSON.stringify(t)); } catch (e) {}
+      const at = readJSON('threadTitleAt'); at[id] = Date.now(); writeJSON('threadTitleAt', at);
+      scheduleSync();
+    }
+    function startRename(row, threadId) {
+      const titleEl = row.querySelector('.thread-title');
+      if (!titleEl || row.querySelector('.thread-title-input')) return;
+      const input = document.createElement('input');
+      input.type = 'text'; input.value = threadDisplayTitle(threadId); input.placeholder = '對話紀錄'; input.maxLength = 60;
+      input.className = 'thread-title-input w-full px-2 py-1 text-sm rounded border border-primary-500 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 outline-none';
+      titleEl.replaceWith(input); input.focus(); input.select();
+      let done = false;
+      const finish = (save) => {
+        if (done) return; done = true;
+        if (save && input.value.trim() !== threadDisplayTitle(threadId)) { setThreadTitle(threadId, input.value.trim()); showToast('已重新命名'); }
+        renderThreads();
+      };
+      input.addEventListener('keydown', (e) => {
+        e.stopPropagation();
+        if (e.key === 'Enter') { e.preventDefault(); finish(true); }
+        else if (e.key === 'Escape') { e.preventDefault(); finish(false); }
+      });
+      input.addEventListener('click', (e) => e.stopPropagation());
+      input.addEventListener('blur', () => finish(true));
+    }
+
+    // --- v11: chatbox file upload ---
+    const isTempUpload = () => { try { return localStorage.getItem('tempUpload') === 'true'; } catch (e) { return false; } };
+    async function uploadForChat(file) {
+      const tid = 'up-' + Date.now() + '-' + Math.random().toString(36).slice(2, 7);
+      state.uploading.set(tid, { filename: file.name });
+      renderSelectedFiles();
+      try {
+        file = await prepareImage(file);
+        const fd = new FormData(); fd.append('file', file); fd.append('purpose', 'assistants');
+        if (isTempUpload()) fd.append('is_temp', 'true');
+        const res = await apiCall('/v1/files', 'POST', fd, true);
+        const id = res.id || res.file_id;
+        if (!id) throw new Error('伺服器未回傳檔案 ID');
+        state.selectedFiles.set(id, { id, filename: res.filename || file.name }); rememberFileName(id, res.filename || file.name);
+      } catch (err) { showToast(`上傳失敗（${file.name}）：${err.message}`, 'error'); }
+      finally { state.uploading.delete(tid); renderSelectedFiles(); }
+    }
+    function handleChatFiles(list) { Array.from(list || []).forEach(uploadForChat); }
+
+    // --- v10.2: thread files, sticky attach, download ---
+    const readJSON = (k) => { try { return JSON.parse(localStorage.getItem(k) || '{}') || {}; } catch (e) { return {}; } };
+    const writeJSON = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} };
+    function isStickyFiles() { try { return localStorage.getItem('stickyFiles') !== 'false'; } catch (e) { return true; } }
+    function rememberFileName(id, filename) {
+      if (!id || !filename) return;
+      const m = readJSON('fileNames'); if (m[id] === filename) return;
+      m[id] = filename; writeJSON('fileNames', m);
+    }
+    function nameForFile(id) { return readJSON('fileNames')[id] || ''; }
+    function recordThreadFiles(threadId, text, files) {
+      const all = readJSON('threadFiles');
+      const list = all[threadId] || [];
+      list.push({ text: String(text || '').trim(), files, at: Date.now() });
+      all[threadId] = list.slice(-200);
+      files.forEach(f => rememberFileName(f.id, f.filename));
+      writeJSON('threadFiles', all); scheduleSync();
+    }
+    function forgetThreadFiles(threadId) {
+      const all = readJSON('threadFiles'); delete all[threadId]; writeJSON('threadFiles', all);
+      const d = readJSON('deletedThreads'); d[threadId] = Date.now(); writeJSON('deletedThreads', d);
+      scheduleSync();
+    }
+    // 若後端在訊息中回傳檔案資訊（content 的 file part / attachments / file_ids），一併解析
+    function extractServerFiles(msg) {
+      const out = [];
+      const add = (id, filename) => { if (id) out.push({ id, filename: filename || nameForFile(id) || String(id) }); };
+      if (Array.isArray(msg.content)) msg.content.forEach(c => { if (c && c.type === 'file' && c.file) add(c.file.file_id || c.file.id, c.file.filename); });
+      if (Array.isArray(msg.attachments)) msg.attachments.forEach(a => add(a.file_id || a.id, a.filename));
+      if (Array.isArray(msg.file_ids)) msg.file_ids.forEach(id => add(id, ''));
+      return out;
+    }
+    async function downloadFile(id, filename) {
+      if (!id) return showToast('缺少檔案 ID，無法下載', 'error');
+      showToast('下載中...', 'info');
+      let lastErr;
+      for (const path of [`/v1/files/${encodeURIComponent(id)}/content`, `/v1/files/${encodeURIComponent(id)}/download`]) {
+        try { await authDownload(getBase() + path, filename || nameForFile(id), true); return; } catch (e) { lastErr = e; }
+      }
+      showToast(`下載失敗：${lastErr ? lastErr.message : ''}（後端可能未提供檔案下載端點）`, 'error');
+    }
+
+    // --- Helper Functions ---
+    function appendMessage(role, text, attachments = [], requestPayload = null) {
+      const div = document.createElement('div');
+      div.className = `flex w-full mb-6 ${role === 'user' ? 'justify-end' : 'justify-start'}`;
+      div.dataset.role = role;
+      div.dataset.label = String(text || '').replace(/\s+/g, ' ').trim().slice(0, 80) || (attachments.length ? '（附件）' + (attachments[0].filename || '') : '');
+
+      let attachmentHTML = '';
+      if (attachments.length > 0) {
+        attachmentHTML = `<div class="flex flex-wrap gap-2 mb-2 justify-end">${attachments.map(f => f.id ? `<button type="button" class="attach-chip text-xs bg-white/20 hover:bg-white/30 text-white px-2 py-1 rounded border border-white/20 inline-flex items-center gap-1.5 max-w-full" data-id="${escapeHtml(String(f.id))}" data-name="${escapeHtml(f.filename || '')}" title="點擊下載"><i class="fa-solid fa-paperclip"></i><span class="truncate max-w-[14rem]">${escapeHtml(f.filename || String(f.id))}</span><i class="fa-solid fa-download opacity-70"></i></button>` : `<span class="text-xs bg-white/20 text-white px-2 py-1 rounded border border-white/20"><i class="fa-solid fa-paperclip mr-1"></i>${escapeHtml(f.filename || '')}</span>`).join('')}</div>`;
+      }
+
+      const bubbleClass = role === 'user' 
+        ? 'user-bubble bg-primary-600 text-white rounded-2xl rounded-tr-sm px-5 py-4' 
+        : 'bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-slate-700 rounded-2xl rounded-tl-sm px-5 py-4';
+
+      div.innerHTML = `
+        <div class="max-w-[85%] sm:max-w-[75%] relative group">
+           ${role === 'assistant' ? '<div class="text-xs text-slate-400 mb-1 ml-1 flex justify-between items-center"><span>Assistant</span></div>' : ''}
+           <div class="${bubbleClass} shadow-sm relative group">
+             ${attachmentHTML}
+             <div class="md-output text-sm sm:text-base break-words"></div>
+             <div class="absolute -bottom-7 right-0 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+               <button class="copy-btn text-xs text-slate-400 hover:text-primary-600 p-1 bg-slate-100 dark:bg-slate-700 rounded" title="複製內容"><i class="fa-regular fa-copy"></i></button>
+               ${role === 'user' ? `<button class="edit-btn text-xs text-slate-400 hover:text-primary-600 p-1 bg-slate-100 dark:bg-slate-700 rounded" title="編輯後重新送出"><i class="fa-solid fa-pen"></i></button>` : ''}
+               ${requestPayload ? `<button class="code-btn text-xs text-slate-400 hover:text-primary-600 p-1 bg-slate-100 dark:bg-slate-700 rounded font-mono font-bold" title="檢視 API 程式碼">&lt; &gt;</button>` : ''}
+             </div>
+           </div>
+        </div>
+      `;
+      
+      const mdEl = div.querySelector('.md-output');
+      mdEl.innerHTML = renderMarkdown(text);
+      enhanceMarkdown(mdEl);
+      if (role === 'user' && text) state.lastUserText = text;
+      div.querySelector('.edit-btn')?.addEventListener('click', () => startEdit(text, attachments));
+      div.querySelectorAll('.attach-chip').forEach(btn => btn.addEventListener('click', () => downloadFile(btn.dataset.id, btn.dataset.name)));
+
+      div.querySelector('.copy-btn')?.addEventListener('click', () => { navigator.clipboard.writeText(text); showToast('已複製內容', 'info'); });
+      if(requestPayload) {
+        div.querySelector('.code-btn')?.addEventListener('click', () => showCodeModal(requestPayload));
+      }
+
+      els.chatWindow.appendChild(div);
+      if (state.loadingHistory) return;
+      if (role === 'assistant') revealTop(div); else scrollToBottom();
+    }
+
+    function showThinking() {
+      const id = 'thinking-' + Date.now();
+      const div = document.createElement('div'); div.id = id; div.className = 'flex w-full mb-6 justify-start';
+      div.innerHTML = `<div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl rounded-tl-sm px-5 py-4 shadow-sm flex items-center gap-3"><div class="text-sm text-slate-500">思考中</div><div class="typing flex gap-1"><div class="dot w-1.5 h-1.5 bg-slate-400 rounded-full"></div><div class="dot w-1.5 h-1.5 bg-slate-400 rounded-full"></div><div class="dot w-1.5 h-1.5 bg-slate-400 rounded-full"></div></div></div>`;
+      els.chatWindow.appendChild(div); scrollToBottom(); return id;
+    }
+    function removeThinking(id) { document.getElementById(id)?.remove(); }
+    function scrollToBottom(instant) { els.chatWindow.scrollTo({ top: els.chatWindow.scrollHeight, behavior: instant ? 'auto' : 'smooth' }); }
+    // 回覆出現時停在回覆的開頭（長回覆從頭讀起；短回覆自然落在底部）
+    function revealTop(el) { el.scrollIntoView({ block: 'start', behavior: 'smooth' }); }
+    
+    function renderSelectedFiles() {
+      els.selectedFilesArea.innerHTML = '';
+      const mk = (label, cls, iconHtml, onRemove) => {
+        const tag = document.createElement('span');
+        tag.className = `inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border max-w-full ${cls}`;
+        tag.innerHTML = iconHtml;
+        const name = document.createElement('span'); name.className = 'truncate max-w-[14rem]'; name.textContent = label; tag.appendChild(name);
+        if (onRemove) {
+          const btn = document.createElement('button'); btn.type = 'button'; btn.title = '移除'; btn.setAttribute('aria-label', '移除檔案');
+          btn.className = 'hover:text-primary-900 dark:hover:text-white'; btn.innerHTML = '<i class="fa-solid fa-xmark"></i>';
+          btn.addEventListener('click', onRemove); tag.appendChild(btn);
+        }
+        els.selectedFilesArea.appendChild(tag);
+      };
+      state.selectedFiles.forEach((meta, id) => mk(meta.filename, 'bg-primary-100 text-primary-700 dark:bg-primary-900/30 dark:text-primary-300 border-primary-200 dark:border-primary-800', meta.carried ? '<i class="fa-solid fa-thumbtack" title="持續附加於本對話"></i>' : '<i class="fa-solid fa-paperclip"></i>', () => { state.selectedFiles.delete(id); renderSelectedFiles(); }));
+      state.uploading.forEach(meta => mk(meta.filename + ' (上傳中…)', 'bg-amber-50 text-amber-700 dark:bg-amber-900/20 dark:text-amber-300 border-amber-200 dark:border-amber-800', '<i class="fa-solid fa-spinner animate-spin"></i>', null));
+    }
+    window.removeSelectedFile = (id) => { state.selectedFiles.delete(id); renderSelectedFiles(); };
+
+    async function uploadFile(file) {
+      const formData = new FormData(); formData.append('file', file); formData.append('purpose', 'assistants');
+      try { showToast('上傳中...', 'info'); await apiCall('/v1/files', 'POST', formData, true); showToast('上傳成功', 'success'); loadFileLibrary(); } 
+      catch (err) { showToast(`上傳失敗: ${err.message}`, 'error'); }
+    }
+
+    async function loadFileLibrary() {
+      els.fileDrawer.list.innerHTML = '<div class="text-center py-4 text-slate-400"><i class="fa-solid fa-spinner animate-spin"></i></div>';
+      try {
+        const data = await apiCall('/v1/files');
+        els.fileDrawer.list.innerHTML = '';
+        if(!data.data || data.data.length === 0) { els.fileDrawer.list.innerHTML = '<div class="text-center py-4 text-slate-400 text-sm">暫無檔案</div>'; return; }
+        data.data.forEach(f => { rememberFileName(f.id, f.filename);
+          const div = document.createElement('div'); div.className = 'flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 group';
+          div.innerHTML = `<div class="flex items-center gap-3 overflow-hidden"><div class="w-8 h-8 rounded bg-blue-100 text-blue-600 flex items-center justify-center shrink-0"><i class="fa-solid fa-file"></i></div><div class="min-w-0"><div class="text-sm font-medium text-slate-700 dark:text-slate-200 truncate">${escapeHtml(f.filename)}</div><div class="text-xs text-slate-400">${(f.bytes/1024).toFixed(1)} KB</div></div></div><div class="flex items-center gap-2"><button class="download-file-btn text-slate-400 hover:text-primary-600 p-1" title="下載" data-id="${f.id}" data-name="${escapeHtml(f.filename)}"><i class="fa-solid fa-download"></i></button><button class="select-file-btn px-2 py-1 text-xs bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded hover:bg-slate-100 dark:hover:bg-slate-600 text-slate-600 dark:text-slate-300" data-id="${f.id}" data-name="${escapeHtml(f.filename)}">選取</button><button class="delete-file-btn text-slate-400 hover:text-red-500 p-1" data-id="${f.id}"><i class="fa-solid fa-trash"></i></button></div>`;
+          els.fileDrawer.list.appendChild(div);
+        });
+      } catch (err) { els.fileDrawer.list.innerHTML = `<div class="text-red-500 text-sm text-center">無法載入: ${err.message}</div>`; }
+    }
+    
+    async function deleteThread(id) { if(!confirm('確定刪除此對話？')) return; try { await apiCall(`/v1/threads/${id}`, 'DELETE'); setThreadTitle(id, ''); setDerivedTitle(id, ''); forgetThreadFiles(id); if(state.currentThreadId === id) { state.currentThreadId = null; els.chatWindow.innerHTML = ''; els.chatWindow.appendChild(document.createElement('div')).innerHTML = '<div class="flex flex-col items-center justify-center h-full text-slate-400 dark:text-slate-500 opacity-60"><i class="fa-regular fa-comments text-5xl mb-4"></i><p>對話已刪除</p></div>'; } loadThreads(); showToast('對話已刪除'); } catch(err) { showToast('刪除失敗', 'error'); } }
+
+    // --- Listeners ---
+    els.settings.envPreset.addEventListener('change', (e) => { if (e.target.value === 'custom') { els.settings.customUrl.classList.remove('hidden'); els.settings.customUrl.focus(); } else els.settings.customUrl.classList.add('hidden'); });
+    els.settings.saveBtn.addEventListener('click', () => {
+      const url = els.settings.envPreset.value === 'custom' ? els.settings.customUrl.value.trim() : els.settings.envPreset.value;
+      if (!url || !els.settings.apiKey.value) return showToast('請填寫完整連線資訊', 'error');
+      state.baseUrl = url; state.assistantId = els.settings.asstId.value.trim(); state.apiKey = els.settings.apiKey.value.trim();
+      localStorage.setItem('baseUrl', state.baseUrl); localStorage.setItem('assistantId', state.assistantId); localStorage.setItem('apiKey', state.apiKey);
+      showToast('設定已儲存', 'success'); switchView('chat'); loadThreads();
+    });
+    els.settings.toggleKey.addEventListener('click', () => { const i = els.settings.apiKey; i.type = i.type === 'password' ? 'text' : 'password'; els.settings.toggleKey.innerHTML = i.type==='password'?'<i class="fa-regular fa-eye"></i>':'<i class="fa-regular fa-eye-slash"></i>'; });
+    els.sidebarToggle.addEventListener('click', () => toggleSidebar(true)); els.sidebarClose.addEventListener('click', () => toggleSidebar(false)); els.sidebarBackdrop.addEventListener('click', () => toggleSidebar(false)); els.themeToggle.addEventListener('click', toggleTheme);
+    els.newThreadBtn.addEventListener('click', () => { state.currentThreadId = null; state.selectedFiles.clear(); renderSelectedFiles(); els.chatWindow.innerHTML = ''; els.chatWindow.appendChild(document.createElement('div')).innerHTML = '<div class="flex flex-col items-center justify-center h-full text-slate-400 dark:text-slate-500 opacity-60"><i class="fa-regular fa-comments text-5xl mb-4"></i><p>新對話</p></div>'; if(window.innerWidth < 1024) toggleSidebar(false); });
+    els.userInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') {
+        // 輸入法選字/確認時的 Enter 不送出（避免送出注音/拼音預覽並在 commit 後把文字又寫回輸入框）
+        if (e.isComposing || imeComposing || e.keyCode === 229 || Date.now() - imeLastEnd < 80) return;
+        const shouldSend = getSendMode() === 'mod' ? (e.metaKey || e.ctrlKey) : !e.shiftKey;
+        if (shouldSend) { e.preventDefault(); if (!e.repeat) sendMessage(); }
+      } setTimeout(() => { els.userInput.style.height = 'auto'; els.userInput.style.height = Math.min(els.userInput.scrollHeight, 160) + 'px'; }, 0); });
+    els.sendBtn.addEventListener('click', () => state.isSending ? stopGeneration() : sendMessage());
+    const toggleFileDrawer = (show) => { if (show) { els.fileDrawer.root.classList.remove('hidden'); loadFileLibrary(); setTimeout(() => els.fileDrawer.panel.classList.remove('translate-x-full'), 10); } else { els.fileDrawer.panel.classList.add('translate-x-full'); setTimeout(() => els.fileDrawer.root.classList.add('hidden'), 500); } };
+    els.fileDrawer.trigger.addEventListener('click', () => toggleFileDrawer(true)); els.fileDrawer.close.addEventListener('click', () => toggleFileDrawer(false)); els.fileDrawer.backdrop.addEventListener('click', () => toggleFileDrawer(false)); els.fileDrawer.refresh.addEventListener('click', loadFileLibrary); els.fileDrawer.upload.addEventListener('change', (e) => { if(e.target.files[0]) uploadFile(e.target.files[0]); e.target.value = ''; });
+    els.fileDrawer.list.addEventListener('click', async (e) => {
+      const selectBtn = e.target.closest('.select-file-btn'), deleteBtn = e.target.closest('.delete-file-btn'), dlBtn = e.target.closest('.download-file-btn');
+      if (dlBtn) { downloadFile(dlBtn.dataset.id, dlBtn.dataset.name); return; }
+      if (selectBtn) { state.selectedFiles.set(selectBtn.dataset.id, { id: selectBtn.dataset.id, filename: selectBtn.dataset.name }); renderSelectedFiles(); toggleFileDrawer(false); showToast(`已選取 ${selectBtn.dataset.name}`, 'success'); }
+      else if (deleteBtn) { if(!confirm('確定永久刪除此檔案？')) return; try { await apiCall(`/v1/files/${deleteBtn.dataset.id}`, 'DELETE'); showToast('檔案已刪除'); loadFileLibrary(); } catch(err) { showToast(`刪除失敗: ${err.message}`, 'error'); } }
+    });
+    
+    // Modal Events
+    els.codeModalClose.addEventListener('click', () => els.codeModal.close());
+    els.codeModal.addEventListener('click', (e) => { if(e.target === els.codeModal) els.codeModal.close(); });
+    els.copyCodeBtn.addEventListener('click', () => {
+      const activePane = Array.from(els.codeModal.querySelectorAll('.code-pane')).find(p => !p.classList.contains('hidden'));
+      if(activePane) { navigator.clipboard.writeText(activePane.textContent); showToast('程式碼已複製'); }
+    });
+    document.querySelectorAll('.code-tab').forEach(tab => {
+        tab.addEventListener('click', () => {
+           document.querySelectorAll('.code-tab').forEach(t => { t.classList.remove('bg-primary-600', 'text-white'); t.classList.add('text-slate-400', 'hover:bg-slate-800'); });
+           tab.classList.add('bg-primary-600', 'text-white'); tab.classList.remove('text-slate-400', 'hover:bg-slate-800');
+           document.querySelectorAll('.code-pane').forEach(p => p.classList.add('hidden'));
+           document.querySelector(`.code-pane[data-lang="${tab.dataset.target}"]`).classList.remove('hidden');
+        });
+    });
+
+    document.getElementById('edit-cancel').addEventListener('click', cancelEdit);
+
+    // chatbox upload: paperclip / drag & drop / paste
+    const chatFileInput = document.getElementById('chat-file-input');
+    document.getElementById('attach-btn').addEventListener('click', () => chatFileInput.click());
+    chatFileInput.addEventListener('change', (e) => { handleChatFiles(e.target.files); e.target.value = ''; });
+    els.userInput.addEventListener('paste', (e) => {
+      const cd = e.clipboardData;
+      if (cd && cd.files && cd.files.length && !cd.getData('text')) { e.preventDefault(); handleChatFiles(cd.files); }
+    });
+    const chatSection = document.getElementById('chat-section'), dropOverlay = document.getElementById('drop-overlay');
+    let dragDepth = 0;
+    const hasFiles = (e) => e.dataTransfer && Array.from(e.dataTransfer.types || []).includes('Files');
+    const showDrop = (on) => { dropOverlay.classList.toggle('hidden', !on); dropOverlay.classList.toggle('flex', on); };
+    chatSection.addEventListener('dragenter', (e) => { if (!hasFiles(e)) return; e.preventDefault(); dragDepth++; showDrop(true); });
+    chatSection.addEventListener('dragover', (e) => { if (!hasFiles(e)) return; e.preventDefault(); });
+    chatSection.addEventListener('dragleave', (e) => { if (!hasFiles(e)) return; dragDepth = Math.max(0, dragDepth - 1); if (!dragDepth) showDrop(false); });
+    chatSection.addEventListener('drop', (e) => { if (!hasFiles(e)) return; e.preventDefault(); dragDepth = 0; showDrop(false); handleChatFiles(e.dataTransfer.files); });
+    const tempToggle = document.getElementById('temp-upload-input');
+    tempToggle.checked = isTempUpload();
+    tempToggle.addEventListener('change', () => { try { localStorage.setItem('tempUpload', tempToggle.checked); } catch (e) {} });
+    els.userInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') { if (state.isSending) stopGeneration(); else if (state.editing) cancelEdit(); }
+      else if (e.key === 'ArrowUp' && !els.userInput.value && state.lastUserText && !state.isSending) { e.preventDefault(); startEdit(state.lastUserText); }
+    });
+
+    function getSendMode() { try { return localStorage.getItem('sendMode') === 'mod' ? 'mod' : 'enter'; } catch (e) { return 'enter'; } }
+    function applySendMode() {
+      const mod = getSendMode() === 'mod';
+      els.userInput.placeholder = mod ? '輸入訊息... (Enter 換行，⌘/Ctrl+Enter 送出)' : '輸入訊息... (Enter 送出，Shift+Enter 換行)';
+      document.querySelectorAll('input[name="send-mode"]').forEach(r => { r.checked = r.value === getSendMode(); });
+    }
+    document.querySelectorAll('input[name="send-mode"]').forEach(r => r.addEventListener('change', () => {
+      if (!r.checked) return;
+      try { localStorage.setItem('sendMode', r.value); } catch (e) {}
+      applySendMode();
+    }));
+    applySendMode();
+    // IME (注音/拼音) 組字狀態
+    let imeComposing = false, imeLastEnd = 0;
+    els.userInput.addEventListener('compositionstart', () => { imeComposing = true; });
+    els.userInput.addEventListener('compositionend', () => { imeComposing = false; imeLastEnd = Date.now(); });
+    els.userInput.addEventListener('input', autoResizeInput);
+    const stickyToggle = document.getElementById('sticky-files-input');
+    stickyToggle.checked = isStickyFiles();
+    stickyToggle.addEventListener('change', () => { try { localStorage.setItem('stickyFiles', stickyToggle.checked); } catch (e) {} });
+
+    // ===================== v11 =====================
+    const lsGet = (k) => { try { return localStorage.getItem(k); } catch (e) { return null; } };
+    const lsSet = (k, v) => { try { localStorage.setItem(k, v); } catch (e) {} };
+
+    // --- relay helpers ---
+    const UPSTREAM = { sbx: 'https://rtgapp.profetai.com:4231/public/kits/openai', prd: 'https://rtgapp.profetai.com:4234/public/kits/openai' };
+    function isRelay() { return String(state.baseUrl).startsWith('@relay/'); }
+    function getBase() { return isRelay() ? location.origin + '/relay/' + state.baseUrl.slice(7) : state.baseUrl; }
+    function upstreamBase() { return isRelay() ? (UPSTREAM[state.baseUrl.slice(7)] || '') : state.baseUrl; }
+    function relayize(href) {
+      if (!isRelay()) return href;
+      const up = upstreamBase();
+      return up && href.startsWith(up) ? getBase() + href.slice(up.length) : href;
+    }
+    function updateRelayHint() {
+      const h = document.getElementById('relay-hint');
+      if (h) h.classList.toggle('hidden', !String(els.settings.envPreset.value).startsWith('@relay/'));
+    }
+    els.settings.envPreset.addEventListener('change', updateRelayHint);
+
+    // --- titles: server-derived default title (works on any device) ---
+    function contentToText(msg) { return Array.isArray(msg.content) ? msg.content.map(c => (c && c.text) ? (c.text.value || c.text) : '').join('\n') : String(msg.content || ''); }
+    function getDerivedTitle(id) { return readJSON('derivedTitles')[id] || ''; }
+    function setDerivedTitle(id, t) { const m = readJSON('derivedTitles'); if (t) m[id] = t; else delete m[id]; writeJSON('derivedTitles', m); }
+    function threadDisplayTitle(id) { return getThreadTitle(id) || getDerivedTitle(id); }
+    const titleTried = new Set();
+    async function deriveTitles() {
+      const pending = (state.threads || []).filter(t => !getThreadTitle(t.id) && !getDerivedTitle(t.id) && !titleTried.has(t.id));
+      pending.forEach(t => titleTried.add(t.id));
+      let i = 0;
+      const worker = async () => {
+        while (i < pending.length) {
+          const t = pending[i++];
+          try {
+            const d = await apiCall(`/v1/threads/${encodeURIComponent(t.id)}/messages?limit=2&order=asc`);
+            const list = d.data || [];
+            const m = list.find(x => x.role === 'user') || list[0];
+            if (!m) continue;
+            let title = contentToText(m).replace(/[#>*`_\[\]]/g, '').replace(/\s+/g, ' ').trim();
+            if (!title) { const f = extractServerFiles(m); if (f.length) title = '（附件）' + f[0].filename; }
+            if (!title) continue;
+            setDerivedTitle(t.id, title.slice(0, 28));
+            const row = Array.from(els.threadsList.children).find(r => r.dataset && r.dataset.id === t.id);
+            const el = row && row.querySelector('.thread-title');
+            if (el && !getThreadTitle(t.id)) el.textContent = title.slice(0, 28);
+          } catch (e) { /* 單一對話失敗不影響其他 */ }
+        }
+      };
+      await Promise.all([worker(), worker(), worker()]);
+    }
+
+    // --- cross-device sync (relay only): custom titles + per-thread file records ---
+    function syncEnabled() { return isRelay() && !!state.apiKey; }
+    async function syncKey() {
+      const h = await crypto.subtle.digest('SHA-256', new TextEncoder().encode('agent-web:' + state.apiKey));
+      return Array.from(new Uint8Array(h)).map(x => x.toString(16).padStart(2, '0')).join('').slice(0, 40);
+    }
+    function localSnapshot() {
+      const t = readJSON('threadTitles'), a = readJSON('threadTitleAt'), titles = {};
+      Object.keys(Object.assign({}, t, a)).forEach(id => { titles[id] = { v: t[id] || '', at: a[id] || 0 }; });
+      return { titles, threadFiles: readJSON('threadFiles'), fileNames: readJSON('fileNames'), deleted: readJSON('deletedThreads') };
+    }
+    function mergeRemote(rem) {
+      if (!rem || typeof rem !== 'object') return false;
+      let changed = false;
+      const t = readJSON('threadTitles'), a = readJSON('threadTitleAt'), del = readJSON('deletedThreads'), tf = readJSON('threadFiles'), fn = readJSON('fileNames');
+      Object.entries(rem.deleted || {}).forEach(([id, at]) => { if (!(id in del)) { del[id] = at; changed = true; } });
+      Object.entries(rem.titles || {}).forEach(([id, o]) => {
+        if (!o || typeof o !== 'object' || id in del) return;
+        const la = (id in a) ? a[id] : ((id in t) ? 0 : -1);
+        if ((o.at || 0) > la) { if (o.v) t[id] = String(o.v).slice(0, 60); else delete t[id]; a[id] = o.at || 0; changed = true; }
+      });
+      Object.entries(rem.threadFiles || {}).forEach(([id, list]) => {
+        if (id in del || !Array.isArray(list)) return;
+        const cur = tf[id] || [], seen = new Set(cur.map(r => r.text + '|' + r.at));
+        let add = false;
+        list.forEach(r => {
+          if (r && Array.isArray(r.files) && !seen.has(r.text + '|' + r.at)) {
+            cur.push({ text: String(r.text || ''), at: r.at || 0, files: r.files.map(f => ({ id: String(f.id), filename: String(f.filename || '') })) });
+            add = true;
+          }
+        });
+        if (add) { cur.sort((x, y) => (x.at || 0) - (y.at || 0)); tf[id] = cur.slice(-200); changed = true; }
+      });
+      Object.keys(del).forEach(id => { if (id in tf) { delete tf[id]; changed = true; } if (id in t) { delete t[id]; changed = true; } });
+      Object.entries(rem.fileNames || {}).forEach(([id, n]) => { if (!(id in fn) && typeof n === 'string') { fn[id] = n.slice(0, 200); changed = true; } });
+      writeJSON('threadTitles', t); writeJSON('threadTitleAt', a); writeJSON('deletedThreads', del); writeJSON('threadFiles', tf); writeJSON('fileNames', fn);
+      return changed;
+    }
+    async function syncPull() {
+      if (!syncEnabled()) return false;
+      try {
+        const r = await fetch('/sync/' + await syncKey(), { headers: { 'X-Requested-With': 'fetch' }, cache: 'no-store' });
+        if (!r.ok) return false;
+        return mergeRemote(await r.json());
+      } catch (e) { return false; }
+    }
+    let syncTimer = 0, syncBusy = false;
+    async function syncPush() {
+      if (!syncEnabled() || syncBusy) return;
+      syncBusy = true;
+      try {
+        const url = '/sync/' + await syncKey();
+        const r = await fetch(url, { headers: { 'X-Requested-With': 'fetch' }, cache: 'no-store' });
+        if (r.ok) mergeRemote(await r.json());
+        await fetch(url, { method: 'PUT', headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'fetch' }, body: JSON.stringify(localSnapshot()) });
+      } catch (e) { /* 同步為盡力而為，不影響使用 */ }
+      finally { syncBusy = false; }
+    }
+    function scheduleSync() { if (!syncEnabled()) return; clearTimeout(syncTimer); syncTimer = setTimeout(syncPush, 1500); }
+    document.addEventListener('visibilitychange', () => {
+      if (!document.hidden && syncEnabled()) syncPull().then(ch => { if (ch) renderThreads(); });
+    });
+
+    // --- image preprocessing: shrink big photos, convert HEIC to JPEG ---
+    async function prepareImage(file) {
+      const isHeic = /heic|heif/i.test(file.type) || /\.(heic|heif)$/i.test(file.name);
+      if (!isHeic && (!/^image\//.test(file.type) || /gif|svg/.test(file.type))) return file;
+      try {
+        const bmp = await createImageBitmap(file);
+        const scale = Math.min(1, 2048 / Math.max(bmp.width, bmp.height));
+        if (!isHeic && scale === 1 && file.size <= 1.5 * 1024 * 1024) { if (bmp.close) bmp.close(); return file; }
+        const c = document.createElement('canvas');
+        c.width = Math.round(bmp.width * scale); c.height = Math.round(bmp.height * scale);
+        const ctx = c.getContext('2d'); ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, c.width, c.height); ctx.drawImage(bmp, 0, 0, c.width, c.height);
+        if (bmp.close) bmp.close();
+        const blob = await new Promise(res => c.toBlob(res, 'image/jpeg', 0.85));
+        if (!blob) return file;
+        let name = file.name.replace(/\.[^.]+$/, '') || 'photo';
+        if (/^(image|photo)$/i.test(name)) { const d = new Date(), p = n => String(n).padStart(2, '0'); name = `photo-${d.getFullYear()}${p(d.getMonth() + 1)}${p(d.getDate())}-${p(d.getHours())}${p(d.getMinutes())}${p(d.getSeconds())}`; }
+        return new File([blob], name + '.jpg', { type: 'image/jpeg' });
+      } catch (e) { return file; }
+    }
+    const cameraInput = document.getElementById('camera-input');
+    document.getElementById('camera-btn').addEventListener('click', () => cameraInput.click());
+    cameraInput.addEventListener('change', (e) => { handleChatFiles(e.target.files); e.target.value = ''; });
+
+    // --- sidebar: resize / collapse ---
+    const SB = { min: 220, max: 480, def: 288 };
+    function applySidebarPrefs() {
+      const w = Math.min(SB.max, Math.max(SB.min, parseInt(lsGet('sbWidth'), 10) || SB.def));
+      els.sidebar.style.setProperty('--sb-w', w + 'px');
+      els.sidebar.classList.toggle('sb-mini', lsGet('sbMini') === '1');
+    }
+    function toggleSidebarMini(force) {
+      const mini = typeof force === 'boolean' ? force : !els.sidebar.classList.contains('sb-mini');
+      lsSet('sbMini', mini ? '1' : '0'); applySidebarPrefs();
+    }
+    (function setupSidebarResizer() {
+      const handle = document.getElementById('sidebar-resizer');
+      let startX = 0, startW = 0, raw = 0, dragging = false;
+      handle.addEventListener('pointerdown', (e) => {
+        if (els.sidebar.classList.contains('sb-mini')) return;
+        dragging = true; startX = e.clientX; startW = raw = els.sidebar.getBoundingClientRect().width;
+        handle.setPointerCapture(e.pointerId); handle.classList.add('dragging'); document.body.classList.add('sb-dragging');
+      });
+      handle.addEventListener('pointermove', (e) => {
+        if (!dragging) return;
+        raw = Math.min(SB.max, startW + e.clientX - startX);
+        els.sidebar.style.setProperty('--sb-w', Math.max(SB.min, raw) + 'px');
+      });
+      const end = () => {
+        if (!dragging) return; dragging = false;
+        handle.classList.remove('dragging'); document.body.classList.remove('sb-dragging');
+        if (raw < SB.min - 30) toggleSidebarMini(true);   // 拖到很窄 = 收合
+        else lsSet('sbWidth', String(Math.round(Math.max(SB.min, Math.min(SB.max, raw)))));
+        applySidebarPrefs();
+      };
+      handle.addEventListener('pointerup', end); handle.addEventListener('pointercancel', end);
+      handle.addEventListener('dblclick', () => { lsSet('sbWidth', String(SB.def)); lsSet('sbMini', '0'); applySidebarPrefs(); });
+    })();
+    document.getElementById('sidebar-collapse').addEventListener('click', () => toggleSidebarMini());
+    document.addEventListener('keydown', (e) => {
+      if ((e.metaKey || e.ctrlKey) && !e.shiftKey && !e.altKey && String(e.key).toLowerCase() === 'b' && window.innerWidth >= 1024) { e.preventDefault(); toggleSidebarMini(); }
+    });
+    applySidebarPrefs();
+
+    // --- conversation navigator (desktop rail + mobile sheet) ---
+    const rail = {
+      box: document.getElementById('msg-rail'), dots: document.getElementById('rail-dots'), tip: document.getElementById('rail-tip'),
+      fab: document.getElementById('rail-fab'), sheet: document.getElementById('rail-sheet'), backdrop: document.getElementById('rail-backdrop'), list: document.getElementById('sheet-list')
+    };
+    let railItems = [], railRaf = 0, scrollRaf = 0;
+    function scheduleRail() { if (railRaf) return; railRaf = requestAnimationFrame(() => { railRaf = 0; buildRail(); }); }
+    function jumpTo(el) { el.scrollIntoView({ block: 'start', behavior: 'smooth' }); }
+    function showRailTip(btn, text) {
+      const r = btn.getBoundingClientRect();
+      rail.tip.textContent = text; rail.tip.style.top = (r.top + r.height / 2) + 'px'; rail.tip.style.right = (window.innerWidth - r.left + 8) + 'px'; rail.tip.classList.add('show');
+    }
+    function hideRailTip() { rail.tip.classList.remove('show'); }
+    function openSheet() { rail.sheet.classList.add('open'); rail.backdrop.classList.add('open'); const a = rail.list.querySelector('.active'); if (a) rail.list.scrollTop = a.offsetTop - rail.list.clientHeight / 2; }
+    function closeSheet() { rail.sheet.classList.remove('open'); rail.backdrop.classList.remove('open'); }
+    function buildRail() {
+      railItems = Array.from(els.chatWindow.children).filter(n => n.dataset && n.dataset.role === 'user');
+      const show = railItems.length >= 2;
+      rail.box.classList.toggle('has-items', show); rail.fab.classList.toggle('has-items', show);
+      rail.dots.innerHTML = ''; rail.list.innerHTML = '';
+      railItems.forEach((el, i) => {
+        const label = el.dataset.label || ('提問 ' + (i + 1));
+        const dot = document.createElement('button'); dot.type = 'button'; dot.className = 'rail-dot'; dot.setAttribute('aria-label', label);
+        dot.addEventListener('click', () => jumpTo(el));
+        dot.addEventListener('mouseenter', () => showRailTip(dot, label)); dot.addEventListener('mouseleave', hideRailTip);
+        dot.addEventListener('focus', () => showRailTip(dot, label)); dot.addEventListener('blur', hideRailTip);
+        rail.dots.appendChild(dot);
+        const item = document.createElement('button'); item.type = 'button'; item.className = 'sheet-item'; item.textContent = label;
+        item.addEventListener('click', () => { closeSheet(); jumpTo(el); });
+        rail.list.appendChild(item);
+      });
+      updateRailActive();
+    }
+    function updateRailActive() {
+      if (!railItems.length) return;
+      const cw = els.chatWindow, top = cw.getBoundingClientRect().top + 24;
+      let idx = 0;
+      for (let i = 0; i < railItems.length; i++) { if (railItems[i].getBoundingClientRect().top <= top) idx = i; else break; }
+      if (cw.scrollTop + cw.clientHeight >= cw.scrollHeight - 4) idx = railItems.length - 1;
+      Array.from(rail.dots.children).forEach((d, i) => d.classList.toggle('active', i === idx));
+      Array.from(rail.list.children).forEach((d, i) => d.classList.toggle('active', i === idx));
+      const act = rail.dots.children[idx];
+      if (act && rail.dots.scrollHeight > rail.dots.clientHeight) rail.dots.scrollTop = act.offsetTop - rail.dots.clientHeight / 2;
+    }
+    new MutationObserver(scheduleRail).observe(els.chatWindow, { childList: true });
+    els.chatWindow.addEventListener('scroll', () => { if (!scrollRaf) scrollRaf = requestAnimationFrame(() => { scrollRaf = 0; updateRailActive(); }); }, { passive: true });
+    const toTop = () => els.chatWindow.scrollTo({ top: 0, behavior: 'smooth' });
+    document.getElementById('rail-top').addEventListener('click', toTop);
+    document.getElementById('rail-bottom').addEventListener('click', () => scrollToBottom());
+    document.getElementById('sheet-top').addEventListener('click', () => { closeSheet(); toTop(); });
+    document.getElementById('sheet-bottom').addEventListener('click', () => { closeSheet(); scrollToBottom(); });
+    document.getElementById('sheet-close').addEventListener('click', closeSheet);
+    rail.backdrop.addEventListener('click', closeSheet);
+    rail.fab.addEventListener('click', openSheet);
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeSheet(); });
+    const inputBarEl = document.querySelector('.input-bar');
+    if (window.ResizeObserver && inputBarEl) new ResizeObserver(() => document.getElementById('chat-section').style.setProperty('--inputbar-h', inputBarEl.offsetHeight + 'px')).observe(inputBarEl);
+
+    init();
+  </script>
+</body>
+</html>
