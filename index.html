@@ -394,6 +394,7 @@
                 <button id="edit-cancel" type="button" class="underline hover:no-underline">取消</button>
               </span>
             </div>
+            <div id="run-status" class="hidden max-w-4xl mx-auto mb-2 flex-wrap items-center justify-between gap-x-3 gap-y-2 px-3 py-2 rounded-lg bg-sky-50 dark:bg-sky-900/20 border border-sky-200 dark:border-sky-900/50 text-xs text-sky-800 dark:text-sky-200" role="status" aria-live="polite"></div>
             <div id="selected-files-area" class="flex flex-wrap gap-2 mb-2 empty:hidden"></div>
             <div class="relative max-w-4xl mx-auto flex gap-3 items-end bg-slate-100 dark:bg-slate-700/50 p-2 rounded-2xl border border-transparent focus-within:border-primary-500 focus-within:bg-white dark:focus-within:bg-slate-800 transition-all shadow-inner">
               <button id="attach-btn" type="button" class="p-3 text-slate-500 hover:text-primary-600 dark:text-slate-400 dark:hover:text-primary-400 self-end transition-colors" title="上傳檔案並附加到訊息 (也可拖曳或貼上)" aria-label="附加檔案"><i class="fa-solid fa-paperclip"></i></button>
@@ -592,8 +593,10 @@
         </div>
 
         <div id="changelog" class="w-full max-w-lg mt-6 mb-10 px-2 text-sm text-slate-600 dark:text-slate-300">
-          <h3 class="font-semibold text-slate-800 dark:text-slate-100 mb-2">版本紀錄 <span class="text-xs font-normal text-slate-400">目前版本 v14.1</span></h3>
+          <h3 class="font-semibold text-slate-800 dark:text-slate-100 mb-2">版本紀錄 <span class="text-xs font-normal text-slate-400">目前版本 v14.2</span></h3>
           <div class="space-y-3">
+            <div><div class="font-medium text-slate-700 dark:text-slate-200">v14.2 <span class="text-xs text-slate-400">2026-10-07</span></div>
+              <ul class="list-disc pl-5 space-y-0.5"><li>API 沒有取消回應的端點，因此移除原本無效的「停止」鈕與 Esc 中止，避免看起來能中止</li><li>處理中改為顯示狀態列（已等待時間、預估時間提示），送出鈕暫時停用並顯示轉圈；訊息中的「思考中」同步計時</li><li>處理中關閉／重新整理頁面會先提醒，避免遺失回覆</li></ul></div>
             <div><div class="font-medium text-slate-700 dark:text-slate-200">v14.1 <span class="text-xs text-slate-400">2026-10-06</span></div>
               <ul class="list-disc pl-5 space-y-0.5"><li>HTML 報表在沙箱內執行出錯（例如 agent 程式碼語法錯誤導致畫面空白）時，卡片下方直接顯示錯誤原因與「改為頁內顯示」</li><li>agent 回覆「HTML 檔案連結」時，訊息下方新增提示列：<b>改為頁內顯示</b>（一鍵請 agent 改輸出頁內報表）與<b>預覽已下載的檔案</b>（拖放／選檔）</li></ul></div>
             <div><div class="font-medium text-slate-700 dark:text-slate-200">v14.0 <span class="text-xs text-slate-400">2026-10-06</span></div>
@@ -924,7 +927,7 @@
     }
 
     async function sendMessage() {
-      if (state.isSending) return;
+      if (state.isSending) return showToast('Agent 仍在處理上一則訊息，請稍候', 'info');
       const typedText = els.userInput.value.trim();
       const reportOn = isReportMode() || !!state.forceReport; state.forceReport = false;
       const hasFiles = state.selectedFiles.size > 0;
@@ -976,10 +979,7 @@
         appendMessage('assistant', reply, [], payload);
       } catch (err) {
         removeThinking(loadingId);
-        if (err.name === 'AbortError') {
-          appendSystemNote('⏹ 已停止等待本次回應（伺服器端是否同步中止取決於後端）');
-          if (!state.currentThreadId) setTimeout(loadThreads, 1500);
-        } else appendMessage('assistant', `❌ 錯誤: ${err.message}`);
+        appendMessage('assistant', `❌ 錯誤: ${err.message}`);
       } finally { state.abortCtrl = null; setSending(false); }
     }
 
@@ -1061,20 +1061,50 @@
     // --- v10: Stop / Edit / Rename ---
     Object.assign(state, { pendingRaw: null, pendingFiles: null, isSending: false, abortCtrl: null, editing: false, lastUserText: '', threads: [], uploading: new Map() });
 
+    // v14.2: API 沒有取消端點 → 不提供停止；處理中顯示狀態列與計時，送出鈕暫時停用
+    const SEND_PH_DEFAULT = els.userInput.getAttribute('placeholder') || '';
+    const runUi = { t0: 0, timer: null };
+    function fmtElapsed(s) { return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0'); }
+    function runHint(s) {
+      if (s < 20) return '回覆產生後會顯示在對話中';
+      if (s < 90) return '含檔案或報表的分析通常需 1–3 分鐘';
+      return '仍在處理中，資料量大時可能需要數分鐘';
+    }
+    function renderRunStatus() {
+      const bar = document.getElementById('run-status'); if (!bar) return;
+      const s = Math.max(0, Math.floor((Date.now() - runUi.t0) / 1000));
+      document.querySelectorAll('.rs-t').forEach(n => { n.textContent = '· ' + fmtElapsed(s); });
+      if (bar.dataset.mode !== 'run') {
+        bar.dataset.mode = 'run';
+        bar.innerHTML = '<span class="flex items-center gap-2 min-w-0"><i class="fa-solid fa-circle-notch fa-spin shrink-0"></i><span><b>Agent 處理中</b> <span id="rs-time" class="tabular-nums"></span><span class="mx-1.5 opacity-50">|</span><span id="rs-hint"></span></span></span>';
+      }
+      document.getElementById('rs-time').textContent = '已等待 ' + fmtElapsed(s);
+      document.getElementById('rs-hint').textContent = runHint(s);
+    }
     function setSending(on) {
       state.isSending = on;
-      const b = els.sendBtn;
-      b.innerHTML = on ? '<i class="fa-solid fa-stop"></i>' : '<i class="fa-solid fa-paper-plane"></i>';
-      b.title = on ? '停止回應 (Esc)' : '送出 (Enter)';
-      b.setAttribute('aria-label', on ? '停止回應' : '送出');
-      b.classList.toggle('bg-red-500', on); b.classList.toggle('hover:bg-red-600', on);
-      b.classList.toggle('bg-primary-600', !on); b.classList.toggle('hover:bg-primary-700', !on);
+      const b = els.sendBtn, bar = document.getElementById('run-status');
+      b.innerHTML = on ? '<i class="fa-solid fa-circle-notch fa-spin"></i>' : '<i class="fa-solid fa-paper-plane"></i>';
+      b.disabled = on;
+      b.title = on ? '處理中…' : '送出 (Enter)';
+      b.setAttribute('aria-label', on ? '處理中' : '送出');
+      els.userInput.placeholder = on ? 'Agent 處理中…可先輸入下一則，待回覆完成後再送出' : SEND_PH_DEFAULT;
+      clearInterval(runUi.timer); runUi.timer = null;
+      if (on) {
+        runUi.t0 = Date.now(); if (bar) { bar.dataset.mode = ''; bar.classList.remove('hidden'); bar.classList.add('flex'); }
+        renderRunStatus(); runUi.timer = setInterval(renderRunStatus, 1000);
+      } else if (bar) { bar.classList.add('hidden'); bar.classList.remove('flex'); bar.dataset.mode = ''; bar.innerHTML = ''; }
     }
-    function stopGeneration() { if (state.abortCtrl) state.abortCtrl.abort(); }
-    function appendSystemNote(text) {
+    window.addEventListener('beforeunload', (e) => { if (state.isSending) { e.preventDefault(); e.returnValue = ''; } });
+    function appendSystemNote(text, action) {
       const d = document.createElement('div');
       d.className = 'w-full mb-6 text-center text-xs text-slate-400 dark:text-slate-500';
-      d.textContent = text;
+      d.appendChild(document.createTextNode(text));
+      if (action) {
+        const a = document.createElement('button'); a.type = 'button'; a.textContent = action.label;
+        a.className = 'ml-2 underline hover:no-underline text-primary-600 dark:text-primary-400';
+        a.onclick = () => action.fn(a); d.appendChild(a);
+      }
       els.chatWindow.appendChild(d); scrollToBottom();
     }
 
@@ -1644,7 +1674,7 @@
       dlg.showModal();
     }
     function reaskInline() {
-      if (state.isSending) return showToast('正在回應中，請稍候', 'info');
+      if (state.isSending) return showToast('Agent 仍在處理上一則訊息，請稍候', 'info');
       state.forceReport = true;
       els.userInput.value = '請把上一份報表改用「頁內報表」方式呈現：不要產生任何檔案或 HTML，直接依同一份資料與剛才的分析結果，在回覆中輸出 dashboard JSON。';
       sendMessage();
@@ -1748,7 +1778,7 @@
     function showThinking() {
       const id = 'thinking-' + Date.now();
       const div = document.createElement('div'); div.id = id; div.className = 'flex w-full mb-6 justify-start';
-      div.innerHTML = `<div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl rounded-tl-sm px-5 py-4 shadow-sm flex items-center gap-3"><div class="text-sm text-slate-500">思考中</div><div class="typing flex gap-1"><div class="dot w-1.5 h-1.5 bg-slate-400 rounded-full"></div><div class="dot w-1.5 h-1.5 bg-slate-400 rounded-full"></div><div class="dot w-1.5 h-1.5 bg-slate-400 rounded-full"></div></div></div>`;
+      div.innerHTML = `<div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl rounded-tl-sm px-5 py-4 shadow-sm flex items-center gap-3"><div class="text-sm text-slate-500">思考中 <span class="rs-t tabular-nums"></span></div><div class="typing flex gap-1"><div class="dot w-1.5 h-1.5 bg-slate-400 rounded-full"></div><div class="dot w-1.5 h-1.5 bg-slate-400 rounded-full"></div><div class="dot w-1.5 h-1.5 bg-slate-400 rounded-full"></div></div></div>`;
       els.chatWindow.appendChild(div); scrollToBottom(); return id;
     }
     function removeThinking(id) { document.getElementById(id)?.remove(); }
@@ -1815,7 +1845,7 @@
         const shouldSend = getSendMode() === 'mod' ? (e.metaKey || e.ctrlKey) : !e.shiftKey;
         if (shouldSend) { e.preventDefault(); if (!e.repeat) sendMessage(); }
       } setTimeout(() => { els.userInput.style.height = 'auto'; els.userInput.style.height = Math.min(els.userInput.scrollHeight, 160) + 'px'; }, 0); });
-    els.sendBtn.addEventListener('click', () => state.isSending ? stopGeneration() : sendMessage());
+    els.sendBtn.addEventListener('click', () => { if (!state.isSending) sendMessage(); });
     const toggleFileDrawer = (show) => { if (show) { els.fileDrawer.root.classList.remove('hidden'); loadFileLibrary(); setTimeout(() => els.fileDrawer.panel.classList.remove('translate-x-full'), 10); } else { els.fileDrawer.panel.classList.add('translate-x-full'); setTimeout(() => els.fileDrawer.root.classList.add('hidden'), 500); } };
     els.fileDrawer.trigger.addEventListener('click', () => toggleFileDrawer(true)); els.fileDrawer.close.addEventListener('click', () => toggleFileDrawer(false)); els.fileDrawer.backdrop.addEventListener('click', () => toggleFileDrawer(false)); els.fileDrawer.refresh.addEventListener('click', loadFileLibrary); els.fileDrawer.upload.addEventListener('change', (e) => { if(e.target.files[0]) uploadFile(e.target.files[0]); e.target.value = ''; });
     els.fileDrawer.list.addEventListener('click', async (e) => {
@@ -1863,7 +1893,7 @@
     tempToggle.checked = isTempUpload();
     tempToggle.addEventListener('change', () => { try { localStorage.setItem('tempUpload', tempToggle.checked); } catch (e) {} });
     els.userInput.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape') { if (state.isSending) stopGeneration(); else if (state.editing) cancelEdit(); }
+      if (e.key === 'Escape') { if (state.editing) cancelEdit(); }
       else if (e.key === 'ArrowUp' && !els.userInput.value && state.lastUserText && !state.isSending) { e.preventDefault(); startEdit(state.lastUserText); }
     });
 
