@@ -443,6 +443,7 @@
               <button id="camera-btn" type="button" class="p-3 text-slate-500 hover:text-primary-600 dark:text-slate-400 self-end transition-colors" title="拍照並附加" aria-label="拍照並附加"><i class="fa-solid fa-camera"></i></button>
               <input type="file" id="camera-input" accept="image/*" capture="environment" class="hidden" />
               <button id="report-btn" type="button" class="p-3 text-slate-500 hover:text-primary-600 dark:text-slate-400 self-end transition-colors" title="報表模式：要求 agent 以儀表板格式回覆，前端自動排版" aria-label="報表模式" aria-pressed="false"><i class="fa-solid fa-chart-line"></i></button>
+              <button id="mention-btn" type="button" class="p-3 text-slate-500 hover:text-primary-600 dark:text-slate-400 self-end transition-colors" title="呼叫其他 Agent 給意見（@）" aria-label="呼叫其他 Agent"><i class="fa-solid fa-at"></i></button>
               <textarea id="user-input" rows="1" class="flex-1 bg-transparent border-none focus:ring-0 text-slate-800 dark:text-slate-100 placeholder-slate-400 resize-none py-3 px-2 max-h-40" placeholder="輸入訊息... (Shift+Enter 換行)"></textarea>
               <button id="send-btn" class="p-3 bg-primary-600 text-white rounded-xl shadow-md hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all active:scale-95 self-end">
                 <i class="fa-solid fa-paper-plane"></i>
@@ -627,21 +628,29 @@
             <textarea id="report-instr-input" rows="9" spellcheck="false" class="w-full p-3 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none font-mono text-xs"></textarea>
             <button id="report-instr-reset" type="button" class="mt-1 text-xs underline text-slate-500 hover:text-primary-600">還原預設指令</button>
           </div>
-          <div>
-            <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Agent 名單（在輸入框打 <code>@</code> 可呼叫其他 agent 給意見）</label>
-            <p class="text-xs text-slate-500 mb-2">名稱不可含空白；Assistant ID 向平台取得（SBX／PRD 的 ID 不同）；變更會即時儲存在此瀏覽器。</p>
-            <div id="roster-list" class="space-y-2"></div>
-            <button id="roster-add" type="button" class="mt-2 text-xs underline text-slate-500 hover:text-primary-600">＋ 新增 Agent</button>
-          </div>
           <div class="flex gap-3 pt-2">
             <button onclick="switchView('chat')" class="flex-1 px-4 py-3 border border-slate-300 dark:border-slate-600 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700 font-medium transition-colors">取消</button>
             <button id="save-settings-btn" class="flex-1 px-4 py-3 bg-primary-600 hover:bg-primary-700 text-white rounded-xl font-medium shadow-lg shadow-primary-500/30 transition-all active:scale-95">儲存並連線</button>
           </div>
         </div>
 
+        <div id="roster-card" class="w-full max-w-2xl mt-6 bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-700 p-6 space-y-4">
+          <div class="flex items-start justify-between gap-3">
+            <div class="min-w-0">
+              <h3 class="font-semibold text-slate-800 dark:text-slate-100">Agent 名單 <span id="roster-count" class="ml-1 px-2 py-0.5 text-xs font-medium rounded-full bg-primary-50 dark:bg-slate-700 text-primary-700 dark:text-primary-300"></span></h3>
+              <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">在輸入框打 <code>@</code>（或按輸入框的 <i class="fa-solid fa-at"></i> 鈕）呼叫其他 agent，針對你引用的段落給意見。數量不限，可重複使用同一個 Assistant ID（例如搭配不同角色說明）；同名時 <code>@名稱</code> 會同時呼叫全部。設定即時儲存在此瀏覽器，不需按下方「儲存並連線」。</p>
+            </div>
+            <button id="roster-add-top" type="button" class="shrink-0 px-3 py-2 text-sm font-medium rounded-lg bg-primary-600 hover:bg-primary-700 text-white shadow"><i class="fa-solid fa-plus mr-1"></i>新增 Agent</button>
+          </div>
+          <div id="roster-list" class="space-y-3"></div>
+          <button id="roster-add" type="button" class="w-full py-3 text-sm font-medium rounded-xl border-2 border-dashed border-slate-300 dark:border-slate-600 text-slate-500 dark:text-slate-300 hover:border-primary-500 hover:text-primary-600 transition-colors"><i class="fa-solid fa-plus mr-1.5"></i>新增 Agent</button>
+        </div>
+
         <div id="changelog" class="w-full max-w-lg mt-6 mb-10 px-2 text-sm text-slate-600 dark:text-slate-300">
-          <h3 class="font-semibold text-slate-800 dark:text-slate-100 mb-2">版本紀錄 <span class="text-xs font-normal text-slate-400">目前版本 v14.3</span></h3>
+          <h3 class="font-semibold text-slate-800 dark:text-slate-100 mb-2">版本紀錄 <span class="text-xs font-normal text-slate-400">目前版本 v14.4</span></h3>
           <div class="space-y-3">
+            <div><div class="font-medium text-slate-700 dark:text-slate-200">v14.4 <span class="text-xs text-slate-400">2026-10-11</span></div>
+              <ul class="list-disc pl-5 space-y-0.5"><li>Agent 名單改為設定頁獨立區塊，醒目的「＋ 新增 Agent」（上下各一個）可無限新增；每項可「複製」「啟用／停用」，允許重複的 Assistant ID 與同名（同名時 <code>@名稱</code> 同時呼叫全部，回覆卡標為「名稱 #1／#2」）</li><li>輸入框新增 <b>@</b> 鈕，選單未設定時可直接跳到設定頁新增</li></ul></div>
             <div><div class="font-medium text-slate-700 dark:text-slate-200">v14.3 <span class="text-xs text-slate-400">2026-10-11</span></div>
               <ul class="list-disc pl-5 space-y-0.5"><li><b>選段落追問（可多選）</b>：助理訊息的「❝」鈕進入選取模式逐段勾選（段落、清單項、表格列、儀表板 KPI／警示／圖表皆可），或直接框選文字按「引用所選文字」；選取內容集中在輸入框上方的引用區，送出時一併帶給 agent，訊息中以可展開的引用卡呈現（重新載入歷史也會還原）</li><li><b>@agent 協作</b>：設定頁新增「Agent 名單」（每個 agent 可各自指定環境 SBX／PRD／自訂 URL 與獨立 API Key，並可測試連線）；輸入框打 <code>@</code> 選擇其他 agent，它會針對你引用的段落（未引用則為上一則回覆）給意見，意見以卡片顯示在同一對話中；按「帶回主對話」後，意見會附在下一則訊息送給主 agent，主 agent 即可評估並修正（歷史載入時也會還原為意見卡）</li></ul></div>
             <div><div class="font-medium text-slate-700 dark:text-slate-200">v14.2 <span class="text-xs text-slate-400">2026-10-07</span></div>
@@ -1918,15 +1927,29 @@
     })();
 
     // ---- Agent 名單（設定頁）----
-    function rosterRaw() { try { const a = JSON.parse(localStorage.getItem('agentRoster') || '[]'); return Array.isArray(a) ? a : []; } catch (e) { return []; } }
+    function newUid() { return 'ag' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6); }
+    function rosterRaw() {
+      try {
+        const a = JSON.parse(localStorage.getItem('agentRoster') || '[]'); if (!Array.isArray(a)) return [];
+        let dirty = false; a.forEach(r => { if (r && !r.uid) { r.uid = newUid(); dirty = true; } });
+        if (dirty) rosterSave(a);
+        return a;
+      } catch (e) { return []; }
+    }
+    function rosterSave(list) { try { localStorage.setItem('agentRoster', JSON.stringify(list)); } catch (e) {} }
     const AGENT_ENVS = { sbx: 'https://rtgapp.profetai.com:4231/public/kits/openai', prd: 'https://rtgapp.profetai.com:4234/public/kits/openai' };
     const AGENT_ENV_LABEL = { sbx: 'SBX', prd: 'PRD', custom: '自訂' };
+    function rosterEntry(r) {
+      const env = r.env || 'main';
+      const base = env === 'main' ? '' : env === 'custom' ? String(r.custom || '').trim().replace(/\/+$/, '') : AGENT_ENVS[env] || '';
+      return { uid: r.uid, name: String(r.name || '').replace(/[\s@]/g, ''), id: String(r.id || '').trim(), instr: String(r.instr || ''), env, base, key: String(r.key || '').trim(), label: '' };
+    }
+    // 只取「已啟用且名稱／ID 皆有填」的項目；同名者標成「名稱 #1／#2…」以便區分
     function rosterGet() {
-      return rosterRaw().map(r => {
-        const env = r.env || 'main';
-        const base = env === 'main' ? '' : env === 'custom' ? String(r.custom || '').trim().replace(/\/+$/, '') : AGENT_ENVS[env] || '';
-        return { name: String(r.name || '').replace(/[\s@]/g, ''), id: String(r.id || '').trim(), instr: String(r.instr || ''), env, base, key: String(r.key || '').trim() };
-      }).filter(r => r.name && r.id);
+      const list = rosterRaw().filter(r => r && !r.off).map(rosterEntry).filter(r => r.name && r.id);
+      const cnt = {}, seen = {}; list.forEach(r => { cnt[r.name] = (cnt[r.name] || 0) + 1; });
+      list.forEach(r => { seen[r.name] = (seen[r.name] || 0) + 1; r.label = cnt[r.name] > 1 ? r.name + ' #' + seen[r.name] : r.name; });
+      return list;
     }
     // 其他 agent 可使用不同環境／不同 API Key；兩者都未設定時沿用主設定（含中繼模式）
     async function agentApiCall(ag, path, method, body) {
@@ -1940,44 +1963,68 @@
       return await res.json();
     }
     const agentTag = (ag) => ag.env && ag.env !== 'main' ? AGENT_ENV_LABEL[ag.env] : '';
-    function rosterSave(list) { try { localStorage.setItem('agentRoster', JSON.stringify(list)); } catch (e) {} }
     function initRosterUi() {
       const box = document.getElementById('roster-list'); if (!box) return;
       let rows = rosterRaw();
-      const persist = () => rosterSave(rows);
-      const cls = 'w-full p-2 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-md text-xs outline-none focus:ring-2 focus:ring-primary-500';
-      const draw = () => {
+      const cls = 'w-full p-2 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-md text-xs outline-none focus:ring-2 focus:ring-primary-500';
+      const updateCount = () => { const c = document.getElementById('roster-count'); if (c) c.textContent = rows.length ? rows.length + ' 個' : '尚無'; };
+      const persist = () => { rosterSave(rows); updateCount(); };
+      const draw = (focusIdx) => {
         box.innerHTML = '';
-        if (!rows.length) { const p = document.createElement('div'); p.className = 'text-xs text-slate-400'; p.textContent = '尚未新增。可用同一個 Assistant ID 搭配不同「角色說明」，也可指定不同環境或不同 API Key 的 agent。'; box.appendChild(p); }
+        updateCount();
+        if (!rows.length) {
+          const p = document.createElement('div'); p.className = 'text-sm text-slate-400 text-center py-4 border border-dashed border-slate-300 dark:border-slate-600 rounded-xl';
+          p.textContent = '尚未新增 Agent。按「新增 Agent」開始；同一個 Assistant ID 可重複新增，並搭配不同角色說明。'; box.appendChild(p);
+        }
+        const warns = [];
+        const refreshWarns = () => {   // 就地更新「同名」提示，不重繪（避免輸入中途失去焦點）
+          const cnt = {}; rows.forEach(r => { const n = String(r.name || '').replace(/[\s@]/g, ''); if (n) cnt[n] = (cnt[n] || 0) + 1; });
+          warns.forEach(w => { const n = String(w.r.name || '').replace(/[\s@]/g, ''); w.el.textContent = (n && cnt[n] > 1) ? '同名 ' + cnt[n] + ' 個：@' + n + ' 會同時呼叫全部' : ''; });
+        };
         rows.forEach((r, i) => {
-          const d = document.createElement('div'); d.className = 'p-2.5 rounded-lg border border-slate-200 dark:border-slate-700 space-y-1.5';
+          const d = document.createElement('div'); d.className = 'p-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/40 space-y-2' + (r.off ? ' opacity-60' : '');
           d.innerHTML =
-            '<div class="flex gap-2"><input data-k="name" class="' + cls + ' !w-28 shrink-0" placeholder="名稱（如 審查員）" /><input data-k="id" class="' + cls + ' font-mono" placeholder="Assistant ID" /><button type="button" data-act="del" class="px-2 text-slate-400 hover:text-red-500" aria-label="刪除"><i class="fa-solid fa-trash"></i></button></div>' +
+            '<div class="flex items-center gap-2"><span class="text-xs font-semibold text-slate-400 w-6">#' + (i + 1) + '</span>' +
+            '<label class="flex items-center gap-1.5 text-xs text-slate-600 dark:text-slate-300 cursor-pointer"><input type="checkbox" data-k="on" /> 啟用</label>' +
+            '<span data-role="dupwarn" class="flex-1 text-xs text-amber-600 dark:text-amber-400 truncate"></span>' +
+            '<button type="button" data-act="dup" class="px-2 py-1 text-xs text-slate-500 hover:text-primary-600" title="複製這個設定（新增一份重複的）"><i class="fa-regular fa-clone mr-1"></i>複製</button>' +
+            '<button type="button" data-act="del" class="px-2 py-1 text-xs text-slate-400 hover:text-red-500" aria-label="刪除"><i class="fa-solid fa-trash"></i></button></div>' +
+            '<div class="flex gap-2"><input data-k="name" class="' + cls + ' !w-32 shrink-0" placeholder="名稱（如 審查員）" /><input data-k="id" class="' + cls + ' font-mono" placeholder="Assistant ID" /></div>' +
             '<div class="flex gap-2"><select data-k="env" class="' + cls + ' !w-auto shrink-0"><option value="main">環境：同主設定</option><option value="sbx">環境：Sandbox (SBX)</option><option value="prd">環境：Production (PRD)</option><option value="custom">環境：自訂 URL…</option></select><input data-k="custom" class="' + cls + ' font-mono" placeholder="https://…/public/kits/openai" /></div>' +
             '<input data-k="key" type="password" autocomplete="off" class="' + cls + ' font-mono" placeholder="API Key（留空＝使用主設定的 Key）" />' +
             '<input data-k="instr" class="' + cls + '" placeholder="角色說明（選填，會附加在每次呼叫前，例如：你是資深審查員，請指出風險與遺漏）" />' +
-            '<div class="flex items-center gap-2"><button type="button" data-act="test" class="px-2.5 py-1 text-xs rounded-md border border-slate-300 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-700">測試連線</button><span data-role="tst" class="text-xs text-slate-500 min-w-0"></span></div>';
+            '<div class="flex items-center gap-2"><button type="button" data-act="test" class="px-2.5 py-1 text-xs rounded-md border border-slate-300 dark:border-slate-600 hover:bg-white dark:hover:bg-slate-700">測試連線</button><span data-role="tst" class="text-xs text-slate-500 min-w-0"></span></div>';
           const custom = d.querySelector('[data-k="custom"]');
           const syncCustom = () => { custom.style.display = (r.env === 'custom') ? '' : 'none'; };
+          const warn = d.querySelector('[data-role="dupwarn"]');
+          warns.push({ r, el: warn });
+          const on = d.querySelector('[data-k="on"]'); on.checked = !r.off;
+          on.addEventListener('change', () => { r.off = !on.checked; persist(); d.classList.toggle('opacity-60', !!r.off); });
           d.querySelectorAll('[data-k]').forEach(inp => {
+            if (inp.dataset.k === 'on') return;
             inp.value = r[inp.dataset.k] || (inp.dataset.k === 'env' ? 'main' : '');
-            const h = () => { r[inp.dataset.k] = inp.value; persist(); if (inp.dataset.k === 'env') syncCustom(); };
+            const h = () => { r[inp.dataset.k] = inp.value; persist(); if (inp.dataset.k === 'env') syncCustom(); if (inp.dataset.k === 'name') refreshWarns(); };
             inp.addEventListener(inp.tagName === 'SELECT' ? 'change' : 'input', h);
           });
           syncCustom();
           d.querySelector('[data-act="del"]').onclick = () => { rows.splice(i, 1); persist(); draw(); };
+          d.querySelector('[data-act="dup"]').onclick = () => { rows.splice(i + 1, 0, Object.assign({}, r, { uid: newUid() })); persist(); draw(i + 1); };
           const tst = d.querySelector('[data-role="tst"]');
           d.querySelector('[data-act="test"]').onclick = async () => {
-            const ag = rosterGet().find(x => x.name === String(r.name || '').replace(/[\s@]/g, '') && x.id === String(r.id || '').trim());
-            if (!ag) { tst.className = 'text-xs text-red-500'; tst.textContent = '請先填名稱與 Assistant ID'; return; }
+            const ag = rosterEntry(r);
+            if (!ag.name || !ag.id) { tst.className = 'text-xs text-red-500'; tst.textContent = '請先填名稱與 Assistant ID'; return; }
             tst.className = 'text-xs text-slate-500'; tst.textContent = '連線中…';
             try { await agentApiCall(ag, '/v1/threads?limit=1', 'GET'); tst.className = 'text-xs text-emerald-600'; tst.textContent = '✓ 連線與 API Key 正常（Assistant ID 會在實際呼叫時驗證）'; }
             catch (e) { tst.className = 'text-xs text-red-500'; tst.textContent = '✗ ' + e.message; }
           };
           box.appendChild(d);
+          if (i === rows.length - 1) refreshWarns();
+          if (focusIdx === i) { setTimeout(() => { d.scrollIntoView({ block: 'center', behavior: 'smooth' }); const f = d.querySelector('[data-k="name"]'); if (f) f.focus(); }, 30); }
         });
       };
-      document.getElementById('roster-add').addEventListener('click', () => { rows.push({ name: '', id: '', env: 'main', custom: '', key: '', instr: '' }); persist(); draw(); });
+      const add = () => { rows.push({ uid: newUid(), name: '', id: '', env: 'main', custom: '', key: '', instr: '' }); persist(); draw(rows.length - 1); };
+      document.getElementById('roster-add').addEventListener('click', add);
+      document.getElementById('roster-add-top').addEventListener('click', add);
       draw();
     }
     initRosterUi();
@@ -1999,19 +2046,30 @@
       const tk = mentionToken(); if (!tk) return hideMention();
       if (!mp.box) { mp.box = document.createElement('div'); mp.box.id = 'mention-pop'; els.userInput.parentElement.appendChild(mp.box); }
       const roster = rosterGet(), q = tk.q.toLowerCase();
-      mp.items = roster.filter(r => r.name.toLowerCase().includes(q));
+      const groups = []; roster.forEach(r => { let g = groups.find(x => x.name === r.name); if (!g) { g = Object.assign({}, r, { n: 0 }); groups.push(g); } g.n++; });
+      mp.items = groups.filter(g => g.name.toLowerCase().includes(q));
       mp.idx = Math.min(mp.idx, Math.max(0, mp.items.length - 1));
       mp.box.innerHTML = '';
-      if (!roster.length) { if (tk.q) return hideMention(); mp.box.innerHTML = '<div class="mh">尚未設定 Agent 名單，請到「設定」頁新增</div>'; mp.box.style.display = 'block'; return; }
+      if (!roster.length) {
+        if (tk.q) return hideMention();
+        mp.box.innerHTML = '<div class="mh">尚未設定 Agent。<a href="#" style="text-decoration:underline;color:#4f46e5">到設定頁新增</a></div>';
+        mp.box.querySelector('a').addEventListener('mousedown', (e) => { e.preventDefault(); hideMention(); switchView('settings'); setTimeout(() => { const c = document.getElementById('roster-card'); if (c) c.scrollIntoView({ block: 'center', behavior: 'smooth' }); }, 80); });
+        mp.box.style.display = 'block'; return;
+      }
       if (!mp.items.length) return hideMention();
       mp.items.forEach((r, i) => {
         const d = document.createElement('div'); d.className = 'mi' + (i === mp.idx ? ' on' : '');
-        d.innerHTML = '<span>@' + escapeHtml(r.name) + (agentTag(r) ? ' <small>[' + agentTag(r) + (r.key ? '・獨立 Key' : '') + ']</small>' : (r.key ? ' <small>[獨立 Key]</small>' : '')) + '</span><small>' + escapeHtml(r.instr ? r.instr.slice(0, 40) : r.id) + '</small>';
+        d.innerHTML = '<span>@' + escapeHtml(r.name) + (r.n > 1 ? ' <small>×' + r.n + '</small>' : '') + (agentTag(r) ? ' <small>[' + agentTag(r) + (r.key ? '・獨立 Key' : '') + ']</small>' : (r.key ? ' <small>[獨立 Key]</small>' : '')) + '</span><small>' + escapeHtml(r.instr ? r.instr.slice(0, 40) : r.id) + '</small>';
         d.addEventListener('mousedown', (e) => { e.preventDefault(); pickMention(i); });
         mp.box.appendChild(d);
       });
       mp.box.style.display = 'block';
     }
+    document.getElementById('mention-btn').addEventListener('click', () => {
+      const ta = els.userInput, pos = ta.selectionStart == null ? ta.value.length : ta.selectionStart;
+      const before = ta.value.slice(0, pos), ins = (before && !/\s$/.test(before)) ? ' @' : '@';
+      ta.value = before + ins + ta.value.slice(pos); const np = before.length + ins.length; ta.focus(); ta.setSelectionRange(np, np); autoResizeInput(); showMention();
+    });
     els.userInput.addEventListener('input', showMention);
     els.userInput.addEventListener('click', showMention);
     els.userInput.addEventListener('blur', () => setTimeout(hideMention, 120));
@@ -2030,7 +2088,7 @@
     function lastAssistantText() { const a = Array.from(els.chatWindow.querySelectorAll('[data-role="assistant"]')); const d = a[a.length - 1]; return d && d.__raw ? String(d.__raw) : ''; }
     const cardsKey = () => state.currentThreadId || '_new';
     function cardsAdd(c) { const m = readJSON('agentCards'), k = cardsKey(); (m[k] = m[k] || []).push(c); if (m[k].length > 60) m[k].shift(); writeJSON('agentCards', m); }
-    const sideKey = (ag) => ag.id + '@' + (ag.base || 'main') + ':' + ag.key.slice(-4);
+    const sideKey = (ag) => ag.uid || (ag.id + '@' + (ag.base || 'main'));
     function sideThreadGet(ag) { return (readJSON('agentSideThreads')[cardsKey()] || {})[sideKey(ag)] || ''; }
     function sideThreadSet(ag, tid) { const m = readJSON('agentSideThreads'), k = cardsKey(); (m[k] = m[k] || {})[sideKey(ag)] = tid; writeJSON('agentSideThreads', m); }
     function makeLocalAsk(text, prefixText) {
@@ -2091,22 +2149,22 @@
       setSending(true);
       try {
         await Promise.all(mentions.map(async (ag) => {
-          const think = showThinking('@' + ag.name + ' 處理中');
+          const think = showThinking('@' + ag.label + ' 處理中');
           try {
             const prompt = (ag.instr ? ag.instr.trim() + '\n\n' : '') + (ctx ? '以下是' + ctxLabel + '：\n<context>\n' + ctx + '\n</context>\n\n' : '') + '使用者的要求：' + (question || '請針對以上內容給出你的意見。');
             const payload = { model: ag.id, messages: [{ role: 'user', content: prompt }] };
             const stid = sideThreadGet(ag); if (stid) payload.thread_id = stid;
             const res = await agentApiCall(ag, '/v1/chat/completions', 'POST', payload);
-            if (res.thread_id && res.thread_id !== stid) { sideThreadSet(ag, res.thread_id); if (!ag.base && !ag.key) setThreadTitle(res.thread_id, '@' + ag.name + ' · ' + (question || '意見').slice(0, 20)); }
+            if (res.thread_id && res.thread_id !== stid) { sideThreadSet(ag, res.thread_id); if (!ag.base && !ag.key) setThreadTitle(res.thread_id, '@' + ag.label + ' · ' + (question || '意見').slice(0, 20)); }
             const ch = res.choices && res.choices[0] && res.choices[0].message;
             const reply = ch ? (Array.isArray(ch.content) ? ch.content.map(c => c.text ? c.text.value : '').join('\n') : String(ch.content || '')) : '';
             removeThinking(think);
-            const card = { name: ag.name, env: agentTag(ag), ask: typedText, prefix: prefixText, text: reply || '（沒有內容）', after: afterCount, ts: Date.now() };
+            const card = { name: ag.label, env: agentTag(ag), ask: typedText, prefix: prefixText, text: reply || '（沒有內容）', after: afterCount, ts: Date.now() };
             cardsAdd(card);
             els.chatWindow.appendChild(buildAgentCard(card)); revealTop(els.chatWindow.lastElementChild);
           } catch (err) {
             removeThinking(think);
-            const el = buildAgentCard({ name: ag.name, text: '❌ 呼叫失敗：' + err.message });
+            const el = buildAgentCard({ name: ag.label, text: '❌ 呼叫失敗：' + err.message });
             el.querySelector('.agent-actions').remove(); els.chatWindow.appendChild(el);
           }
         }));
