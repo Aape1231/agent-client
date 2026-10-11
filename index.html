@@ -315,6 +315,11 @@
     .qm-bar { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 10px; padding: 6px 10px; border-radius: 8px; font-size: 12px; background: rgba(99,102,241,.1); color: #4338ca; }
     html.dark .qm-bar { color: #c7d2fe; background: rgba(99,102,241,.2); }
     .qm-bar button { text-decoration: underline; flex: none; }
+    .qm-bar .qm-acts { display: flex; gap: 12px; flex: none; }
+    .qm .qb-mq { background: rgba(99,102,241,.22) !important; outline: 1.5px solid rgba(99,102,241,.7); }
+    .qm-dragging, .qm-dragging * { user-select: none !important; -webkit-user-select: none !important; cursor: crosshair !important; }
+    #qmq-rect { position: fixed; z-index: 65; display: none; pointer-events: none; border: 1.5px solid #6366f1; background: rgba(99,102,241,.12); border-radius: 4px; }
+    #qmq-hud { position: fixed; z-index: 66; display: none; pointer-events: none; padding: 3px 9px; border-radius: 999px; font-size: 11.5px; color: #fff; background: #4f46e5; box-shadow: 0 4px 12px rgba(0,0,0,.25); }
     .qt-list { display: flex; flex-direction: column; gap: 6px; margin-bottom: 10px; }
     .qt-item { display: flex; gap: 8px; align-items: flex-start; background: rgba(255,255,255,.14); border-left: 3px solid rgba(255,255,255,.65); border-radius: 8px; padding: 6px 10px; font-size: 12.5px; cursor: pointer; text-align: left; }
     .qt-item.op { border-left-color: #fde68a; }
@@ -327,8 +332,13 @@
     .qtray-n.op { color: #b45309; } html.dark .qtray-n.op { color: #fcd34d; }
     .qtray-t { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; opacity: .85; }
     .qtray-i button { flex: none; opacity: .6; } .qtray-i button:hover { opacity: 1; }
-    #qsel-btn { position: fixed; z-index: 70; display: none; padding: 6px 12px; border-radius: 10px; font-size: 12px; font-weight: 500; color: #fff; background: #4f46e5; box-shadow: 0 6px 18px rgba(0,0,0,.25); cursor: pointer; }
-    #qsel-btn:hover { background: #4338ca; }
+    #qsel-bar { position: fixed; z-index: 70; display: none; border-radius: 10px; overflow: hidden; box-shadow: 0 6px 18px rgba(0,0,0,.28); background: #4f46e5; }
+    #qsel-bar button { padding: 6px 12px; font-size: 12px; font-weight: 500; color: #fff; cursor: pointer; white-space: nowrap; }
+    #qsel-bar button:hover { background: #4338ca; }
+    #qsel-bar button + button { border-left: 1px solid rgba(255,255,255,.3); }
+    ::highlight(quoted) { background-color: rgba(250, 204, 21, .45); }
+    html.dark ::highlight(quoted) { background-color: rgba(250, 204, 21, .35); }
+    .qtray-hint { font-weight: 400; opacity: .75; }
     #mention-pop { position: absolute; left: 0; bottom: calc(100% + 8px); z-index: 40; min-width: 240px; max-width: 100%; max-height: 220px; overflow-y: auto; border-radius: 12px; background: #fff; border: 1px solid #e2e8f0; box-shadow: 0 10px 30px rgba(0,0,0,.15); padding: 4px; display: none; }
     html.dark #mention-pop { background: #1e293b; border-color: #475569; }
     #mention-pop .mi { display: flex; flex-direction: column; padding: 6px 10px; border-radius: 8px; cursor: pointer; font-size: 13px; }
@@ -647,8 +657,12 @@
         </div>
 
         <div id="changelog" class="w-full max-w-lg mt-6 mb-10 px-2 text-sm text-slate-600 dark:text-slate-300">
-          <h3 class="font-semibold text-slate-800 dark:text-slate-100 mb-2">版本紀錄 <span class="text-xs font-normal text-slate-400">目前版本 v14.4</span></h3>
+          <h3 class="font-semibold text-slate-800 dark:text-slate-100 mb-2">版本紀錄 <span class="text-xs font-normal text-slate-400">目前版本 v14.6</span></h3>
           <div class="space-y-3">
+            <div><div class="font-medium text-slate-700 dark:text-slate-200">v14.6 <span class="text-xs text-slate-400">2026-10-11</span></div>
+              <ul class="list-disc pl-5 space-y-0.5"><li><b>ChatGPT 式引用</b>：在助理回覆中直接用滑鼠選一句話（不需進入選取模式），放開滑鼠即出現「引用」「直接問 Agent」；被引用的文字會以黃色標示，移除引用即取消標示</li><li><b>空白提問由 Agent 判斷</b>：有引用但輸入框留空時，會告訴 Agent「使用者未附問題，請自行判斷最有幫助的回應並先說明判斷」，對話中顯示為「未附問題，由 Agent 自行判斷」；「直接問 Agent」一鍵引用並送出</li></ul></div>
+            <div><div class="font-medium text-slate-700 dark:text-slate-200">v14.5 <span class="text-xs text-slate-400">2026-10-11</span></div>
+              <ul class="list-disc pl-5 space-y-0.5"><li><b>滑鼠拖曳框選</b>：在「選取段落」模式下，按住滑鼠左鍵拖出矩形，碰到的段落／清單項／表格列／KPI 一次全部選取；可跨訊息、靠近上下緣會自動捲動，Esc 取消。框到的全是已選項目時，會改為取消選取</li><li>Shift＋點選可選取兩點之間的整個範圍；選取列新增「全選」「清除」（以單則訊息為單位）</li><li>引用上限由 12 段提高為 30 段</li></ul></div>
             <div><div class="font-medium text-slate-700 dark:text-slate-200">v14.4 <span class="text-xs text-slate-400">2026-10-11</span></div>
               <ul class="list-disc pl-5 space-y-0.5"><li>Agent 名單改為設定頁獨立區塊，醒目的「＋ 新增 Agent」（上下各一個）可無限新增；每項可「複製」「啟用／停用」，允許重複的 Assistant ID 與同名（同名時 <code>@名稱</code> 同時呼叫全部，回覆卡標為「名稱 #1／#2」）</li><li>輸入框新增 <b>@</b> 鈕，選單未設定時可直接跳到設定頁新增</li></ul></div>
             <div><div class="font-medium text-slate-700 dark:text-slate-200">v14.3 <span class="text-xs text-slate-400">2026-10-11</span></div>
@@ -1766,9 +1780,9 @@
 
     // ===== v14.3: 選取段落引用 + @agent 協作 =====
     const QUOTE_INSTR = '以下是我從先前回覆中選取的段落，請針對這些內容回答我的問題：';
-    const QUOTE_DEFAULT_Q = '請針對以上引用的段落，說明重點與建議。';
+    const QUOTE_DEFAULT_Q = '（我沒有附上具體問題。請你依據以上引用的內容，自行判斷我最可能想知道什麼，直接給出最有幫助的回應——例如補充說明、查核或指出疑點、提出延伸建議。回答的第一句請先簡短說明你的判斷。）';
     const OPINION_DEFAULT_Q = '請評估以上意見：說明你是否同意、哪些應採納，並據此修正或補充你先前的回覆。';
-    const QUOTE_MAX_ITEMS = 12, QUOTE_MAX_CHARS = 1200, OPINION_MAX = 8000, CTX_MAX = 8000;
+    const QUOTE_MAX_ITEMS = 30, QUOTE_MAX_CHARS = 1200, OPINION_MAX = 8000, CTX_MAX = 8000;
     Object.assign(state, { quotes: [], opinions: [] });
 
     function qtNorm(s, keepNl) {
@@ -1819,7 +1833,7 @@
       tray.classList.toggle('hidden', !n); tray.classList.toggle('flex', !!n);
       if (!n) return;
       const head = document.createElement('div'); head.className = 'flex items-center justify-between gap-2 w-full';
-      head.innerHTML = '<span class="font-medium"><i class="fa-solid fa-quote-left mr-1.5"></i>將隨下一則訊息帶給 Agent（' + n + '）</span><button type="button" class="underline hover:no-underline shrink-0">全部清除</button>';
+      head.innerHTML = '<span class="font-medium"><i class="fa-solid fa-quote-left mr-1.5"></i>將隨下一則訊息帶給 Agent（' + n + '）' + ((state.quotes.length && !state.opinions.length) ? '<span class="qtray-hint ml-2">輸入框留空直接送出＝由 Agent 自行判斷</span>' : '') + '</span><button type="button" class="underline hover:no-underline shrink-0">全部清除</button>';
       head.querySelector('button').onclick = clearQuotes;
       tray.appendChild(head);
       const list = document.createElement('div'); list.className = 'flex flex-col w-full max-h-28 overflow-y-auto';
@@ -1827,16 +1841,20 @@
       state.quotes.forEach((q, i) => list.appendChild(trayItem(String(i + 1), q.text, false, () => removeQuote(i))));
       tray.appendChild(list);
     }
-    function addQuote(text, el) {
+    const qHL = (window.CSS && CSS.highlights && window.Highlight) ? new Highlight() : null;
+    if (qHL) { try { CSS.highlights.set('quoted', qHL); } catch (e) {} }
+    function qUnhl(q) { if (qHL && q && q.rng) { try { qHL.delete(q.rng); } catch (e) {} } }
+    function addQuote(text, el, rng) {
       text = String(text || '').trim(); if (!text) return false;
       if (state.quotes.some(q => q.text === text)) { showToast('這段已在引用區', 'info'); return false; }
       if (state.quotes.length >= QUOTE_MAX_ITEMS) { showToast('最多引用 ' + QUOTE_MAX_ITEMS + ' 段', 'info'); return false; }
-      state.quotes.push({ text, el: el || null }); if (el) el.classList.add('qb-sel');
+      state.quotes.push({ text, el: el || null, rng: rng || null }); if (el) el.classList.add('qb-sel');
+      if (rng && qHL) { try { qHL.add(rng); } catch (e) {} }
       renderQuoteTray(); return true;
     }
-    function removeQuote(i) { const q = state.quotes[i]; if (q && q.el) q.el.classList.remove('qb-sel'); state.quotes.splice(i, 1); renderQuoteTray(); }
+    function removeQuote(i) { const q = state.quotes[i]; if (q && q.el) q.el.classList.remove('qb-sel'); qUnhl(q); state.quotes.splice(i, 1); renderQuoteTray(); }
     function clearQuotes() {
-      state.quotes.forEach(q => { if (q.el) q.el.classList.remove('qb-sel'); });
+      state.quotes.forEach(q => { if (q.el) q.el.classList.remove('qb-sel'); qUnhl(q); });
       state.quotes = []; state.opinions = [];
       document.querySelectorAll('.qm').forEach(exitQuoteMode);
       renderQuoteTray();
@@ -1881,8 +1899,10 @@
         if (state.quotes.some(q => q.el === b.el)) b.el.classList.add('qb-sel');
       });
       const bar = document.createElement('div'); bar.className = 'qm-bar';
-      bar.innerHTML = '<span><i class="fa-solid fa-quote-left mr-1.5"></i>點選要引用的段落（可多選，也可跨訊息）</span><button type="button">完成</button>';
-      bar.querySelector('button').onclick = () => exitQuoteMode(msgDiv);
+      bar.innerHTML = '<span><i class="fa-solid fa-quote-left mr-1.5"></i>拖曳滑鼠框選區域，或點選段落（Shift＋點選可選範圍；可跨訊息）</span><span class="qm-acts"><button type="button" data-a="all">全選</button><button type="button" data-a="none">清除</button><button type="button" data-a="done">完成</button></span>';
+      bar.querySelector('[data-a="done"]').onclick = () => exitQuoteMode(msgDiv);
+      bar.querySelector('[data-a="all"]').onclick = () => qmSelectMany(Array.from(msgDiv.querySelectorAll('.qb-on')), true);
+      bar.querySelector('[data-a="none"]').onclick = () => qmSelectMany(Array.from(msgDiv.querySelectorAll('.qb-on')), false);
       md.parentNode.insertBefore(bar, md);
     }
     function exitQuoteMode(msgDiv) {
@@ -1891,38 +1911,159 @@
       msgDiv.querySelectorAll('.qm-bar').forEach(b => b.remove());
     }
     function toggleQuoteMode(msgDiv) { if (msgDiv.classList.contains('qm')) exitQuoteMode(msgDiv); else enterQuoteMode(msgDiv); }
+    // 批次加入／移除（框選、全選、Shift 範圍共用）；回傳 {added, removed}
+    function qmSelectMany(elsList, on) {
+      let added = 0, removed = 0, capped = false;
+      elsList.forEach(el => {
+        const i = state.quotes.findIndex(q => q.el === el);
+        if (on) {
+          if (i >= 0) return;
+          if (state.quotes.length >= QUOTE_MAX_ITEMS) { capped = true; return; }
+          const t = qbText(el); if (!t) return;
+          if (state.quotes.some(q => q.text === t)) return;
+          state.quotes.push({ text: t, el }); el.classList.add('qb-sel'); added++;
+        } else if (i >= 0) { state.quotes[i].el.classList.remove('qb-sel'); qUnhl(state.quotes[i]); state.quotes.splice(i, 1); removed++; }
+      });
+      renderQuoteTray();
+      if (capped) showToast('最多引用 ' + QUOTE_MAX_ITEMS + ' 段，其餘未加入', 'info');
+      return { added, removed };
+    }
+    let qmSuppressUntil = 0, qmLastEl = null;
     els.chatWindow.addEventListener('click', (e) => {
+      if (Date.now() < qmSuppressUntil) { e.stopPropagation(); return; }
       const chip = e.target.closest('.qt-item'); if (chip) { chip.classList.toggle('open'); return; }
       const el = e.target.closest('.qm .qb-on'); if (!el) return;
       if (e.target.closest('a,button,input,select,textarea')) return;
+      if (e.shiftKey && qmLastEl && qmLastEl !== el && qmLastEl.isConnected) {
+        const all = Array.from(els.chatWindow.querySelectorAll('.qm .qb-on'));
+        const a = all.indexOf(qmLastEl), b = all.indexOf(el);
+        if (a >= 0 && b >= 0) {
+          const sel0 = window.getSelection(); if (sel0) sel0.removeAllRanges();
+          qmSelectMany(all.slice(Math.min(a, b), Math.max(a, b) + 1), true); qmLastEl = el; return;
+        }
+      }
       const sel = window.getSelection(); if (sel && !sel.isCollapsed && sel.toString().trim()) return;
       const i = state.quotes.findIndex(q => q.el === el);
       if (i >= 0) removeQuote(i); else addQuote(qbText(el), el);
+      qmLastEl = el;
     });
 
-    // ---- 選取文字 → 浮動「引用」鈕 ----
-    (function initSelectionQuote() {
-      const btn = document.createElement('button'); btn.id = 'qsel-btn'; btn.type = 'button'; btn.innerHTML = '<i class="fa-solid fa-quote-left mr-1.5"></i>引用所選文字';
-      document.body.appendChild(btn);
-      const hide = () => { btn.style.display = 'none'; btn.dataset.text = ''; };
-      btn.addEventListener('mousedown', (e) => e.preventDefault());
-      btn.addEventListener('click', () => { const t = btn.dataset.text; if (t) addQuote(t, null); const s = window.getSelection(); if (s) s.removeAllRanges(); hide(); });
-      let tm = null;
-      document.addEventListener('selectionchange', () => {
-        clearTimeout(tm);
-        tm = setTimeout(() => {
-          const sel = window.getSelection();
-          if (!sel || sel.isCollapsed || !sel.rangeCount) return hide();
-          const r = sel.getRangeAt(0), anc = r.commonAncestorContainer;
-          const host = (anc.nodeType === 1 ? anc : anc.parentElement);
-          if (!host || !host.closest('[data-role="assistant"] .md-output, [data-role="agent"] .md-output')) return hide();
-          const txt = qtNorm(sel.toString(), true); if (txt.length < 2) return hide();
-          const rect = r.getBoundingClientRect();
-          const w = 150; let top = rect.bottom + 8; if (top > window.innerHeight - 50) top = Math.max(8, rect.top - 44);
-          btn.style.left = Math.min(Math.max(8, rect.left + rect.width / 2 - w / 2), window.innerWidth - w - 8) + 'px';
-          btn.style.top = top + 'px'; btn.dataset.text = txt; btn.style.display = 'block';
-        }, 220);
+    // ---- 選取模式：滑鼠拖曳框選（橡皮筋）----
+    (function initMarquee() {
+      const rectEl = document.createElement('div'); rectEl.id = 'qmq-rect';
+      const hud = document.createElement('div'); hud.id = 'qmq-hud';
+      document.body.append(rectEl, hud);
+      const cw = els.chatWindow;
+      let st = null; // { x0, y0c (content y), active, hit:Set, cx, cy, raf }
+      // 區塊的「自身」矩形：含巢狀清單的項目只算到子清單之前，避免框子項目時連父項一起選到
+      function ownRect(el) {
+        const r = el.getBoundingClientRect(); let bottom = r.bottom;
+        if (el.tagName === 'LI') { const n = el.querySelector(':scope > ul, :scope > ol'); if (n) bottom = Math.min(bottom, n.getBoundingClientRect().top); }
+        return { left: r.left, right: r.right, top: r.top, bottom };
+      }
+      function curRect() {
+        const cr = cw.getBoundingClientRect();
+        const y0 = st.y0c - cw.scrollTop;
+        const x1 = Math.min(Math.max(st.cx, cr.left), cr.right), y1 = Math.min(Math.max(st.cy, cr.top), cr.bottom);
+        return { left: Math.min(st.x0, x1), right: Math.max(st.x0, x1), top: Math.min(y0, y1), bottom: Math.max(y0, y1) };
+      }
+      function update() {
+        if (!st || !st.active) return;
+        const R = curRect();
+        const cr = cw.getBoundingClientRect();
+        const T = Math.max(R.top, cr.top), B = Math.min(R.bottom, cr.bottom);
+        rectEl.style.display = 'block'; rectEl.style.left = R.left + 'px'; rectEl.style.top = T + 'px';
+        rectEl.style.width = (R.right - R.left) + 'px'; rectEl.style.height = Math.max(0, B - T) + 'px';
+        const hit = new Set();
+        cw.querySelectorAll('.qm .qb-on').forEach(el => {
+          const r = ownRect(el);
+          if (r.right > R.left && r.left < R.right && r.bottom > R.top && r.top < R.bottom && r.bottom - r.top > 2) hit.add(el);
+        });
+        cw.querySelectorAll('.qb-mq').forEach(el => { if (!hit.has(el)) el.classList.remove('qb-mq'); });
+        hit.forEach(el => el.classList.add('qb-mq'));
+        st.hit = hit;
+        hud.textContent = '框選 ' + hit.size + ' 段'; hud.style.display = 'block';
+        hud.style.left = Math.min(window.innerWidth - 90, st.cx + 14) + 'px'; hud.style.top = Math.min(window.innerHeight - 30, st.cy + 14) + 'px';
+      }
+      function tick() { // 靠近上下緣自動捲動
+        if (!st || !st.active) return;
+        const cr = cw.getBoundingClientRect(), edge = 44; let dy = 0;
+        if (st.cy < cr.top + edge) dy = -Math.ceil((cr.top + edge - st.cy) / 3);
+        else if (st.cy > cr.bottom - edge) dy = Math.ceil((st.cy - (cr.bottom - edge)) / 3);
+        if (dy) { cw.scrollTop += Math.max(-28, Math.min(28, dy)); update(); }
+        st.raf = requestAnimationFrame(tick);
+      }
+      function cleanup() {
+        if (st && st.raf) cancelAnimationFrame(st.raf);
+        rectEl.style.display = 'none'; hud.style.display = 'none';
+        document.body.classList.remove('qm-dragging');
+        cw.querySelectorAll('.qb-mq').forEach(el => el.classList.remove('qb-mq'));
+        st = null;
+      }
+      cw.addEventListener('mousedown', (e) => {
+        if (e.button !== 0 || e.shiftKey || e.ctrlKey || e.metaKey || e.altKey) return;
+        if (!cw.querySelector('.qm')) return;
+        if (e.target.closest('a,button,input,select,textarea,.qm-bar,.qt-item,.agent-actions,.rp-card-h')) return;
+        const cr = cw.getBoundingClientRect(); if (e.clientX > cr.left + cw.clientWidth) return; // 捲軸
+        st = { x0: e.clientX, y0c: e.clientY + cw.scrollTop, cx: e.clientX, cy: e.clientY, active: false, hit: new Set(), raf: 0 };
       });
+      document.addEventListener('mousemove', (e) => {
+        if (!st) return;
+        st.cx = e.clientX; st.cy = e.clientY;
+        if (!st.active) {
+          if (Math.hypot(e.clientX - st.x0, (e.clientY + cw.scrollTop) - st.y0c) < 6) return;
+          st.active = true; document.body.classList.add('qm-dragging');
+          const s = window.getSelection(); if (s) s.removeAllRanges();
+          st.raf = requestAnimationFrame(tick);
+        }
+        const s = window.getSelection(); if (s && !s.isCollapsed) s.removeAllRanges();
+        update();
+      });
+      document.addEventListener('mouseup', () => {
+        if (!st) return;
+        if (!st.active) { st = null; return; }
+        const hit = Array.from(cw.querySelectorAll('.qm .qb-on')).filter(el => st.hit.has(el));
+        const allSel = hit.length && hit.every(el => state.quotes.some(q => q.el === el));
+        cleanup(); qmSuppressUntil = Date.now() + 80;
+        if (!hit.length) return;
+        const r = qmSelectMany(hit, !allSel);
+        qmLastEl = hit[hit.length - 1];
+        if (allSel) showToast('已取消 ' + r.removed + ' 段', 'info');
+      });
+      document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && st && st.active) { cleanup(); qmSuppressUntil = Date.now() + 80; } });
+      window.addEventListener('blur', () => { if (st) cleanup(); });
+    })();
+
+    // ---- 選取文字 → 浮動「引用」鈕（類似 ChatGPT：選一句話即可引用）----
+    (function initSelectionQuote() {
+      const bar = document.createElement('div'); bar.id = 'qsel-bar';
+      const btn = document.createElement('button'); btn.id = 'qsel-btn'; btn.type = 'button'; btn.innerHTML = '<i class="fa-solid fa-quote-left mr-1.5"></i>引用';
+      const ask = document.createElement('button'); ask.id = 'qsel-ask'; ask.type = 'button'; ask.innerHTML = '<i class="fa-solid fa-wand-magic-sparkles mr-1.5"></i>直接問 Agent';
+      ask.title = '引用這段並直接送出，不附問題，由 Agent 自行判斷要回應什麼';
+      bar.append(btn, ask); document.body.appendChild(bar);
+      let cur = null; // { text, rng }
+      const hide = () => { bar.style.display = 'none'; cur = null; };
+      bar.addEventListener('mousedown', (e) => e.preventDefault());
+      const take = () => { if (!cur) return false; const ok = addQuote(cur.text, null, cur.rng); const s = window.getSelection(); if (s) s.removeAllRanges(); hide(); return ok; };
+      btn.addEventListener('click', () => { take(); try { els.userInput.focus(); } catch (e) {} });
+      ask.addEventListener('click', () => { const had = !!cur; take(); if (had) sendMessage(); });
+      function evalSel() {
+        const sel = window.getSelection();
+        if (!sel || sel.isCollapsed || !sel.rangeCount) return hide();
+        const r = sel.getRangeAt(0), anc = r.commonAncestorContainer;
+        const host = (anc.nodeType === 1 ? anc : anc.parentElement);
+        if (!host || !host.closest('[data-role="assistant"] .md-output, [data-role="agent"] .md-output')) return hide();
+        if (document.body.classList.contains('qm-dragging')) return hide();
+        const txt = qtNorm(sel.toString(), true); if (txt.length < 2) return hide();
+        cur = { text: txt, rng: r.cloneRange() };
+        const rect = r.getBoundingClientRect();
+        const w = 190; let top = rect.bottom + 8; if (top > window.innerHeight - 50) top = Math.max(8, rect.top - 44);
+        bar.style.left = Math.min(Math.max(8, rect.left + rect.width / 2 - w / 2), window.innerWidth - w - 8) + 'px';
+        bar.style.top = top + 'px'; bar.style.display = 'block';
+      }
+      let tm = null;
+      document.addEventListener('selectionchange', () => { clearTimeout(tm); tm = setTimeout(evalSel, 220); }); // 觸控／鍵盤選取
+      document.addEventListener('mouseup', (e) => { if (bar.contains(e.target)) return; clearTimeout(tm); setTimeout(evalSel, 0); }); // 滑鼠放開即顯示
       window.addEventListener('scroll', hide, true);
     })();
 
@@ -2143,7 +2284,7 @@
       const prefixText = buildPrefixBlocks(true);
       const afterCount = serverMsgCount();
       els.userInput.value = ''; els.userInput.style.height = 'auto'; hideMention();
-      state.quotes.forEach(q => { if (q.el) q.el.classList.remove('qb-sel'); }); state.quotes = []; renderQuoteTray();
+      state.quotes.forEach(q => { if (q.el) q.el.classList.remove('qb-sel'); qUnhl(q); }); state.quotes = []; renderQuoteTray();
       const askDiv = appendMessage('user', prefixText + typedText); if (askDiv) askDiv.dataset.local = '1';
       if (truncated) showToast('上一則回覆過長，只帶入前 ' + CTX_MAX + ' 字；可改用「選取段落」精準帶入', 'info');
       setSending(true);
@@ -2173,8 +2314,8 @@
 
     // --- Helper Functions ---
     function appendMessage(role, text, attachments = [], requestPayload = null) {
-      let reportChip = false, pfx = { quotes: [], opinions: [] };
-      if (role === 'user') { pfx = splitPrefix(text); text = pfx.rest; if (hasReportTag(text)) { text = stripReport(text); reportChip = true; } else if (state.pendingReportChip) reportChip = true; state.pendingReportChip = false; }
+      let reportChip = false, autoQ = false, pfx = { quotes: [], opinions: [] };
+      if (role === 'user') { pfx = splitPrefix(text); text = pfx.rest; if (hasReportTag(text)) { text = stripReport(text); reportChip = true; } if (pfx.quotes.length && String(text).trim() === QUOTE_DEFAULT_Q) { text = '*（未附問題，由 Agent 自行判斷）*'; autoQ = true; } else if (state.pendingReportChip) reportChip = true; state.pendingReportChip = false; }
       const div = document.createElement('div');
       div.className = `flex w-full mb-6 ${role === 'user' ? 'justify-end' : 'justify-start'}`;
       div.dataset.role = role;
@@ -2210,7 +2351,7 @@
       if (pfx.quotes.length || pfx.opinions.length) mdEl.insertAdjacentHTML('beforebegin', prefixChipsHtml(pfx));
       if (reportChip) mdEl.insertAdjacentHTML('beforebegin', '<div class="rp-chip">📊 報表模式</div>');
       const raw = state.pendingRaw; state.pendingRaw = null;
-      const origText = text; div.__raw = origText;
+      const origText = autoQ ? '' : text; div.__raw = origText;
       let canvasDocs = [];
       if (role === 'assistant') {
         const ex = extractCanvasFromText(text);
@@ -2233,7 +2374,7 @@
       state.pendingFiles = null;
       div.querySelector('.raw-btn')?.addEventListener('click', () => openRawModal(raw, '用來確認 API 實際回傳的格式'));
       if (role === 'user' && text) state.lastUserText = text;
-      div.querySelector('.edit-btn')?.addEventListener('click', () => { startEdit(text, attachments); if (pfx.quotes.length || pfx.opinions.length) { state.quotes = pfx.quotes.map(q => ({ text: q, el: null })); state.opinions = pfx.opinions.slice(); renderQuoteTray(); } });
+      div.querySelector('.edit-btn')?.addEventListener('click', () => { startEdit(autoQ ? '' : text, attachments); if (pfx.quotes.length || pfx.opinions.length) { state.quotes = pfx.quotes.map(q => ({ text: q, el: null })); state.opinions = pfx.opinions.slice(); renderQuoteTray(); } });
       div.querySelector('.quote-btn')?.addEventListener('click', () => toggleQuoteMode(div));
       div.querySelectorAll('.attach-chip').forEach(btn => btn.addEventListener('click', () => downloadFile(btn.dataset.id, btn.dataset.name)));
 
