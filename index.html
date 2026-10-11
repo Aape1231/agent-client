@@ -303,6 +303,46 @@
       #chat-window { padding-left: 12px; padding-right: 12px; }
       #chat-window .max-w-\[85\%\] { max-width: 92%; }
     }
+    /* v14.3: 段落引用 / @agent */
+    .qm .qb-on { cursor: pointer; border-radius: 6px; transition: background .15s; }
+    .qm .qb { position: relative; padding-left: 1.7rem !important; }
+    .qm .qb::before { content: ''; position: absolute; left: .35rem; top: .45em; width: .95rem; height: .95rem; border: 1.5px solid #94a3b8; border-radius: 4px; background: transparent; }
+    .qm .qb-on:hover { background: rgba(99,102,241,.08); }
+    .qm .qb-sel { background: rgba(99,102,241,.14) !important; }
+    .qm .qb.qb-sel::before { content: '✓'; background: #6366f1; border-color: #6366f1; color: #fff; font-size: .7rem; line-height: .85rem; text-align: center; }
+    .qm .qb2 { outline: 1.5px dashed rgba(99,102,241,.45); outline-offset: 1px; }
+    .qm .qb2.qb-sel { outline: 2px solid #6366f1; }
+    .qm-bar { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 10px; padding: 6px 10px; border-radius: 8px; font-size: 12px; background: rgba(99,102,241,.1); color: #4338ca; }
+    html.dark .qm-bar { color: #c7d2fe; background: rgba(99,102,241,.2); }
+    .qm-bar button { text-decoration: underline; flex: none; }
+    .qt-list { display: flex; flex-direction: column; gap: 6px; margin-bottom: 10px; }
+    .qt-item { display: flex; gap: 8px; align-items: flex-start; background: rgba(255,255,255,.14); border-left: 3px solid rgba(255,255,255,.65); border-radius: 8px; padding: 6px 10px; font-size: 12.5px; cursor: pointer; text-align: left; }
+    .qt-item.op { border-left-color: #fde68a; }
+    .qt-n { flex: none; font-weight: 700; opacity: .9; }
+    .qt-t { min-width: 0; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; white-space: pre-wrap; word-break: break-word; }
+    .qt-item.open .qt-t { display: block; -webkit-line-clamp: unset; }
+    .qtray-i { display: flex; align-items: flex-start; gap: 8px; padding: 2px 0; }
+    .qtray-n { flex: none; min-width: 1.25rem; text-align: center; font-weight: 700; color: #4338ca; }
+    html.dark .qtray-n { color: #c7d2fe; }
+    .qtray-n.op { color: #b45309; } html.dark .qtray-n.op { color: #fcd34d; }
+    .qtray-t { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; opacity: .85; }
+    .qtray-i button { flex: none; opacity: .6; } .qtray-i button:hover { opacity: 1; }
+    #qsel-btn { position: fixed; z-index: 70; display: none; padding: 6px 12px; border-radius: 10px; font-size: 12px; font-weight: 500; color: #fff; background: #4f46e5; box-shadow: 0 6px 18px rgba(0,0,0,.25); cursor: pointer; }
+    #qsel-btn:hover { background: #4338ca; }
+    #mention-pop { position: absolute; left: 0; bottom: calc(100% + 8px); z-index: 40; min-width: 240px; max-width: 100%; max-height: 220px; overflow-y: auto; border-radius: 12px; background: #fff; border: 1px solid #e2e8f0; box-shadow: 0 10px 30px rgba(0,0,0,.15); padding: 4px; display: none; }
+    html.dark #mention-pop { background: #1e293b; border-color: #475569; }
+    #mention-pop .mi { display: flex; flex-direction: column; padding: 6px 10px; border-radius: 8px; cursor: pointer; font-size: 13px; }
+    #mention-pop .mi small { opacity: .6; font-size: 11px; }
+    #mention-pop .mi.on, #mention-pop .mi:hover { background: rgba(99,102,241,.14); }
+    #mention-pop .mh { padding: 8px 10px; font-size: 12px; opacity: .7; }
+    .agent-card { background: #fff; border: 1px solid #c7d2fe; border-left: 4px solid #6366f1; border-radius: 16px; border-top-left-radius: 4px; padding: 14px 18px; }
+    html.dark .agent-card { background: #1e293b; border-color: #4338ca; border-left-color: #818cf8; }
+    .agent-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; padding-top: 10px; border-top: 1px dashed rgba(99,102,241,.35); }
+    .agent-actions button { font-size: 12px; padding: 4px 10px; border-radius: 8px; border: 1px solid rgba(99,102,241,.45); color: #4338ca; }
+    html.dark .agent-actions button { color: #c7d2fe; }
+    .agent-actions button:hover { background: rgba(99,102,241,.12); }
+    .agent-actions button.pri { background: #4f46e5; border-color: #4f46e5; color: #fff; }
+    .agent-actions button.pri:hover { background: #4338ca; }
   </style>
 </head>
 <body class="h-full bg-slate-50 text-slate-800 dark:bg-slate-900 dark:text-slate-200 overflow-hidden selection:bg-primary-100 selection:text-primary-700">
@@ -395,6 +435,7 @@
               </span>
             </div>
             <div id="run-status" class="hidden max-w-4xl mx-auto mb-2 flex-wrap items-center justify-between gap-x-3 gap-y-2 px-3 py-2 rounded-lg bg-sky-50 dark:bg-sky-900/20 border border-sky-200 dark:border-sky-900/50 text-xs text-sky-800 dark:text-sky-200" role="status" aria-live="polite"></div>
+            <div id="quote-tray" class="hidden max-w-4xl mx-auto mb-2 flex-col gap-1.5 px-3 py-2 rounded-lg bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-200 dark:border-indigo-900/50 text-xs text-indigo-900 dark:text-indigo-100"></div>
             <div id="selected-files-area" class="flex flex-wrap gap-2 mb-2 empty:hidden"></div>
             <div class="relative max-w-4xl mx-auto flex gap-3 items-end bg-slate-100 dark:bg-slate-700/50 p-2 rounded-2xl border border-transparent focus-within:border-primary-500 focus-within:bg-white dark:focus-within:bg-slate-800 transition-all shadow-inner">
               <button id="attach-btn" type="button" class="p-3 text-slate-500 hover:text-primary-600 dark:text-slate-400 dark:hover:text-primary-400 self-end transition-colors" title="上傳檔案並附加到訊息 (也可拖曳或貼上)" aria-label="附加檔案"><i class="fa-solid fa-paperclip"></i></button>
@@ -586,6 +627,12 @@
             <textarea id="report-instr-input" rows="9" spellcheck="false" class="w-full p-3 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none font-mono text-xs"></textarea>
             <button id="report-instr-reset" type="button" class="mt-1 text-xs underline text-slate-500 hover:text-primary-600">還原預設指令</button>
           </div>
+          <div>
+            <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Agent 名單（在輸入框打 <code>@</code> 可呼叫其他 agent 給意見）</label>
+            <p class="text-xs text-slate-500 mb-2">名稱不可含空白；Assistant ID 向平台取得（SBX／PRD 的 ID 不同）；變更會即時儲存在此瀏覽器。</p>
+            <div id="roster-list" class="space-y-2"></div>
+            <button id="roster-add" type="button" class="mt-2 text-xs underline text-slate-500 hover:text-primary-600">＋ 新增 Agent</button>
+          </div>
           <div class="flex gap-3 pt-2">
             <button onclick="switchView('chat')" class="flex-1 px-4 py-3 border border-slate-300 dark:border-slate-600 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700 font-medium transition-colors">取消</button>
             <button id="save-settings-btn" class="flex-1 px-4 py-3 bg-primary-600 hover:bg-primary-700 text-white rounded-xl font-medium shadow-lg shadow-primary-500/30 transition-all active:scale-95">儲存並連線</button>
@@ -593,8 +640,10 @@
         </div>
 
         <div id="changelog" class="w-full max-w-lg mt-6 mb-10 px-2 text-sm text-slate-600 dark:text-slate-300">
-          <h3 class="font-semibold text-slate-800 dark:text-slate-100 mb-2">版本紀錄 <span class="text-xs font-normal text-slate-400">目前版本 v14.2</span></h3>
+          <h3 class="font-semibold text-slate-800 dark:text-slate-100 mb-2">版本紀錄 <span class="text-xs font-normal text-slate-400">目前版本 v14.3</span></h3>
           <div class="space-y-3">
+            <div><div class="font-medium text-slate-700 dark:text-slate-200">v14.3 <span class="text-xs text-slate-400">2026-10-11</span></div>
+              <ul class="list-disc pl-5 space-y-0.5"><li><b>選段落追問（可多選）</b>：助理訊息的「❝」鈕進入選取模式逐段勾選（段落、清單項、表格列、儀表板 KPI／警示／圖表皆可），或直接框選文字按「引用所選文字」；選取內容集中在輸入框上方的引用區，送出時一併帶給 agent，訊息中以可展開的引用卡呈現（重新載入歷史也會還原）</li><li><b>@agent 協作</b>：設定頁新增「Agent 名單」（每個 agent 可各自指定環境 SBX／PRD／自訂 URL 與獨立 API Key，並可測試連線）；輸入框打 <code>@</code> 選擇其他 agent，它會針對你引用的段落（未引用則為上一則回覆）給意見，意見以卡片顯示在同一對話中；按「帶回主對話」後，意見會附在下一則訊息送給主 agent，主 agent 即可評估並修正（歷史載入時也會還原為意見卡）</li></ul></div>
             <div><div class="font-medium text-slate-700 dark:text-slate-200">v14.2 <span class="text-xs text-slate-400">2026-10-07</span></div>
               <ul class="list-disc pl-5 space-y-0.5"><li>API 沒有取消回應的端點，因此移除原本無效的「停止」鈕與 Esc 中止，避免看起來能中止</li><li>處理中改為顯示狀態列（已等待時間、預估時間提示），送出鈕暫時停用並顯示轉圈；訊息中的「思考中」同步計時</li><li>處理中關閉／重新整理頁面會先提醒，避免遺失回覆</li></ul></div>
             <div><div class="font-medium text-slate-700 dark:text-slate-200">v14.1 <span class="text-xs text-slate-400">2026-10-06</span></div>
@@ -892,7 +941,7 @@
     }
 
     async function loadMessages(threadId) {
-      state.currentThreadId = threadId;
+      state.currentThreadId = threadId; clearQuotes();
       Array.from(els.threadsList.children).forEach(child => { if(child.innerHTML.includes(threadId)) child.classList.add('bg-primary-50', 'dark:bg-slate-700', 'border-l-4', 'border-primary-500'); else child.classList.remove('bg-primary-50', 'dark:bg-slate-700', 'border-l-4', 'border-primary-500'); });
       if(window.innerWidth < 1024) toggleSidebar(false);
       els.chatWindow.innerHTML = '<div class="flex h-full items-center justify-center text-slate-400"><i class="fa-solid fa-spinner animate-spin text-2xl"></i></div>';
@@ -918,6 +967,7 @@
           appendMessage(msg.role, content, files);
         });
         state.loadingHistory = false;
+        restoreAgentCards(threadId);
         recs.forEach(r => r.files.forEach(f => restored.set(f.id, f)));
         state.selectedFiles.clear();
         if (isStickyFiles()) restored.forEach((f, id) => state.selectedFiles.set(id, { id, filename: f.filename || nameForFile(id) || id, carried: true }));
@@ -929,9 +979,10 @@
     async function sendMessage() {
       if (state.isSending) return showToast('Agent 仍在處理上一則訊息，請稍候', 'info');
       const typedText = els.userInput.value.trim();
+      { const _ro = rosterGet(); if (_ro.length && typedText) { const _mn = detectMentions(typedText, _ro); if (_mn.length) return runAgentCalls(typedText, _mn); } }
       const reportOn = isReportMode() || !!state.forceReport; state.forceReport = false;
       const hasFiles = state.selectedFiles.size > 0;
-      const text = typedText || ((reportOn && hasFiles) ? REPORT_DEFAULT_TEXT : '');
+      const text = typedText || (state.opinions.length ? OPINION_DEFAULT_Q : state.quotes.length ? QUOTE_DEFAULT_Q : ((reportOn && hasFiles) ? REPORT_DEFAULT_TEXT : ''));
       if (state.uploading.size) return showToast('檔案上傳中，請稍候再送出', 'info');
       if (!text && !hasFiles) return;
       if (!state.assistantId) return showToast('請先設定 Assistant ID', 'error');
@@ -948,8 +999,9 @@
       // 保險：若輸入法在送出後才 commit 文字，再清一次
       [60, 250].forEach(ms => setTimeout(() => { if (!state.editing && els.userInput.value.trim() === text) { els.userInput.value = ''; autoResizeInput(); } }, ms));
       
+      const prefixBlocks = buildPrefixBlocks();
       const content = [];
-      if (text) content.push({ type: 'text', text: reportOn ? text + '\n\n<report_mode>\n' + reportInstr() + '\n</report_mode>' : text });
+      if (text) content.push({ type: 'text', text: prefixBlocks + (reportOn ? text + '\n\n<report_mode>\n' + reportInstr() + '\n</report_mode>' : text) });
       state.selectedFiles.forEach((meta, id) => content.push({ type: 'file', file: { file_id: id, filename: meta.filename } }));
 
       const payload = { model: state.assistantId, messages: [{ role: 'user', content: content }] };
@@ -957,7 +1009,8 @@
 
       const sentNewFiles = Array.from(state.selectedFiles.values()).filter(f => !f.carried).map(f => ({ id: f.id, filename: f.filename }));
       state.pendingReportChip = reportOn;
-      appendMessage('user', text, sentNewFiles);
+      appendMessage('user', prefixBlocks + text, sentNewFiles);
+      clearQuotes();
       const loadingId = showThinking();
       // 續問時仍需把檔案再帶一次：保留檔案為「持續附加」，可用 ✕ 移除
       if (isStickyFiles()) state.selectedFiles.forEach(m => { m.carried = true; }); else state.selectedFiles.clear();
@@ -1379,7 +1432,7 @@
     function isReportMode() { return rpLs('reportMode') === '1'; }
     function reportInstr() { return (rpLs('reportInstr') || '').trim() || REPORT_INSTR_DEFAULT; }
     function hasReportTag(t) { return /<report_mode>[\s\S]*<\/report_mode>/.test(String(t || '')); }
-    function stripReport(t) { return String(t == null ? '' : t).replace(/\n*<report_mode>[\s\S]*?<\/report_mode>\s*/g, '').trim(); }
+    function stripReport(t) { return splitPrefix(t).rest.replace(/\n*<report_mode>[\s\S]*?<\/report_mode>\s*/g, '').trim(); }
 
     // ---- 規格解析 / 正規化 ----
     function parseDashboardSpec(code) {
@@ -1702,10 +1755,368 @@
       document.getElementById('report-instr-reset').addEventListener('click', () => { rpLsSet('reportInstr', null); ta.value = REPORT_INSTR_DEFAULT; showToast('已還原預設指令', 'info'); });
     })();
 
+    // ===== v14.3: 選取段落引用 + @agent 協作 =====
+    const QUOTE_INSTR = '以下是我從先前回覆中選取的段落，請針對這些內容回答我的問題：';
+    const QUOTE_DEFAULT_Q = '請針對以上引用的段落，說明重點與建議。';
+    const OPINION_DEFAULT_Q = '請評估以上意見：說明你是否同意、哪些應採納，並據此修正或補充你先前的回覆。';
+    const QUOTE_MAX_ITEMS = 12, QUOTE_MAX_CHARS = 1200, OPINION_MAX = 8000, CTX_MAX = 8000;
+    Object.assign(state, { quotes: [], opinions: [] });
+
+    function qtNorm(s, keepNl) {
+      s = String(s || '').replace(/ /g, ' ');
+      s = keepNl ? s.replace(/[ \t]+\n/g, '\n').replace(/\n{3,}/g, '\n\n') : s.replace(/\s+/g, ' ');
+      s = s.trim();
+      return s.length > QUOTE_MAX_CHARS ? s.slice(0, QUOTE_MAX_CHARS) + '…' : s;
+    }
+    function cleanTag(s) { return String(s == null ? '' : s).replace(/<\/?(quoted_passages|agent_opinion)[^>]*>/gi, ''); }
+    // 訊息前綴（引用段落 + 其他 agent 意見）：以標籤包住，存進伺服器歷史後仍可還原成卡片
+    function buildPrefixBlocks(quotesOnly) {
+      let out = '';
+      if (state.quotes.length) out += '<quoted_passages>\n' + QUOTE_INSTR + '\n' + state.quotes.map((q, i) => '[' + (i + 1) + '] ' + cleanTag(q.text)).join('\n') + '\n</quoted_passages>\n\n';
+      if (!quotesOnly) state.opinions.forEach(o => { out += '<agent_opinion name="' + String(o.name).replace(/["<>]/g, '') + '">\n' + cleanTag(o.text) + '\n</agent_opinion>\n\n'; });
+      return out;
+    }
+    function splitPrefix(t) {
+      t = String(t == null ? '' : t);
+      const res = { quotes: [], opinions: [], rest: t };
+      let m = res.rest.match(/^\s*<quoted_passages>\n?([\s\S]*?)<\/quoted_passages>\s*/);
+      if (m) {
+        const body = m[1].replace(QUOTE_INSTR, '').replace(/^\n/, '').trim();
+        res.quotes = body ? body.split(/\n(?=\[\d+\] )/).map(s => s.replace(/^\[\d+\] /, '')) : [];
+        res.rest = res.rest.slice(m[0].length);
+      }
+      const re = /^\s*<agent_opinion name="([^"]*)">\n?([\s\S]*?)\n?<\/agent_opinion>\s*/;
+      while ((m = res.rest.match(re))) { res.opinions.push({ name: m[1], text: m[2] }); res.rest = res.rest.slice(m[0].length); }
+      return res;
+    }
+    function prefixChipsHtml(pfx) {
+      const items = pfx.quotes.map((q, i) => '<div class="qt-item" title="點擊展開／收合"><span class="qt-n">' + (i + 1) + '</span><span class="qt-t">' + escapeHtml(q) + '</span></div>')
+        .concat(pfx.opinions.map(o => '<div class="qt-item op" title="點擊展開／收合"><span class="qt-n">@' + escapeHtml(o.name) + '</span><span class="qt-t">' + escapeHtml(o.text) + '</span></div>'));
+      return items.length ? '<div class="qt-list">' + items.join('') + '</div>' : '';
+    }
+
+    // ---- 引用區（輸入框上方）----
+    function trayItem(tag, text, isOp, onRemove) {
+      const d = document.createElement('div'); d.className = 'qtray-i';
+      const a = document.createElement('span'); a.className = 'qtray-n' + (isOp ? ' op' : ''); a.textContent = tag;
+      const b = document.createElement('span'); b.className = 'qtray-t'; b.textContent = String(text).replace(/\s+/g, ' '); b.title = text;
+      const x = document.createElement('button'); x.type = 'button'; x.setAttribute('aria-label', '移除'); x.innerHTML = '<i class="fa-solid fa-xmark"></i>'; x.onclick = onRemove;
+      d.append(a, b, x); return d;
+    }
+    function renderQuoteTray() {
+      const tray = document.getElementById('quote-tray'); if (!tray) return;
+      const n = state.quotes.length + state.opinions.length;
+      tray.innerHTML = '';
+      tray.classList.toggle('hidden', !n); tray.classList.toggle('flex', !!n);
+      if (!n) return;
+      const head = document.createElement('div'); head.className = 'flex items-center justify-between gap-2 w-full';
+      head.innerHTML = '<span class="font-medium"><i class="fa-solid fa-quote-left mr-1.5"></i>將隨下一則訊息帶給 Agent（' + n + '）</span><button type="button" class="underline hover:no-underline shrink-0">全部清除</button>';
+      head.querySelector('button').onclick = clearQuotes;
+      tray.appendChild(head);
+      const list = document.createElement('div'); list.className = 'flex flex-col w-full max-h-28 overflow-y-auto';
+      state.opinions.forEach((o, i) => list.appendChild(trayItem('@' + o.name, o.text, true, () => { state.opinions.splice(i, 1); renderQuoteTray(); })));
+      state.quotes.forEach((q, i) => list.appendChild(trayItem(String(i + 1), q.text, false, () => removeQuote(i))));
+      tray.appendChild(list);
+    }
+    function addQuote(text, el) {
+      text = String(text || '').trim(); if (!text) return false;
+      if (state.quotes.some(q => q.text === text)) { showToast('這段已在引用區', 'info'); return false; }
+      if (state.quotes.length >= QUOTE_MAX_ITEMS) { showToast('最多引用 ' + QUOTE_MAX_ITEMS + ' 段', 'info'); return false; }
+      state.quotes.push({ text, el: el || null }); if (el) el.classList.add('qb-sel');
+      renderQuoteTray(); return true;
+    }
+    function removeQuote(i) { const q = state.quotes[i]; if (q && q.el) q.el.classList.remove('qb-sel'); state.quotes.splice(i, 1); renderQuoteTray(); }
+    function clearQuotes() {
+      state.quotes.forEach(q => { if (q.el) q.el.classList.remove('qb-sel'); });
+      state.quotes = []; state.opinions = [];
+      document.querySelectorAll('.qm').forEach(exitQuoteMode);
+      renderQuoteTray();
+    }
+
+    // ---- 選取模式：逐區塊勾選 ----
+    function qbBlocks(root) {
+      const out = [];
+      root.querySelectorAll('p,h1,h2,h3,h4,h5,h6,blockquote,pre,li').forEach(el => {
+        if (el.closest('.rp')) return;
+        const par = el.parentElement;
+        if (el.tagName !== 'LI' && par && par.closest('li,blockquote')) return;
+        out.push({ el, cls: 'qb' });
+      });
+      root.querySelectorAll('.md-table-wrap tbody tr, .rp tbody tr, .rp-kpi, .rp-alert, .rp-card').forEach(el => {
+        if (el.classList.contains('rp-card') && el.querySelector('.rp-tbl')) return;
+        out.push({ el, cls: 'qb2' });
+      });
+      return out;
+    }
+    function qbText(el) {
+      const tg = el.tagName;
+      if (tg === 'PRE') return qtNorm((el.querySelector('code') || el).textContent, true);
+      if (tg === 'LI') { const c = el.cloneNode(true); c.querySelectorAll('ul,ol').forEach(n => n.remove()); return qtNorm(c.textContent); }
+      if (tg === 'TR') {
+        const tbl = el.closest('table');
+        const heads = tbl ? Array.from(tbl.querySelectorAll('thead th')).map(h => h.textContent.replace(/[▲▼↑↓\s]+$/, '').trim()) : [];
+        const ttl = el.closest('.rp-card') && el.closest('.rp-card').querySelector('.rp-card-h .t');
+        const row = Array.from(el.children).map((c, i) => (heads[i] ? heads[i] + '：' : '') + c.textContent.trim()).join('｜');
+        return qtNorm((ttl ? '【' + ttl.textContent.trim() + '】' : '') + row);
+      }
+      if (el.classList.contains('rp-kpi')) return qtNorm('KPI｜' + el.innerText.replace(/\n+/g, ' '));
+      if (el.classList.contains('rp-alert')) return qtNorm('警示｜' + el.innerText.replace(/\n+/g, ' '));
+      if (el.classList.contains('rp-card')) { const h = el.querySelector('.rp-card-h'); return qtNorm('圖表｜' + (h ? h.innerText.replace(/\n+/g, ' ') : '')); }
+      return qtNorm(el.textContent);
+    }
+    function enterQuoteMode(msgDiv) {
+      const md = msgDiv.querySelector('.md-output'); if (!md || msgDiv.classList.contains('qm')) return;
+      msgDiv.classList.add('qm');
+      qbBlocks(md).forEach(b => {
+        b.el.classList.add(b.cls, 'qb-on');
+        if (state.quotes.some(q => q.el === b.el)) b.el.classList.add('qb-sel');
+      });
+      const bar = document.createElement('div'); bar.className = 'qm-bar';
+      bar.innerHTML = '<span><i class="fa-solid fa-quote-left mr-1.5"></i>點選要引用的段落（可多選，也可跨訊息）</span><button type="button">完成</button>';
+      bar.querySelector('button').onclick = () => exitQuoteMode(msgDiv);
+      md.parentNode.insertBefore(bar, md);
+    }
+    function exitQuoteMode(msgDiv) {
+      msgDiv.classList.remove('qm');
+      msgDiv.querySelectorAll('.qb-on').forEach(el => el.classList.remove('qb', 'qb2', 'qb-on'));
+      msgDiv.querySelectorAll('.qm-bar').forEach(b => b.remove());
+    }
+    function toggleQuoteMode(msgDiv) { if (msgDiv.classList.contains('qm')) exitQuoteMode(msgDiv); else enterQuoteMode(msgDiv); }
+    els.chatWindow.addEventListener('click', (e) => {
+      const chip = e.target.closest('.qt-item'); if (chip) { chip.classList.toggle('open'); return; }
+      const el = e.target.closest('.qm .qb-on'); if (!el) return;
+      if (e.target.closest('a,button,input,select,textarea')) return;
+      const sel = window.getSelection(); if (sel && !sel.isCollapsed && sel.toString().trim()) return;
+      const i = state.quotes.findIndex(q => q.el === el);
+      if (i >= 0) removeQuote(i); else addQuote(qbText(el), el);
+    });
+
+    // ---- 選取文字 → 浮動「引用」鈕 ----
+    (function initSelectionQuote() {
+      const btn = document.createElement('button'); btn.id = 'qsel-btn'; btn.type = 'button'; btn.innerHTML = '<i class="fa-solid fa-quote-left mr-1.5"></i>引用所選文字';
+      document.body.appendChild(btn);
+      const hide = () => { btn.style.display = 'none'; btn.dataset.text = ''; };
+      btn.addEventListener('mousedown', (e) => e.preventDefault());
+      btn.addEventListener('click', () => { const t = btn.dataset.text; if (t) addQuote(t, null); const s = window.getSelection(); if (s) s.removeAllRanges(); hide(); });
+      let tm = null;
+      document.addEventListener('selectionchange', () => {
+        clearTimeout(tm);
+        tm = setTimeout(() => {
+          const sel = window.getSelection();
+          if (!sel || sel.isCollapsed || !sel.rangeCount) return hide();
+          const r = sel.getRangeAt(0), anc = r.commonAncestorContainer;
+          const host = (anc.nodeType === 1 ? anc : anc.parentElement);
+          if (!host || !host.closest('[data-role="assistant"] .md-output, [data-role="agent"] .md-output')) return hide();
+          const txt = qtNorm(sel.toString(), true); if (txt.length < 2) return hide();
+          const rect = r.getBoundingClientRect();
+          const w = 150; let top = rect.bottom + 8; if (top > window.innerHeight - 50) top = Math.max(8, rect.top - 44);
+          btn.style.left = Math.min(Math.max(8, rect.left + rect.width / 2 - w / 2), window.innerWidth - w - 8) + 'px';
+          btn.style.top = top + 'px'; btn.dataset.text = txt; btn.style.display = 'block';
+        }, 220);
+      });
+      window.addEventListener('scroll', hide, true);
+    })();
+
+    // ---- Agent 名單（設定頁）----
+    function rosterRaw() { try { const a = JSON.parse(localStorage.getItem('agentRoster') || '[]'); return Array.isArray(a) ? a : []; } catch (e) { return []; } }
+    const AGENT_ENVS = { sbx: 'https://rtgapp.profetai.com:4231/public/kits/openai', prd: 'https://rtgapp.profetai.com:4234/public/kits/openai' };
+    const AGENT_ENV_LABEL = { sbx: 'SBX', prd: 'PRD', custom: '自訂' };
+    function rosterGet() {
+      return rosterRaw().map(r => {
+        const env = r.env || 'main';
+        const base = env === 'main' ? '' : env === 'custom' ? String(r.custom || '').trim().replace(/\/+$/, '') : AGENT_ENVS[env] || '';
+        return { name: String(r.name || '').replace(/[\s@]/g, ''), id: String(r.id || '').trim(), instr: String(r.instr || ''), env, base, key: String(r.key || '').trim() };
+      }).filter(r => r.name && r.id);
+    }
+    // 其他 agent 可使用不同環境／不同 API Key；兩者都未設定時沿用主設定（含中繼模式）
+    async function agentApiCall(ag, path, method, body) {
+      if (!ag.base && !ag.key) return apiCall(path, method || 'GET', body || null, false);
+      const key = ag.key || state.apiKey; if (!key) throw new Error('缺少 API Key');
+      const root = ag.base || getBase(); const url = root + path;
+      let res;
+      try { res = await fetch(url, { method: method || 'GET', headers: { 'Authorization': 'Bearer ' + key, 'Content-Type': 'application/json' }, body: body ? JSON.stringify(body) : undefined }); }
+      catch (e) { let host = url; try { host = new URL(url).host; } catch (x) {} throw new Error('無法連線到 ' + host + '（網路／VPN／憑證，或該環境未允許本頁的 CORS）'); }
+      if (!res.ok) { const err = await res.json().catch(() => ({})); const m = err.error && (err.error.message || (typeof err.error === 'string' ? err.error : '')); throw new Error(m ? 'HTTP ' + res.status + '：' + m : 'HTTP ' + res.status); }
+      return await res.json();
+    }
+    const agentTag = (ag) => ag.env && ag.env !== 'main' ? AGENT_ENV_LABEL[ag.env] : '';
+    function rosterSave(list) { try { localStorage.setItem('agentRoster', JSON.stringify(list)); } catch (e) {} }
+    function initRosterUi() {
+      const box = document.getElementById('roster-list'); if (!box) return;
+      let rows = rosterRaw();
+      const persist = () => rosterSave(rows);
+      const cls = 'w-full p-2 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-md text-xs outline-none focus:ring-2 focus:ring-primary-500';
+      const draw = () => {
+        box.innerHTML = '';
+        if (!rows.length) { const p = document.createElement('div'); p.className = 'text-xs text-slate-400'; p.textContent = '尚未新增。可用同一個 Assistant ID 搭配不同「角色說明」，也可指定不同環境或不同 API Key 的 agent。'; box.appendChild(p); }
+        rows.forEach((r, i) => {
+          const d = document.createElement('div'); d.className = 'p-2.5 rounded-lg border border-slate-200 dark:border-slate-700 space-y-1.5';
+          d.innerHTML =
+            '<div class="flex gap-2"><input data-k="name" class="' + cls + ' !w-28 shrink-0" placeholder="名稱（如 審查員）" /><input data-k="id" class="' + cls + ' font-mono" placeholder="Assistant ID" /><button type="button" data-act="del" class="px-2 text-slate-400 hover:text-red-500" aria-label="刪除"><i class="fa-solid fa-trash"></i></button></div>' +
+            '<div class="flex gap-2"><select data-k="env" class="' + cls + ' !w-auto shrink-0"><option value="main">環境：同主設定</option><option value="sbx">環境：Sandbox (SBX)</option><option value="prd">環境：Production (PRD)</option><option value="custom">環境：自訂 URL…</option></select><input data-k="custom" class="' + cls + ' font-mono" placeholder="https://…/public/kits/openai" /></div>' +
+            '<input data-k="key" type="password" autocomplete="off" class="' + cls + ' font-mono" placeholder="API Key（留空＝使用主設定的 Key）" />' +
+            '<input data-k="instr" class="' + cls + '" placeholder="角色說明（選填，會附加在每次呼叫前，例如：你是資深審查員，請指出風險與遺漏）" />' +
+            '<div class="flex items-center gap-2"><button type="button" data-act="test" class="px-2.5 py-1 text-xs rounded-md border border-slate-300 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-700">測試連線</button><span data-role="tst" class="text-xs text-slate-500 min-w-0"></span></div>';
+          const custom = d.querySelector('[data-k="custom"]');
+          const syncCustom = () => { custom.style.display = (r.env === 'custom') ? '' : 'none'; };
+          d.querySelectorAll('[data-k]').forEach(inp => {
+            inp.value = r[inp.dataset.k] || (inp.dataset.k === 'env' ? 'main' : '');
+            const h = () => { r[inp.dataset.k] = inp.value; persist(); if (inp.dataset.k === 'env') syncCustom(); };
+            inp.addEventListener(inp.tagName === 'SELECT' ? 'change' : 'input', h);
+          });
+          syncCustom();
+          d.querySelector('[data-act="del"]').onclick = () => { rows.splice(i, 1); persist(); draw(); };
+          const tst = d.querySelector('[data-role="tst"]');
+          d.querySelector('[data-act="test"]').onclick = async () => {
+            const ag = rosterGet().find(x => x.name === String(r.name || '').replace(/[\s@]/g, '') && x.id === String(r.id || '').trim());
+            if (!ag) { tst.className = 'text-xs text-red-500'; tst.textContent = '請先填名稱與 Assistant ID'; return; }
+            tst.className = 'text-xs text-slate-500'; tst.textContent = '連線中…';
+            try { await agentApiCall(ag, '/v1/threads?limit=1', 'GET'); tst.className = 'text-xs text-emerald-600'; tst.textContent = '✓ 連線與 API Key 正常（Assistant ID 會在實際呼叫時驗證）'; }
+            catch (e) { tst.className = 'text-xs text-red-500'; tst.textContent = '✗ ' + e.message; }
+          };
+          box.appendChild(d);
+        });
+      };
+      document.getElementById('roster-add').addEventListener('click', () => { rows.push({ name: '', id: '', env: 'main', custom: '', key: '', instr: '' }); persist(); draw(); });
+      draw();
+    }
+    initRosterUi();
+
+    // ---- 輸入框 @ 選單 ----
+    const mp = { box: null, items: [], idx: 0, start: -1 };
+    function mentionToken() {
+      const ta = els.userInput, pos = ta.selectionStart, before = ta.value.slice(0, pos);
+      const m = before.match(/(^|\s)@([^\s@]*)$/);
+      return m ? { q: m[2], start: pos - m[2].length - 1, end: pos } : null;
+    }
+    function hideMention() { if (mp.box) mp.box.style.display = 'none'; mp.items = []; }
+    function pickMention(i) {
+      const tk = mentionToken(), it = mp.items[i]; if (!tk || !it) return hideMention();
+      const ta = els.userInput; ta.value = ta.value.slice(0, tk.start) + '@' + it.name + ' ' + ta.value.slice(tk.end);
+      const p = tk.start + it.name.length + 2; ta.setSelectionRange(p, p); autoResizeInput(); hideMention(); ta.focus();
+    }
+    function showMention() {
+      const tk = mentionToken(); if (!tk) return hideMention();
+      if (!mp.box) { mp.box = document.createElement('div'); mp.box.id = 'mention-pop'; els.userInput.parentElement.appendChild(mp.box); }
+      const roster = rosterGet(), q = tk.q.toLowerCase();
+      mp.items = roster.filter(r => r.name.toLowerCase().includes(q));
+      mp.idx = Math.min(mp.idx, Math.max(0, mp.items.length - 1));
+      mp.box.innerHTML = '';
+      if (!roster.length) { if (tk.q) return hideMention(); mp.box.innerHTML = '<div class="mh">尚未設定 Agent 名單，請到「設定」頁新增</div>'; mp.box.style.display = 'block'; return; }
+      if (!mp.items.length) return hideMention();
+      mp.items.forEach((r, i) => {
+        const d = document.createElement('div'); d.className = 'mi' + (i === mp.idx ? ' on' : '');
+        d.innerHTML = '<span>@' + escapeHtml(r.name) + (agentTag(r) ? ' <small>[' + agentTag(r) + (r.key ? '・獨立 Key' : '') + ']</small>' : (r.key ? ' <small>[獨立 Key]</small>' : '')) + '</span><small>' + escapeHtml(r.instr ? r.instr.slice(0, 40) : r.id) + '</small>';
+        d.addEventListener('mousedown', (e) => { e.preventDefault(); pickMention(i); });
+        mp.box.appendChild(d);
+      });
+      mp.box.style.display = 'block';
+    }
+    els.userInput.addEventListener('input', showMention);
+    els.userInput.addEventListener('click', showMention);
+    els.userInput.addEventListener('blur', () => setTimeout(hideMention, 120));
+    els.userInput.addEventListener('keydown', (e) => {
+      if (!mp.box || mp.box.style.display !== 'block' || !mp.items.length || e.isComposing || e.keyCode === 229) return;
+      if (e.key === 'ArrowDown' || e.key === 'ArrowUp') { e.preventDefault(); e.stopImmediatePropagation(); mp.idx = (mp.idx + (e.key === 'ArrowDown' ? 1 : -1) + mp.items.length) % mp.items.length; showMention(); }
+      else if (e.key === 'Enter' || e.key === 'Tab') { e.preventDefault(); e.stopImmediatePropagation(); pickMention(mp.idx); }
+      else if (e.key === 'Escape') { e.preventDefault(); e.stopImmediatePropagation(); hideMention(); }
+    });
+
+    // ---- @ 呼叫其他 agent ----
+    const escRe = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    function detectMentions(text, roster) { return roster.filter(r => new RegExp('(^|\\s)@' + escRe(r.name) + '(?=\\s|$|[，。,.!?！？:：、；;])').test(text)); }
+    function stripMentions(text, ags) { let t = text; ags.forEach(r => { t = t.replace(new RegExp('(^|\\s)@' + escRe(r.name) + '(?=\\s|$|[，。,.!?！？:：、；;])', 'g'), '$1'); }); return t.replace(/\s+/g, ' ').trim(); }
+    function serverMsgCount() { return Array.from(els.chatWindow.children).filter(d => (d.dataset.role === 'user' || d.dataset.role === 'assistant') && !d.dataset.local).length; }
+    function lastAssistantText() { const a = Array.from(els.chatWindow.querySelectorAll('[data-role="assistant"]')); const d = a[a.length - 1]; return d && d.__raw ? String(d.__raw) : ''; }
+    const cardsKey = () => state.currentThreadId || '_new';
+    function cardsAdd(c) { const m = readJSON('agentCards'), k = cardsKey(); (m[k] = m[k] || []).push(c); if (m[k].length > 60) m[k].shift(); writeJSON('agentCards', m); }
+    const sideKey = (ag) => ag.id + '@' + (ag.base || 'main') + ':' + ag.key.slice(-4);
+    function sideThreadGet(ag) { return (readJSON('agentSideThreads')[cardsKey()] || {})[sideKey(ag)] || ''; }
+    function sideThreadSet(ag, tid) { const m = readJSON('agentSideThreads'), k = cardsKey(); (m[k] = m[k] || {})[sideKey(ag)] = tid; writeJSON('agentSideThreads', m); }
+    function makeLocalAsk(text, prefixText) {
+      const prev = state.loadingHistory; state.loadingHistory = true;
+      const d = appendMessage('user', (prefixText || '') + text); state.loadingHistory = prev;
+      if (d) d.dataset.local = '1'; return d;
+    }
+    function buildAgentCard(c) {
+      const div = document.createElement('div'); div.className = 'flex w-full mb-6 justify-start'; div.dataset.role = 'agent'; div.dataset.local = '1';
+      div.dataset.label = ('@' + c.name + ' ' + c.text).replace(/\s+/g, ' ').slice(0, 80);
+      div.innerHTML = '<div class="max-w-[85%] sm:max-w-[75%] w-full"><div class="text-xs mb-1 ml-1 text-indigo-500 dark:text-indigo-300"><i class="fa-solid fa-at mr-1"></i><b></b><span class="text-slate-400 ml-1.5">· 其他 Agent 的意見，僅顯示在本機，主 Agent 尚未收到</span></div><div class="agent-card shadow-sm"><div class="md-output text-sm sm:text-base break-words"></div><div class="agent-actions"></div></div></div>';
+      div.querySelector('b').textContent = c.name + (c.env ? '（' + c.env + '）' : '');
+      const md = div.querySelector('.md-output'); md.innerHTML = renderMarkdown(c.text); enhanceMarkdown(md);
+      const act = div.querySelector('.agent-actions');
+      const mk = (label, cls, fn) => { const b = document.createElement('button'); b.type = 'button'; b.className = cls || ''; b.innerHTML = label; b.onclick = fn; act.appendChild(b); };
+      mk('<i class="fa-solid fa-arrow-turn-down mr-1"></i>帶回主對話', 'pri', () => bringBack(c.name, c.text));
+      mk('<i class="fa-solid fa-quote-left mr-1"></i>選取段落', '', () => toggleQuoteMode(div));
+      mk('<i class="fa-regular fa-copy mr-1"></i>複製', '', () => { navigator.clipboard.writeText(c.text); showToast('已複製內容', 'info'); });
+      div.__raw = c.text;
+      return div;
+    }
+    function bringBack(name, text) {
+      state.opinions = state.opinions.filter(o => o.name !== name);
+      state.opinions.push({ name, text: text.length > OPINION_MAX ? text.slice(0, OPINION_MAX) + '…' : text });
+      renderQuoteTray();
+      if (!els.userInput.value.trim()) { els.userInput.value = OPINION_DEFAULT_Q; autoResizeInput(); }
+      els.userInput.focus(); els.userInput.select();
+      showToast('已加入「' + name + '」的意見；可補充問題後送出，主 Agent 就會收到', 'info');
+    }
+    function restoreAgentCards(threadId) {
+      const cards = (readJSON('agentCards')[threadId] || []).slice().sort((a, b) => (a.ts || 0) - (b.ts || 0));
+      if (!cards.length) return;
+      const servers = Array.from(els.chatWindow.children).filter(d => (d.dataset.role === 'user' || d.dataset.role === 'assistant') && !d.dataset.local);
+      const last = {};
+      cards.forEach(c => {
+        const nodes = [];
+        const ask = makeLocalAsk(c.ask || '', c.prefix || ''); nodes.push(ask); nodes.push(buildAgentCard(c));
+        const after = Math.max(0, Math.min(c.after || 0, servers.length));
+        let ref = last[after] || (after > 0 ? servers[after - 1] : null);
+        nodes.forEach(n => { if (n.parentNode) n.remove(); });
+        if (ref) { let cur = ref; nodes.forEach(n => { cur.after(n); cur = n; }); last[after] = cur; }
+        else if (after === 0) { let cur = null; nodes.forEach(n => { if (!cur) els.chatWindow.prepend(n); else cur.after(n); cur = n; }); last[0] = cur; }
+        else els.chatWindow.append(...nodes);
+      });
+    }
+    async function runAgentCalls(typedText, mentions) {
+      const question = stripMentions(typedText, mentions);
+      const quoteTexts = state.quotes.map(q => q.text);
+      let ctx = quoteTexts.length ? quoteTexts.map((t, i) => '[' + (i + 1) + '] ' + t).join('\n') : lastAssistantText();
+      const ctxLabel = quoteTexts.length ? '使用者選取的段落' : '主 Agent 的上一則回覆';
+      let truncated = false; if (ctx.length > CTX_MAX) { ctx = ctx.slice(0, CTX_MAX) + '\n…（以下省略）'; truncated = true; }
+      const prefixText = buildPrefixBlocks(true);
+      const afterCount = serverMsgCount();
+      els.userInput.value = ''; els.userInput.style.height = 'auto'; hideMention();
+      state.quotes.forEach(q => { if (q.el) q.el.classList.remove('qb-sel'); }); state.quotes = []; renderQuoteTray();
+      const askDiv = appendMessage('user', prefixText + typedText); if (askDiv) askDiv.dataset.local = '1';
+      if (truncated) showToast('上一則回覆過長，只帶入前 ' + CTX_MAX + ' 字；可改用「選取段落」精準帶入', 'info');
+      setSending(true);
+      try {
+        await Promise.all(mentions.map(async (ag) => {
+          const think = showThinking('@' + ag.name + ' 處理中');
+          try {
+            const prompt = (ag.instr ? ag.instr.trim() + '\n\n' : '') + (ctx ? '以下是' + ctxLabel + '：\n<context>\n' + ctx + '\n</context>\n\n' : '') + '使用者的要求：' + (question || '請針對以上內容給出你的意見。');
+            const payload = { model: ag.id, messages: [{ role: 'user', content: prompt }] };
+            const stid = sideThreadGet(ag); if (stid) payload.thread_id = stid;
+            const res = await agentApiCall(ag, '/v1/chat/completions', 'POST', payload);
+            if (res.thread_id && res.thread_id !== stid) { sideThreadSet(ag, res.thread_id); if (!ag.base && !ag.key) setThreadTitle(res.thread_id, '@' + ag.name + ' · ' + (question || '意見').slice(0, 20)); }
+            const ch = res.choices && res.choices[0] && res.choices[0].message;
+            const reply = ch ? (Array.isArray(ch.content) ? ch.content.map(c => c.text ? c.text.value : '').join('\n') : String(ch.content || '')) : '';
+            removeThinking(think);
+            const card = { name: ag.name, env: agentTag(ag), ask: typedText, prefix: prefixText, text: reply || '（沒有內容）', after: afterCount, ts: Date.now() };
+            cardsAdd(card);
+            els.chatWindow.appendChild(buildAgentCard(card)); revealTop(els.chatWindow.lastElementChild);
+          } catch (err) {
+            removeThinking(think);
+            const el = buildAgentCard({ name: ag.name, text: '❌ 呼叫失敗：' + err.message });
+            el.querySelector('.agent-actions').remove(); els.chatWindow.appendChild(el);
+          }
+        }));
+      } finally { setSending(false); loadThreads(); }
+    }
+
     // --- Helper Functions ---
     function appendMessage(role, text, attachments = [], requestPayload = null) {
-      let reportChip = false;
-      if (role === 'user') { if (hasReportTag(text)) { text = stripReport(text); reportChip = true; } else if (state.pendingReportChip) reportChip = true; state.pendingReportChip = false; }
+      let reportChip = false, pfx = { quotes: [], opinions: [] };
+      if (role === 'user') { pfx = splitPrefix(text); text = pfx.rest; if (hasReportTag(text)) { text = stripReport(text); reportChip = true; } else if (state.pendingReportChip) reportChip = true; state.pendingReportChip = false; }
       const div = document.createElement('div');
       div.className = `flex w-full mb-6 ${role === 'user' ? 'justify-end' : 'justify-start'}`;
       div.dataset.role = role;
@@ -1728,6 +2139,7 @@
              <div class="md-output text-sm sm:text-base break-words"></div>
              <div class="absolute -bottom-7 right-0 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                <button class="copy-btn text-xs text-slate-400 hover:text-primary-600 p-1 bg-slate-100 dark:bg-slate-700 rounded" title="複製內容"><i class="fa-regular fa-copy"></i></button>
+               ${role === 'assistant' ? `<button class="quote-btn text-xs text-slate-400 hover:text-primary-600 p-1 bg-slate-100 dark:bg-slate-700 rounded" title="選取段落引用（可多選）"><i class="fa-solid fa-quote-left"></i></button>` : ''}
                ${role === 'user' ? `<button class="edit-btn text-xs text-slate-400 hover:text-primary-600 p-1 bg-slate-100 dark:bg-slate-700 rounded" title="編輯後重新送出"><i class="fa-solid fa-pen"></i></button>` : ''}
                ${role === 'assistant' && state.pendingRaw ? `<button class="raw-btn text-xs text-slate-400 hover:text-primary-600 p-1 bg-slate-100 dark:bg-slate-700 rounded font-mono" title="檢視原始回應 JSON">{ }</button>` : ''}
                ${requestPayload ? `<button class="code-btn text-xs text-slate-400 hover:text-primary-600 p-1 bg-slate-100 dark:bg-slate-700 rounded font-mono font-bold" title="檢視 API 程式碼">&lt; &gt;</button>` : ''}
@@ -1737,9 +2149,10 @@
       `;
       
       const mdEl = div.querySelector('.md-output');
+      if (pfx.quotes.length || pfx.opinions.length) mdEl.insertAdjacentHTML('beforebegin', prefixChipsHtml(pfx));
       if (reportChip) mdEl.insertAdjacentHTML('beforebegin', '<div class="rp-chip">📊 報表模式</div>');
       const raw = state.pendingRaw; state.pendingRaw = null;
-      const origText = text;
+      const origText = text; div.__raw = origText;
       let canvasDocs = [];
       if (role === 'assistant') {
         const ex = extractCanvasFromText(text);
@@ -1762,7 +2175,8 @@
       state.pendingFiles = null;
       div.querySelector('.raw-btn')?.addEventListener('click', () => openRawModal(raw, '用來確認 API 實際回傳的格式'));
       if (role === 'user' && text) state.lastUserText = text;
-      div.querySelector('.edit-btn')?.addEventListener('click', () => startEdit(text, attachments));
+      div.querySelector('.edit-btn')?.addEventListener('click', () => { startEdit(text, attachments); if (pfx.quotes.length || pfx.opinions.length) { state.quotes = pfx.quotes.map(q => ({ text: q, el: null })); state.opinions = pfx.opinions.slice(); renderQuoteTray(); } });
+      div.querySelector('.quote-btn')?.addEventListener('click', () => toggleQuoteMode(div));
       div.querySelectorAll('.attach-chip').forEach(btn => btn.addEventListener('click', () => downloadFile(btn.dataset.id, btn.dataset.name)));
 
       div.querySelector('.copy-btn')?.addEventListener('click', () => { navigator.clipboard.writeText(origText); showToast('已複製內容', 'info'); });
@@ -1771,14 +2185,15 @@
       }
 
       els.chatWindow.appendChild(div);
-      if (state.loadingHistory) return;
+      if (state.loadingHistory) return div;
       if (role === 'assistant') revealTop(div); else scrollToBottom();
+      return div;
     }
 
-    function showThinking() {
+    function showThinking(label) {
       const id = 'thinking-' + Date.now();
       const div = document.createElement('div'); div.id = id; div.className = 'flex w-full mb-6 justify-start';
-      div.innerHTML = `<div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl rounded-tl-sm px-5 py-4 shadow-sm flex items-center gap-3"><div class="text-sm text-slate-500">思考中 <span class="rs-t tabular-nums"></span></div><div class="typing flex gap-1"><div class="dot w-1.5 h-1.5 bg-slate-400 rounded-full"></div><div class="dot w-1.5 h-1.5 bg-slate-400 rounded-full"></div><div class="dot w-1.5 h-1.5 bg-slate-400 rounded-full"></div></div></div>`;
+      div.innerHTML = `<div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl rounded-tl-sm px-5 py-4 shadow-sm flex items-center gap-3"><div class="text-sm text-slate-500">${escapeHtml(label || '思考中')} <span class="rs-t tabular-nums"></span></div><div class="typing flex gap-1"><div class="dot w-1.5 h-1.5 bg-slate-400 rounded-full"></div><div class="dot w-1.5 h-1.5 bg-slate-400 rounded-full"></div><div class="dot w-1.5 h-1.5 bg-slate-400 rounded-full"></div></div></div>`;
       els.chatWindow.appendChild(div); scrollToBottom(); return id;
     }
     function removeThinking(id) { document.getElementById(id)?.remove(); }
@@ -1838,7 +2253,7 @@
     });
     els.settings.toggleKey.addEventListener('click', () => { const i = els.settings.apiKey; i.type = i.type === 'password' ? 'text' : 'password'; els.settings.toggleKey.innerHTML = i.type==='password'?'<i class="fa-regular fa-eye"></i>':'<i class="fa-regular fa-eye-slash"></i>'; });
     els.sidebarToggle.addEventListener('click', () => toggleSidebar(true)); els.sidebarClose.addEventListener('click', () => toggleSidebar(false)); els.sidebarBackdrop.addEventListener('click', () => toggleSidebar(false)); els.themeToggle.addEventListener('click', toggleTheme);
-    els.newThreadBtn.addEventListener('click', () => { state.currentThreadId = null; state.selectedFiles.clear(); renderSelectedFiles(); els.chatWindow.innerHTML = ''; els.chatWindow.appendChild(document.createElement('div')).innerHTML = '<div class="flex flex-col items-center justify-center h-full text-slate-400 dark:text-slate-500 opacity-60"><i class="fa-regular fa-comments text-5xl mb-4"></i><p>新對話</p></div>'; if(window.innerWidth < 1024) toggleSidebar(false); });
+    els.newThreadBtn.addEventListener('click', () => { clearQuotes(); state.currentThreadId = null; state.selectedFiles.clear(); renderSelectedFiles(); els.chatWindow.innerHTML = ''; els.chatWindow.appendChild(document.createElement('div')).innerHTML = '<div class="flex flex-col items-center justify-center h-full text-slate-400 dark:text-slate-500 opacity-60"><i class="fa-regular fa-comments text-5xl mb-4"></i><p>新對話</p></div>'; if(window.innerWidth < 1024) toggleSidebar(false); });
     els.userInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') {
         // 輸入法選字/確認時的 Enter 不送出（避免送出注音/拼音預覽並在 commit 後把文字又寫回輸入框）
         if (e.isComposing || imeComposing || e.keyCode === 229 || Date.now() - imeLastEnd < 80) return;
