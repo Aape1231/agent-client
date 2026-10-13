@@ -339,6 +339,14 @@
     ::highlight(quoted) { background-color: rgba(250, 204, 21, .45); }
     html.dark ::highlight(quoted) { background-color: rgba(250, 204, 21, .35); }
     .qtray-hint { font-weight: 400; opacity: .75; }
+    .qt-main { min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+    .qt-note { font-size: 12px; font-weight: 600; color: #fef3c7; white-space: pre-wrap; word-break: break-word; }
+    .qtray-q { display: flex; flex-direction: column; margin-bottom: 4px; }
+    .qtray-note { width: calc(100% - 1.75rem); margin-left: 1.75rem; padding: 3px 8px; border-radius: 6px; border: 1px solid rgba(99,102,241,.35); background: rgba(255,255,255,.85); color: #1e293b; font-size: 12px; outline: none; }
+    .qtray-note:focus { border-color: #6366f1; box-shadow: 0 0 0 2px rgba(99,102,241,.2); }
+    html.dark .qtray-note { background: rgba(15,23,42,.6); color: #e2e8f0; }
+    .qtray-ag { padding: 2px 11px; border-radius: 999px; font-size: 12px; font-weight: 500; color: #fff; background: #4f46e5; cursor: pointer; }
+    .qtray-ag:hover { background: #4338ca; }
     #mention-pop { position: absolute; left: 0; bottom: calc(100% + 8px); z-index: 40; min-width: 240px; max-width: 100%; max-height: 220px; overflow-y: auto; border-radius: 12px; background: #fff; border: 1px solid #e2e8f0; box-shadow: 0 10px 30px rgba(0,0,0,.15); padding: 4px; display: none; }
     html.dark #mention-pop { background: #1e293b; border-color: #475569; }
     #mention-pop .mi { display: flex; flex-direction: column; padding: 6px 10px; border-radius: 8px; cursor: pointer; font-size: 13px; }
@@ -628,6 +636,13 @@
             <input type="checkbox" id="sticky-files-input" class="mt-1" />
             <span>同一對話中持續附加檔案（後續提問會自動再帶上該對話已上傳的檔案，可在輸入框上方個別移除）</span>
           </label>
+          <label class="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-300">
+            <span class="shrink-0">開啟對話時的位置</span>
+            <select id="open-anchor-input" class="px-2 py-1 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-sm">
+              <option value="question">最後一則提問置頂（預設）</option>
+              <option value="bottom">捲到最底</option>
+            </select>
+          </label>
           <fieldset class="text-sm text-slate-600 dark:text-slate-300 space-y-1">
             <legend class="mb-1 font-medium">送出方式</legend>
             <label class="flex items-center gap-2 cursor-pointer"><input type="radio" name="send-mode" value="enter" /> Enter 送出（Shift+Enter 換行）</label>
@@ -657,8 +672,14 @@
         </div>
 
         <div id="changelog" class="w-full max-w-lg mt-6 mb-10 px-2 text-sm text-slate-600 dark:text-slate-300">
-          <h3 class="font-semibold text-slate-800 dark:text-slate-100 mb-2">版本紀錄 <span class="text-xs font-normal text-slate-400">目前版本 v14.6</span></h3>
+          <h3 class="font-semibold text-slate-800 dark:text-slate-100 mb-2">版本紀錄 <span class="text-xs font-normal text-slate-400">目前版本 v14.9</span></h3>
           <div class="space-y-3">
+            <div><div class="font-medium text-slate-700 dark:text-slate-200">v14.9 <span class="text-xs text-slate-400">2026-10-13</span></div>
+              <ul class="list-disc pl-5 space-y-0.5"><li><b>重新整理後回到最後一個對話</b>：自動重新開啟上次查看的對話（切換環境、對話已被刪除時會安靜地回到空白新對話）</li><li><b>開啟對話的定位</b>：預設把該對話「最後一則提問」對齊視窗最上端（答案從提問下方開始看）；設定頁可改為「捲到最底」。圖表等延後渲染造成版面變動時會自動校正，你一捲動就停止校正</li><li><b>釘選對話</b>：側邊欄每個對話多一個圖釘鈕，釘選的對話集中在最上方「已釘選」區（即使不在最近 20 筆內也會顯示）；釘選只存在此瀏覽器</li></ul></div>
+            <div><div class="font-medium text-slate-700 dark:text-slate-200">v14.8 <span class="text-xs text-slate-400">2026-10-11</span></div>
+              <ul class="list-disc pl-5 space-y-0.5"><li><b>每段引用可各自附補充</b>：引用區的每一段下方有「針對這段補充」輸入欄（選填），可一次累積多段、各自補充，再一起送出；送出時以「↳ 我的補充」附在該段下方，對話中的引用卡會顯示 💬 補充</li><li>整體問題留空時：有補充 → 請 Agent 依各段補充逐段回應、沒補充的段落自行判斷；全部沒補充 → 自行判斷。對主 Agent 與 <code>@名稱</code>／「交給其他 Agent」都適用</li></ul></div>
+            <div><div class="font-medium text-slate-700 dark:text-slate-200">v14.7 <span class="text-xs text-slate-400">2026-10-11</span></div>
+              <ul class="list-disc pl-5 space-y-0.5"><li>移除「直接問 Agent」（會立即送出）；選取文字只出現「引用」，可累積多段後再一起送出</li><li>引用區新增「交給其他 Agent」按鈕列（每個名單中的 Agent 一顆，另有「全部」）：一鍵把所有引用交給該 Agent，不需另外下指令；若輸入框有字則當作要求一併帶上。也可直接輸入 <code>@名稱</code> 後送出（不寫要求）</li><li>不附要求時，不論主 Agent 或其他 Agent，都會被告知「請自行判斷最有幫助的回應並先說明判斷」</li></ul></div>
             <div><div class="font-medium text-slate-700 dark:text-slate-200">v14.6 <span class="text-xs text-slate-400">2026-10-11</span></div>
               <ul class="list-disc pl-5 space-y-0.5"><li><b>ChatGPT 式引用</b>：在助理回覆中直接用滑鼠選一句話（不需進入選取模式），放開滑鼠即出現「引用」「直接問 Agent」；被引用的文字會以黃色標示，移除引用即取消標示</li><li><b>空白提問由 Agent 判斷</b>：有引用但輸入框留空時，會告訴 Agent「使用者未附問題，請自行判斷最有幫助的回應並先說明判斷」，對話中顯示為「未附問題，由 Agent 自行判斷」；「直接問 Agent」一鍵引用並送出</li></ul></div>
             <div><div class="font-medium text-slate-700 dark:text-slate-200">v14.5 <span class="text-xs text-slate-400">2026-10-11</span></div>
@@ -827,7 +848,7 @@
         els.settings.envPreset.value = state.baseUrl;
       }
       updateRelayHint();
-      if (state.apiKey && state.baseUrl) loadThreads();
+      if (state.apiKey && state.baseUrl) { loadThreads(); const lt = recallThread(); if (lt) loadMessages(lt, { restore: true }); }
       else { switchView('settings'); showToast('請先完成連線設定', 'info'); }
     }
 
@@ -944,26 +965,59 @@
     function renderThreads() {
       els.threadsList.innerHTML = '';
       const list = state.threads || [];
-      if (!list.length) { els.threadsList.innerHTML = '<div class="p-4 text-center text-slate-400 text-sm">尚無對話</div>'; return; }
-      list.forEach(thread => {
+      const pins = getPins(), byId = new Map(list.map(t => [t.id, t]));
+      const pinned = pins.map(id => byId.get(id) || { id }), rest = list.filter(t => !pins.includes(t.id));
+      if (!pinned.length && !rest.length) { els.threadsList.innerHTML = '<div class="p-4 text-center text-slate-400 text-sm">尚無對話</div>'; return; }
+      const hdr = (txt) => { const h = document.createElement('div'); h.className = 'px-2 pt-2 pb-1 text-xs font-medium text-slate-400 dark:text-slate-500'; h.textContent = txt; els.threadsList.appendChild(h); };
+      if (pinned.length) hdr('已釘選');
+      const rows = pinned.map(t => [t, true]).concat(rest.map(t => [t, false]));
+      let restHdr = false;
+      rows.forEach(([thread, isPin]) => {
+        if (!isPin && pinned.length && !restHdr) { hdr('全部對話'); restHdr = true; }
         const title = threadDisplayTitle(thread.id);
         const el = document.createElement('div');
-        el.setAttribute('role', 'button'); el.tabIndex = 0; el.dataset.id = thread.id;
-        el.className = `w-full text-left p-3 pr-16 lg:pr-3 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 text-sm transition-colors mb-1 group relative cursor-pointer ${state.currentThreadId === thread.id ? 'bg-primary-50 dark:bg-slate-700 border-l-4 border-primary-500' : ''}`;
-        el.innerHTML = `<div class="font-mono text-xs text-slate-500 truncate mb-1">${escapeHtml(thread.id)}</div><div class="thread-title text-slate-700 dark:text-slate-300 truncate font-medium">${title ? escapeHtml(title) : '對話紀錄'}</div><div class="absolute right-2 top-1/2 -translate-y-1/2 flex items-center opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity"><span class="rename-thread-btn p-2 text-slate-400 hover:text-primary-600 cursor-pointer" title="重新命名"><i class="fa-regular fa-pen-to-square"></i></span><span class="delete-thread-btn p-2 text-red-400 hover:text-red-600 cursor-pointer" title="刪除"><i class="fa-regular fa-trash-can"></i></span></div>`;
+        el.setAttribute('role', 'button'); el.tabIndex = 0; el.dataset.id = thread.id; if (isPin) el.dataset.pinned = '1';
+        el.className = `w-full text-left p-3 pr-24 lg:pr-3 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 text-sm transition-colors mb-1 group relative cursor-pointer ${state.currentThreadId === thread.id ? 'bg-primary-50 dark:bg-slate-700 border-l-4 border-primary-500' : ''}`;
+        el.innerHTML = `<div class="font-mono text-xs text-slate-500 truncate mb-1">${isPin ? '<i class="fa-solid fa-thumbtack mr-1 text-primary-600"></i>' : ''}${escapeHtml(thread.id)}</div><div class="thread-title text-slate-700 dark:text-slate-300 truncate font-medium">${title ? escapeHtml(title) : '對話紀錄'}</div><div class="absolute right-2 top-1/2 -translate-y-1/2 flex items-center opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity"><span class="pin-thread-btn p-2 ${isPin ? 'text-primary-600' : 'text-slate-400 hover:text-primary-600'} cursor-pointer" title="${isPin ? '取消釘選' : '釘選到最上方'}"><i class="fa-solid fa-thumbtack"></i></span><span class="rename-thread-btn p-2 text-slate-400 hover:text-primary-600 cursor-pointer" title="重新命名"><i class="fa-regular fa-pen-to-square"></i></span><span class="delete-thread-btn p-2 text-red-400 hover:text-red-600 cursor-pointer" title="刪除"><i class="fa-regular fa-trash-can"></i></span></div>`;
         el.onclick = (e) => {
           if (e.target.closest('.thread-title-input')) return;
-          if (e.target.closest('.delete-thread-btn')) deleteThread(thread.id);
+          if (e.target.closest('.pin-thread-btn')) togglePin(thread.id);
+          else if (e.target.closest('.delete-thread-btn')) deleteThread(thread.id);
           else if (e.target.closest('.rename-thread-btn')) startRename(el, thread.id);
           else loadMessages(thread.id);
         };
-        el.ondblclick = (e) => { if (!e.target.closest('.delete-thread-btn, .rename-thread-btn')) startRename(el, thread.id); };
+        el.ondblclick = (e) => { if (!e.target.closest('.pin-thread-btn, .delete-thread-btn, .rename-thread-btn')) startRename(el, thread.id); };
         el.onkeydown = (e) => { if (e.target === el && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); loadMessages(thread.id); } };
         els.threadsList.appendChild(el);
       });
     }
 
-    async function loadMessages(threadId) {
+    // ---- v14.9：記住最後對話、開啟定位、釘選 ----
+    const LAST_KEY = 'lastThread', PIN_KEY = 'pinnedThreads';
+    function rememberThread(id) { try { if (id) localStorage.setItem(LAST_KEY, JSON.stringify({ id, base: state.baseUrl })); else localStorage.removeItem(LAST_KEY); } catch (e) {} }
+    function recallThread() { try { const o = JSON.parse(localStorage.getItem(LAST_KEY) || 'null'); return (o && o.id && o.base === state.baseUrl) ? o.id : null; } catch (e) { return null; } }
+    function getOpenAnchor() { try { return localStorage.getItem('openAnchor') === 'bottom' ? 'bottom' : 'question'; } catch (e) { return 'question'; } }
+    let anchorTok = 0;
+    function anchorAfterLoad() {
+      const cw = els.chatWindow, tok = ++anchorTok; let userMoved = false;
+      const mv = () => { userMoved = true; };
+      ['wheel', 'touchstart', 'mousedown', 'keydown'].forEach(ev => cw.addEventListener(ev, mv, { once: true, passive: true }));
+      const run = () => {
+        if (tok !== anchorTok || userMoved) return;
+        if (getOpenAnchor() === 'bottom') { cw.scrollTo({ top: cw.scrollHeight, behavior: 'instant' }); return; }
+        const us = Array.from(cw.children).filter(d => d.dataset && d.dataset.role === 'user');
+        const last = us[us.length - 1];
+        if (!last) { cw.scrollTo({ top: cw.scrollHeight, behavior: 'instant' }); return; }
+        const top = last.getBoundingClientRect().top - cw.getBoundingClientRect().top + cw.scrollTop;
+        cw.scrollTo({ top: Math.max(0, top - 12), behavior: 'instant' });
+      };
+      run(); [250, 900].forEach(ms => setTimeout(run, ms)); // 圖表等延後渲染造成高度變動時再校正（使用者一旦自行捲動即停止）
+    }
+    function getPins() { try { const a = JSON.parse(localStorage.getItem(PIN_KEY) || '[]'); return Array.isArray(a) ? a : []; } catch (e) { return []; } }
+    function setPins(a) { try { localStorage.setItem(PIN_KEY, JSON.stringify(a)); } catch (e) {} }
+    function togglePin(id) { let a = getPins(); if (a.includes(id)) a = a.filter(x => x !== id); else a.unshift(id); setPins(a); renderThreads(); }
+    async function loadMessages(threadId, opts) {
+      opts = opts || {};
       state.currentThreadId = threadId; clearQuotes();
       Array.from(els.threadsList.children).forEach(child => { if(child.innerHTML.includes(threadId)) child.classList.add('bg-primary-50', 'dark:bg-slate-700', 'border-l-4', 'border-primary-500'); else child.classList.remove('bg-primary-50', 'dark:bg-slate-700', 'border-l-4', 'border-primary-500'); });
       if(window.innerWidth < 1024) toggleSidebar(false);
@@ -995,8 +1049,13 @@
         state.selectedFiles.clear();
         if (isStickyFiles()) restored.forEach((f, id) => state.selectedFiles.set(id, { id, filename: f.filename || nameForFile(id) || id, carried: true }));
         renderSelectedFiles();
-        scrollToBottom(true);
-      } catch (err) { state.loadingHistory = false; showToast(`讀取訊息失敗: ${err.message}`, 'error'); }
+        rememberThread(threadId);
+        anchorAfterLoad();
+      } catch (err) {
+        state.loadingHistory = false;
+        if (opts.restore) { if (state.currentThreadId === threadId) { state.currentThreadId = null; rememberThread(null); els.chatWindow.innerHTML = '<div class="flex flex-col items-center justify-center h-full text-slate-400 dark:text-slate-500 opacity-60"><i class="fa-regular fa-comments text-5xl mb-4"></i><p>新對話</p></div>'; } }
+        else showToast(`讀取訊息失敗: ${err.message}`, 'error');
+      }
     }
 
     async function sendMessage() {
@@ -1005,7 +1064,7 @@
       { const _ro = rosterGet(); if (_ro.length && typedText) { const _mn = detectMentions(typedText, _ro); if (_mn.length) return runAgentCalls(typedText, _mn); } }
       const reportOn = isReportMode() || !!state.forceReport; state.forceReport = false;
       const hasFiles = state.selectedFiles.size > 0;
-      const text = typedText || (state.opinions.length ? OPINION_DEFAULT_Q : state.quotes.length ? QUOTE_DEFAULT_Q : ((reportOn && hasFiles) ? REPORT_DEFAULT_TEXT : ''));
+      const text = typedText || (state.opinions.length ? OPINION_DEFAULT_Q : state.quotes.length ? (state.quotes.some(q => oneLine(q.note)) ? QUOTE_NOTES_Q : QUOTE_DEFAULT_Q) : ((reportOn && hasFiles) ? REPORT_DEFAULT_TEXT : ''));
       if (state.uploading.size) return showToast('檔案上傳中，請稍候再送出', 'info');
       if (!text && !hasFiles) return;
       if (!state.assistantId) return showToast('請先設定 Assistant ID', 'error');
@@ -1041,7 +1100,7 @@
 
       try {
         const res = await apiCall('/v1/chat/completions', 'POST', payload, false, ctrl.signal);
-        if (!state.currentThreadId && res.thread_id) { state.currentThreadId = res.thread_id; if (text) setDerivedTitle(res.thread_id, text.replace(/\s+/g, ' ').slice(0, 28)); loadThreads(); }
+        if (!state.currentThreadId && res.thread_id) { state.currentThreadId = res.thread_id; rememberThread(res.thread_id); if (text) setDerivedTitle(res.thread_id, text.replace(/\s+/g, ' ').slice(0, 28)); loadThreads(); }
         
         const recTid = payload.thread_id || res.thread_id;
         if (sentNewFiles.length && recTid) recordThreadFiles(recTid, text, sentNewFiles);
@@ -1779,7 +1838,13 @@
     })();
 
     // ===== v14.3: 選取段落引用 + @agent 協作 =====
-    const QUOTE_INSTR = '以下是我從先前回覆中選取的段落，請針對這些內容回答我的問題：';
+    const QUOTE_INSTR = '以下是我從先前回覆中選取的段落。段落下方若有「↳ 我的補充」，是我針對該段的說明或問題，請依此回應；沒有補充的段落，請依我的整體提問，或自行判斷最有幫助的回應：';
+    const QUOTE_NOTES_Q = '（我沒有附整體問題。請依各段引用下方「↳ 我的補充」逐段回應；沒有補充的段落，請自行判斷最有幫助的回應。第一句請先簡短說明你的判斷。）';
+    const AGENT_NOTES_Q = '（請依各段下方「↳ 使用者補充」逐段回應；沒有補充的段落，請自行判斷最有幫助的回應。第一句請先簡短說明你的判斷。）';
+    const NOTE_MARK = '\n   ↳ 我的補充：';
+    function splitNote(s) { const m = String(s == null ? '' : s).match(/^([\s\S]*?)\n\s*↳ 我的補充：([\s\S]*)$/); return m ? { text: m[1], note: m[2].trim() } : { text: String(s == null ? '' : s), note: '' }; }
+    const oneLine = (s) => String(s == null ? '' : s).replace(/\s+/g, ' ').trim();
+    const AGENT_AUTO_Q = '（使用者沒有附具體問題。請依據以上內容，自行判斷最有幫助的回應——例如查核、指出風險或疑點、補充不同觀點、提出建議。第一句請先簡短說明你的判斷。）';
     const QUOTE_DEFAULT_Q = '（我沒有附上具體問題。請你依據以上引用的內容，自行判斷我最可能想知道什麼，直接給出最有幫助的回應——例如補充說明、查核或指出疑點、提出延伸建議。回答的第一句請先簡短說明你的判斷。）';
     const OPINION_DEFAULT_Q = '請評估以上意見：說明你是否同意、哪些應採納，並據此修正或補充你先前的回覆。';
     const QUOTE_MAX_ITEMS = 30, QUOTE_MAX_CHARS = 1200, OPINION_MAX = 8000, CTX_MAX = 8000;
@@ -1795,7 +1860,7 @@
     // 訊息前綴（引用段落 + 其他 agent 意見）：以標籤包住，存進伺服器歷史後仍可還原成卡片
     function buildPrefixBlocks(quotesOnly) {
       let out = '';
-      if (state.quotes.length) out += '<quoted_passages>\n' + QUOTE_INSTR + '\n' + state.quotes.map((q, i) => '[' + (i + 1) + '] ' + cleanTag(q.text)).join('\n') + '\n</quoted_passages>\n\n';
+      if (state.quotes.length) out += '<quoted_passages>\n' + QUOTE_INSTR + '\n' + state.quotes.map((q, i) => '[' + (i + 1) + '] ' + cleanTag(q.text) + (oneLine(q.note) ? NOTE_MARK + cleanTag(oneLine(q.note)) : '')).join('\n') + '\n</quoted_passages>\n\n';
       if (!quotesOnly) state.opinions.forEach(o => { out += '<agent_opinion name="' + String(o.name).replace(/["<>]/g, '') + '">\n' + cleanTag(o.text) + '\n</agent_opinion>\n\n'; });
       return out;
     }
@@ -1804,7 +1869,7 @@
       const res = { quotes: [], opinions: [], rest: t };
       let m = res.rest.match(/^\s*<quoted_passages>\n?([\s\S]*?)<\/quoted_passages>\s*/);
       if (m) {
-        const body = m[1].replace(QUOTE_INSTR, '').replace(/^\n/, '').trim();
+        let body = m[1]; const bi = body.search(/(^|\n)\[1\] /); body = (bi >= 0 ? body.slice(bi) : body.replace(QUOTE_INSTR, '')).trim();
         res.quotes = body ? body.split(/\n(?=\[\d+\] )/).map(s => s.replace(/^\[\d+\] /, '')) : [];
         res.rest = res.rest.slice(m[0].length);
       }
@@ -1813,7 +1878,7 @@
       return res;
     }
     function prefixChipsHtml(pfx) {
-      const items = pfx.quotes.map((q, i) => '<div class="qt-item" title="點擊展開／收合"><span class="qt-n">' + (i + 1) + '</span><span class="qt-t">' + escapeHtml(q) + '</span></div>')
+      const items = pfx.quotes.map((q, i) => { const s = splitNote(q); return '<div class="qt-item" title="點擊展開／收合"><span class="qt-n">' + (i + 1) + '</span><span class="qt-main"><span class="qt-t">' + escapeHtml(s.text) + '</span>' + (s.note ? '<span class="qt-note">💬 ' + escapeHtml(s.note) + '</span>' : '') + '</span></div>'; })
         .concat(pfx.opinions.map(o => '<div class="qt-item op" title="點擊展開／收合"><span class="qt-n">@' + escapeHtml(o.name) + '</span><span class="qt-t">' + escapeHtml(o.text) + '</span></div>'));
       return items.length ? '<div class="qt-list">' + items.join('') + '</div>' : '';
     }
@@ -1826,6 +1891,15 @@
       const x = document.createElement('button'); x.type = 'button'; x.setAttribute('aria-label', '移除'); x.innerHTML = '<i class="fa-solid fa-xmark"></i>'; x.onclick = onRemove;
       d.append(a, b, x); return d;
     }
+    function trayQuote(q, i) {
+      const wrap = document.createElement('div'); wrap.className = 'qtray-q';
+      wrap.appendChild(trayItem(String(i + 1), q.text, false, () => removeQuote(i)));
+      const inp = document.createElement('input'); inp.type = 'text'; inp.className = 'qtray-note'; inp.maxLength = 500;
+      inp.placeholder = '針對這段補充…（選填，可留空）'; inp.value = q.note || '';
+      inp.addEventListener('input', () => { q.note = inp.value; });
+      inp.addEventListener('keydown', (e) => { if (e.key === 'Enter' && !e.isComposing && e.keyCode !== 229) { e.preventDefault(); const nx = wrap.nextElementSibling && wrap.nextElementSibling.querySelector('.qtray-note'); (nx || els.userInput).focus(); } });
+      wrap.appendChild(inp); return wrap;
+    }
     function renderQuoteTray() {
       const tray = document.getElementById('quote-tray'); if (!tray) return;
       const n = state.quotes.length + state.opinions.length;
@@ -1833,13 +1907,31 @@
       tray.classList.toggle('hidden', !n); tray.classList.toggle('flex', !!n);
       if (!n) return;
       const head = document.createElement('div'); head.className = 'flex items-center justify-between gap-2 w-full';
-      head.innerHTML = '<span class="font-medium"><i class="fa-solid fa-quote-left mr-1.5"></i>將隨下一則訊息帶給 Agent（' + n + '）' + ((state.quotes.length && !state.opinions.length) ? '<span class="qtray-hint ml-2">輸入框留空直接送出＝由 Agent 自行判斷</span>' : '') + '</span><button type="button" class="underline hover:no-underline shrink-0">全部清除</button>';
+      head.innerHTML = '<span class="font-medium"><i class="fa-solid fa-quote-left mr-1.5"></i>將隨下一則訊息帶給 Agent（' + n + '）' + ((state.quotes.length && !state.opinions.length) ? '<span class="qtray-hint ml-2">可繼續選取更多；每段可在下方補充；整體問題留空＝由 Agent 判斷</span>' : '') + '</span><button type="button" class="underline hover:no-underline shrink-0">全部清除</button>';
       head.querySelector('button').onclick = clearQuotes;
       tray.appendChild(head);
-      const list = document.createElement('div'); list.className = 'flex flex-col w-full max-h-28 overflow-y-auto';
+      const list = document.createElement('div'); list.className = 'flex flex-col w-full max-h-52 overflow-y-auto';
       state.opinions.forEach((o, i) => list.appendChild(trayItem('@' + o.name, o.text, true, () => { state.opinions.splice(i, 1); renderQuoteTray(); })));
-      state.quotes.forEach((q, i) => list.appendChild(trayItem(String(i + 1), q.text, false, () => removeQuote(i))));
+      state.quotes.forEach((q, i) => list.appendChild(trayQuote(q, i)));
       tray.appendChild(list);
+      const agRow = trayAgentRow(); if (agRow) tray.appendChild(agRow);
+    }
+    function trayAgentRow() {
+      const ro = rosterGet(); if (!ro.length || !state.quotes.length) return null;
+      const names = Array.from(new Set(ro.map(r => r.name)));
+      const row = document.createElement('div'); row.className = 'flex flex-wrap items-center gap-1.5 w-full mt-1.5';
+      row.innerHTML = '<span class="qtray-hint">交給其他 Agent（連同各段補充；可再補整體要求，留空由它自行判斷）：</span>';
+      const mk = (label, ags) => { const b = document.createElement('button'); b.type = 'button'; b.className = 'qtray-ag'; b.textContent = label; b.onclick = () => askAgentsFromTray(ags); row.appendChild(b); };
+      names.forEach(n => { const ags = ro.filter(r => r.name === n); mk('@' + n + (ags.length > 1 ? ' ×' + ags.length : ''), ags); });
+      if (names.length > 1) mk('全部', ro);
+      return row;
+    }
+    function askAgentsFromTray(ags) {
+      if (state.isSending) return showToast('Agent 仍在處理上一則訊息，請稍候', 'info');
+      if (!state.quotes.length) return;
+      const typed = els.userInput.value.trim();
+      const names = Array.from(new Set(ags.map(a => a.name)));
+      runAgentCalls(names.map(n => '@' + n).join(' ') + (typed ? ' ' + typed : ''), ags);
     }
     const qHL = (window.CSS && CSS.highlights && window.Highlight) ? new Highlight() : null;
     if (qHL) { try { CSS.highlights.set('quoted', qHL); } catch (e) {} }
@@ -2038,15 +2130,12 @@
     (function initSelectionQuote() {
       const bar = document.createElement('div'); bar.id = 'qsel-bar';
       const btn = document.createElement('button'); btn.id = 'qsel-btn'; btn.type = 'button'; btn.innerHTML = '<i class="fa-solid fa-quote-left mr-1.5"></i>引用';
-      const ask = document.createElement('button'); ask.id = 'qsel-ask'; ask.type = 'button'; ask.innerHTML = '<i class="fa-solid fa-wand-magic-sparkles mr-1.5"></i>直接問 Agent';
-      ask.title = '引用這段並直接送出，不附問題，由 Agent 自行判斷要回應什麼';
-      bar.append(btn, ask); document.body.appendChild(bar);
+      bar.append(btn); document.body.appendChild(bar);
       let cur = null; // { text, rng }
       const hide = () => { bar.style.display = 'none'; cur = null; };
       bar.addEventListener('mousedown', (e) => e.preventDefault());
       const take = () => { if (!cur) return false; const ok = addQuote(cur.text, null, cur.rng); const s = window.getSelection(); if (s) s.removeAllRanges(); hide(); return ok; };
       btn.addEventListener('click', () => { take(); try { els.userInput.focus(); } catch (e) {} });
-      ask.addEventListener('click', () => { const had = !!cur; take(); if (had) sendMessage(); });
       function evalSel() {
         const sel = window.getSelection();
         if (!sel || sel.isCollapsed || !sel.rangeCount) return hide();
@@ -2057,7 +2146,7 @@
         const txt = qtNorm(sel.toString(), true); if (txt.length < 2) return hide();
         cur = { text: txt, rng: r.cloneRange() };
         const rect = r.getBoundingClientRect();
-        const w = 190; let top = rect.bottom + 8; if (top > window.innerHeight - 50) top = Math.max(8, rect.top - 44);
+        const w = 90; let top = rect.bottom + 8; if (top > window.innerHeight - 50) top = Math.max(8, rect.top - 44);
         bar.style.left = Math.min(Math.max(8, rect.left + rect.width / 2 - w / 2), window.innerWidth - w - 8) + 'px';
         bar.style.top = top + 'px'; bar.style.display = 'block';
       }
@@ -2217,6 +2306,7 @@
     els.userInput.addEventListener('keydown', (e) => {
       if (!mp.box || mp.box.style.display !== 'block' || !mp.items.length || e.isComposing || e.keyCode === 229) return;
       if (e.key === 'ArrowDown' || e.key === 'ArrowUp') { e.preventDefault(); e.stopImmediatePropagation(); mp.idx = (mp.idx + (e.key === 'ArrowDown' ? 1 : -1) + mp.items.length) % mp.items.length; showMention(); }
+      else if (e.key === 'Enter' && (() => { const tk = mentionToken(); return tk && mp.items.some(it => it.name === tk.q); })()) { hideMention(); } // 名稱已完整輸入：Enter 直接送出
       else if (e.key === 'Enter' || e.key === 'Tab') { e.preventDefault(); e.stopImmediatePropagation(); pickMention(mp.idx); }
       else if (e.key === 'Escape') { e.preventDefault(); e.stopImmediatePropagation(); hideMention(); }
     });
@@ -2278,8 +2368,9 @@
     async function runAgentCalls(typedText, mentions) {
       const question = stripMentions(typedText, mentions);
       const quoteTexts = state.quotes.map(q => q.text);
-      let ctx = quoteTexts.length ? quoteTexts.map((t, i) => '[' + (i + 1) + '] ' + t).join('\n') : lastAssistantText();
-      const ctxLabel = quoteTexts.length ? '使用者選取的段落' : '主 Agent 的上一則回覆';
+      const hasNotes = state.quotes.some(q => oneLine(q.note));
+      let ctx = quoteTexts.length ? state.quotes.map((q, i) => '[' + (i + 1) + '] ' + q.text + (oneLine(q.note) ? '\n   ↳ 使用者補充：' + oneLine(q.note) : '')).join('\n') : lastAssistantText();
+      const ctxLabel = quoteTexts.length ? '使用者選取的段落（「↳ 使用者補充」是使用者針對該段的說明或問題）' : '主 Agent 的上一則回覆';
       let truncated = false; if (ctx.length > CTX_MAX) { ctx = ctx.slice(0, CTX_MAX) + '\n…（以下省略）'; truncated = true; }
       const prefixText = buildPrefixBlocks(true);
       const afterCount = serverMsgCount();
@@ -2292,7 +2383,7 @@
         await Promise.all(mentions.map(async (ag) => {
           const think = showThinking('@' + ag.label + ' 處理中');
           try {
-            const prompt = (ag.instr ? ag.instr.trim() + '\n\n' : '') + (ctx ? '以下是' + ctxLabel + '：\n<context>\n' + ctx + '\n</context>\n\n' : '') + '使用者的要求：' + (question || '請針對以上內容給出你的意見。');
+            const prompt = (ag.instr ? ag.instr.trim() + '\n\n' : '') + (ctx ? '以下是' + ctxLabel + '：\n<context>\n' + ctx + '\n</context>\n\n' : '') + '使用者的要求：' + (question || (quoteTexts.length ? (hasNotes ? AGENT_NOTES_Q : AGENT_AUTO_Q) : '請針對以上內容給出你的意見。'));
             const payload = { model: ag.id, messages: [{ role: 'user', content: prompt }] };
             const stid = sideThreadGet(ag); if (stid) payload.thread_id = stid;
             const res = await agentApiCall(ag, '/v1/chat/completions', 'POST', payload);
@@ -2315,7 +2406,7 @@
     // --- Helper Functions ---
     function appendMessage(role, text, attachments = [], requestPayload = null) {
       let reportChip = false, autoQ = false, pfx = { quotes: [], opinions: [] };
-      if (role === 'user') { pfx = splitPrefix(text); text = pfx.rest; if (hasReportTag(text)) { text = stripReport(text); reportChip = true; } if (pfx.quotes.length && String(text).trim() === QUOTE_DEFAULT_Q) { text = '*（未附問題，由 Agent 自行判斷）*'; autoQ = true; } else if (state.pendingReportChip) reportChip = true; state.pendingReportChip = false; }
+      if (role === 'user') { pfx = splitPrefix(text); text = pfx.rest; if (hasReportTag(text)) { text = stripReport(text); reportChip = true; } if (pfx.quotes.length && String(text).trim() === QUOTE_DEFAULT_Q) { text = '*（未附問題，由 Agent 自行判斷）*'; autoQ = true; } else if (pfx.quotes.length && String(text).trim() === QUOTE_NOTES_Q) { text = '*（依各段引用的補充回應）*'; autoQ = true; } else if (state.pendingReportChip) reportChip = true; state.pendingReportChip = false; }
       const div = document.createElement('div');
       div.className = `flex w-full mb-6 ${role === 'user' ? 'justify-end' : 'justify-start'}`;
       div.dataset.role = role;
@@ -2374,7 +2465,7 @@
       state.pendingFiles = null;
       div.querySelector('.raw-btn')?.addEventListener('click', () => openRawModal(raw, '用來確認 API 實際回傳的格式'));
       if (role === 'user' && text) state.lastUserText = text;
-      div.querySelector('.edit-btn')?.addEventListener('click', () => { startEdit(autoQ ? '' : text, attachments); if (pfx.quotes.length || pfx.opinions.length) { state.quotes = pfx.quotes.map(q => ({ text: q, el: null })); state.opinions = pfx.opinions.slice(); renderQuoteTray(); } });
+      div.querySelector('.edit-btn')?.addEventListener('click', () => { startEdit(autoQ ? '' : text, attachments); if (pfx.quotes.length || pfx.opinions.length) { state.quotes = pfx.quotes.map(q => { const s = splitNote(q); return { text: s.text, note: s.note, el: null }; }); state.opinions = pfx.opinions.slice(); renderQuoteTray(); } });
       div.querySelector('.quote-btn')?.addEventListener('click', () => toggleQuoteMode(div));
       div.querySelectorAll('.attach-chip').forEach(btn => btn.addEventListener('click', () => downloadFile(btn.dataset.id, btn.dataset.name)));
 
@@ -2439,7 +2530,7 @@
       } catch (err) { els.fileDrawer.list.innerHTML = `<div class="text-red-500 text-sm text-center">無法載入: ${err.message}</div>`; }
     }
     
-    async function deleteThread(id) { if(!confirm('確定刪除此對話？')) return; try { await apiCall(`/v1/threads/${id}`, 'DELETE'); setThreadTitle(id, ''); setDerivedTitle(id, ''); forgetThreadFiles(id); if(state.currentThreadId === id) { state.currentThreadId = null; els.chatWindow.innerHTML = ''; els.chatWindow.appendChild(document.createElement('div')).innerHTML = '<div class="flex flex-col items-center justify-center h-full text-slate-400 dark:text-slate-500 opacity-60"><i class="fa-regular fa-comments text-5xl mb-4"></i><p>對話已刪除</p></div>'; } loadThreads(); showToast('對話已刪除'); } catch(err) { showToast('刪除失敗', 'error'); } }
+    async function deleteThread(id) { if(!confirm('確定刪除此對話？')) return; try { await apiCall(`/v1/threads/${id}`, 'DELETE'); setThreadTitle(id, ''); setDerivedTitle(id, ''); forgetThreadFiles(id); setPins(getPins().filter(x => x !== id)); if (recallThread() === id) rememberThread(null); if(state.currentThreadId === id) { state.currentThreadId = null; els.chatWindow.innerHTML = ''; els.chatWindow.appendChild(document.createElement('div')).innerHTML = '<div class="flex flex-col items-center justify-center h-full text-slate-400 dark:text-slate-500 opacity-60"><i class="fa-regular fa-comments text-5xl mb-4"></i><p>對話已刪除</p></div>'; } loadThreads(); showToast('對話已刪除'); } catch(err) { showToast('刪除失敗', 'error'); } }
 
     // --- Listeners ---
     els.settings.envPreset.addEventListener('change', (e) => { if (e.target.value === 'custom') { els.settings.customUrl.classList.remove('hidden'); els.settings.customUrl.focus(); } else els.settings.customUrl.classList.add('hidden'); });
@@ -2528,6 +2619,8 @@
     els.userInput.addEventListener('compositionstart', () => { imeComposing = true; });
     els.userInput.addEventListener('compositionend', () => { imeComposing = false; imeLastEnd = Date.now(); });
     els.userInput.addEventListener('input', autoResizeInput);
+    const anchorSel = document.getElementById('open-anchor-input'); anchorSel.value = getOpenAnchor();
+    anchorSel.addEventListener('change', () => { try { localStorage.setItem('openAnchor', anchorSel.value); } catch (e) {} });
     const stickyToggle = document.getElementById('sticky-files-input');
     stickyToggle.checked = isStickyFiles();
     stickyToggle.addEventListener('change', () => { try { localStorage.setItem('stickyFiles', stickyToggle.checked); } catch (e) {} });
@@ -2559,7 +2652,7 @@
     function threadDisplayTitle(id) { return getThreadTitle(id) || getDerivedTitle(id); }
     const titleTried = new Set();
     async function deriveTitles() {
-      const pending = (state.threads || []).filter(t => !getThreadTitle(t.id) && !getDerivedTitle(t.id) && !titleTried.has(t.id));
+      const pending = (state.threads || []).concat(getPins().filter(id => !(state.threads || []).some(t => t.id === id)).map(id => ({ id }))).filter(t => !getThreadTitle(t.id) && !getDerivedTitle(t.id) && !titleTried.has(t.id));
       pending.forEach(t => titleTried.add(t.id));
       let i = 0;
       const worker = async () => {
