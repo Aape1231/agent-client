@@ -353,14 +353,29 @@
     #mention-pop .mi small { opacity: .6; font-size: 11px; }
     #mention-pop .mi.on, #mention-pop .mi:hover { background: rgba(99,102,241,.14); }
     #mention-pop .mh { padding: 8px 10px; font-size: 12px; opacity: .7; }
-    .agent-card { background: #fff; border: 1px solid #c7d2fe; border-left: 4px solid #6366f1; border-radius: 16px; border-top-left-radius: 4px; padding: 14px 18px; }
-    html.dark .agent-card { background: #1e293b; border-color: #4338ca; border-left-color: #818cf8; }
-    .agent-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; padding-top: 10px; border-top: 1px dashed rgba(99,102,241,.35); }
-    .agent-actions button { font-size: 12px; padding: 4px 10px; border-radius: 8px; border: 1px solid rgba(99,102,241,.45); color: #4338ca; }
-    html.dark .agent-actions button { color: #c7d2fe; }
-    .agent-actions button:hover { background: rgba(99,102,241,.12); }
-    .agent-actions button.pri { background: #4f46e5; border-color: #4f46e5; color: #fff; }
-    .agent-actions button.pri:hover { background: #4338ca; }
+    /* 其他 Agent（非主 Agent）的視覺識別：每個 Agent 一個固定顏色 --ac */
+    .agent-card { --ac: #6366f1; position: relative; background: #fff; background: color-mix(in srgb, var(--ac) 7%, #ffffff); border: 2px solid var(--ac); border-radius: 16px; border-top-left-radius: 4px; overflow: hidden; padding: 0; }
+    html.dark .agent-card { background: #1e293b; background: color-mix(in srgb, var(--ac) 16%, #1e293b); }
+    .agent-card::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 6px; background: var(--ac); }
+    .ac-head { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; padding: 9px 14px 9px 20px; background: color-mix(in srgb, var(--ac) 14%, transparent); border-bottom: 1px solid color-mix(in srgb, var(--ac) 35%, transparent); font-size: 12px; }
+    .ac-badge { display: inline-flex; align-items: center; gap: 6px; padding: 2px 10px; border-radius: 999px; background: var(--ac); color: #fff; font-weight: 600; font-size: 12.5px; }
+    .agent-card .ac-body { padding: 12px 18px 14px 20px; }
+    .agent-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; padding-top: 10px; border-top: 1px dashed color-mix(in srgb, var(--ac) 50%, transparent); }
+    .agent-actions button { font-size: 12px; padding: 4px 10px; border-radius: 8px; border: 1px solid var(--ac); color: var(--ac); }
+    html.dark .agent-actions button { filter: brightness(1.35); }
+    .agent-actions button:hover { background: color-mix(in srgb, var(--ac) 14%, transparent); }
+    .agent-actions button.pri { background: var(--ac); border-color: var(--ac); color: #fff; }
+    .agent-actions button.pri:hover { filter: brightness(.9); }
+    /* 送給其他 Agent 的本機提問氣泡 */
+    .side-ask .user-bubble { background: var(--ac) !important; }
+    .side-chip { display: inline-flex; align-items: center; gap: 4px; padding: 1px 8px; border-radius: 999px; background: var(--ac); color: #fff; font-weight: 600; }
+    /* 輸入框上方的「目標」提示列 */
+    #target-bar { display: none; align-items: center; flex-wrap: wrap; gap: 6px 8px; max-width: 56rem; margin: 0 auto 8px; padding: 6px 12px; border-radius: 10px; font-size: 12.5px; border: 2px solid var(--ac, #6366f1); background: color-mix(in srgb, var(--ac, #6366f1) 9%, transparent); color: inherit; }
+    #target-bar.on { display: flex; }
+    #target-bar .side-chip { font-size: 12.5px; }
+    .qtray-ag { background: var(--ac, #4f46e5) !important; }
+    .qt-item.op { border-left-color: var(--ac, #fde68a); border-left-width: 5px; }
+    .qt-item.op .qt-n { padding: 0 6px; border-radius: 999px; background: var(--ac, transparent); }
   </style>
 </head>
 <body class="h-full bg-slate-50 text-slate-800 dark:bg-slate-900 dark:text-slate-200 overflow-hidden selection:bg-primary-100 selection:text-primary-700">
@@ -453,6 +468,7 @@
               </span>
             </div>
             <div id="run-status" class="hidden max-w-4xl mx-auto mb-2 flex-wrap items-center justify-between gap-x-3 gap-y-2 px-3 py-2 rounded-lg bg-sky-50 dark:bg-sky-900/20 border border-sky-200 dark:border-sky-900/50 text-xs text-sky-800 dark:text-sky-200" role="status" aria-live="polite"></div>
+            <div id="target-bar" aria-live="polite"></div>
             <div id="quote-tray" class="hidden max-w-4xl mx-auto mb-2 flex-col gap-1.5 px-3 py-2 rounded-lg bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-200 dark:border-indigo-900/50 text-xs text-indigo-900 dark:text-indigo-100"></div>
             <div id="selected-files-area" class="flex flex-wrap gap-2 mb-2 empty:hidden"></div>
             <div class="relative max-w-4xl mx-auto flex gap-3 items-end bg-slate-100 dark:bg-slate-700/50 p-2 rounded-2xl border border-transparent focus-within:border-primary-500 focus-within:bg-white dark:focus-within:bg-slate-800 transition-all shadow-inner">
@@ -672,8 +688,10 @@
         </div>
 
         <div id="changelog" class="w-full max-w-lg mt-6 mb-10 px-2 text-sm text-slate-600 dark:text-slate-300">
-          <h3 class="font-semibold text-slate-800 dark:text-slate-100 mb-2">版本紀錄 <span class="text-xs font-normal text-slate-400">目前版本 v14.9</span></h3>
+          <h3 class="font-semibold text-slate-800 dark:text-slate-100 mb-2">版本紀錄 <span class="text-xs font-normal text-slate-400">目前版本 v14.10</span></h3>
           <div class="space-y-3">
+            <div><div class="font-medium text-slate-700 dark:text-slate-200">v14.10 <span class="text-xs text-slate-400">2026-10-13</span></div>
+              <ul class="list-disc pl-5 space-y-0.5"><li><b>@Agent 以顏色區分</b>：每個 @ 的 Agent 有固定專屬顏色。回覆卡為同色粗框＋左側色條，標題只顯示 <code>@名稱</code>；你送給它的提問氣泡同色；輸入框內含 <code>@名稱</code> 時，上方以同色名稱標籤顯示收件者；主 Agent 的回覆維持原本白底灰框。不加額外文字、不編號</li><li>「帶回主對話」後主對話內的意見引用卡、引用區的「交給其他 Agent」按鈕也使用同一個顏色</li><li><b>修正</b>：在尚未送出訊息的新對話中使用 <code>@</code>，意見卡與支線對話會在主對話建立後歸入該對話（原本重新整理後意見卡會消失，且下一個新對話會沿用同一條支線）</li></ul></div>
             <div><div class="font-medium text-slate-700 dark:text-slate-200">v14.9 <span class="text-xs text-slate-400">2026-10-13</span></div>
               <ul class="list-disc pl-5 space-y-0.5"><li><b>重新整理後回到最後一個對話</b>：自動重新開啟上次查看的對話（切換環境、對話已被刪除時會安靜地回到空白新對話）</li><li><b>開啟對話的定位</b>：預設把該對話「最後一則提問」對齊視窗最上端（答案從提問下方開始看）；設定頁可改為「捲到最底」。圖表等延後渲染造成版面變動時會自動校正，你一捲動就停止校正</li><li><b>釘選對話</b>：側邊欄每個對話多一個圖釘鈕，釘選的對話集中在最上方「已釘選」區（即使不在最近 20 筆內也會顯示）；釘選只存在此瀏覽器</li></ul></div>
             <div><div class="font-medium text-slate-700 dark:text-slate-200">v14.8 <span class="text-xs text-slate-400">2026-10-11</span></div>
@@ -1100,7 +1118,7 @@
 
       try {
         const res = await apiCall('/v1/chat/completions', 'POST', payload, false, ctrl.signal);
-        if (!state.currentThreadId && res.thread_id) { state.currentThreadId = res.thread_id; rememberThread(res.thread_id); if (text) setDerivedTitle(res.thread_id, text.replace(/\s+/g, ' ').slice(0, 28)); loadThreads(); }
+        if (!state.currentThreadId && res.thread_id) { state.currentThreadId = res.thread_id; migrateNewKey(res.thread_id); rememberThread(res.thread_id); if (text) setDerivedTitle(res.thread_id, text.replace(/\s+/g, ' ').slice(0, 28)); loadThreads(); }
         
         const recTid = payload.thread_id || res.thread_id;
         if (sentNewFiles.length && recTid) recordThreadFiles(recTid, text, sentNewFiles);
@@ -1879,7 +1897,7 @@
     }
     function prefixChipsHtml(pfx) {
       const items = pfx.quotes.map((q, i) => { const s = splitNote(q); return '<div class="qt-item" title="點擊展開／收合"><span class="qt-n">' + (i + 1) + '</span><span class="qt-main"><span class="qt-t">' + escapeHtml(s.text) + '</span>' + (s.note ? '<span class="qt-note">💬 ' + escapeHtml(s.note) + '</span>' : '') + '</span></div>'; })
-        .concat(pfx.opinions.map(o => '<div class="qt-item op" title="點擊展開／收合"><span class="qt-n">@' + escapeHtml(o.name) + '</span><span class="qt-t">' + escapeHtml(o.text) + '</span></div>'));
+        .concat(pfx.opinions.map(o => '<div class="qt-item op" style="--ac:' + agColor(o.name) + '" title="點擊展開／收合"><span class="qt-n">@' + escapeHtml(o.name) + '</span><span class="qt-t">' + escapeHtml(o.text) + '</span></div>'));
       return items.length ? '<div class="qt-list">' + items.join('') + '</div>' : '';
     }
 
@@ -1921,7 +1939,7 @@
       const names = Array.from(new Set(ro.map(r => r.name)));
       const row = document.createElement('div'); row.className = 'flex flex-wrap items-center gap-1.5 w-full mt-1.5';
       row.innerHTML = '<span class="qtray-hint">交給其他 Agent（連同各段補充；可再補整體要求，留空由它自行判斷）：</span>';
-      const mk = (label, ags) => { const b = document.createElement('button'); b.type = 'button'; b.className = 'qtray-ag'; b.textContent = label; b.onclick = () => askAgentsFromTray(ags); row.appendChild(b); };
+      const mk = (label, ags) => { const b = document.createElement('button'); b.type = 'button'; b.className = 'qtray-ag'; b.style.setProperty('--ac', agColor(ags[0].name)); b.textContent = label; b.onclick = () => askAgentsFromTray(ags); row.appendChild(b); };
       names.forEach(n => { const ags = ro.filter(r => r.name === n); mk('@' + n + (ags.length > 1 ? ' ×' + ags.length : ''), ags); });
       if (names.length > 1) mk('全部', ro);
       return row;
@@ -2174,11 +2192,10 @@
       const base = env === 'main' ? '' : env === 'custom' ? String(r.custom || '').trim().replace(/\/+$/, '') : AGENT_ENVS[env] || '';
       return { uid: r.uid, name: String(r.name || '').replace(/[\s@]/g, ''), id: String(r.id || '').trim(), instr: String(r.instr || ''), env, base, key: String(r.key || '').trim(), label: '' };
     }
-    // 只取「已啟用且名稱／ID 皆有填」的項目；同名者標成「名稱 #1／#2…」以便區分
+    // 只取「已啟用且名稱／ID 皆有填」的項目
     function rosterGet() {
       const list = rosterRaw().filter(r => r && !r.off).map(rosterEntry).filter(r => r.name && r.id);
-      const cnt = {}, seen = {}; list.forEach(r => { cnt[r.name] = (cnt[r.name] || 0) + 1; });
-      list.forEach(r => { seen[r.name] = (seen[r.name] || 0) + 1; r.label = cnt[r.name] > 1 ? r.name + ' #' + seen[r.name] : r.name; });
+      list.forEach(r => { r.label = r.name; });
       return list;
     }
     // 其他 agent 可使用不同環境／不同 API Key；兩者都未設定時沿用主設定（含中繼模式）
@@ -2300,7 +2317,19 @@
       const before = ta.value.slice(0, pos), ins = (before && !/\s$/.test(before)) ? ' @' : '@';
       ta.value = before + ins + ta.value.slice(pos); const np = before.length + ins.length; ta.focus(); ta.setSelectionRange(np, np); autoResizeInput(); showMention();
     });
-    els.userInput.addEventListener('input', showMention);
+    function updateTargetBar() {
+      const bar = document.getElementById('target-bar'); if (!bar) return;
+      const t = els.userInput.value, sig = t + '|' + (localStorage.getItem('agentRoster') || ''); if (sig === updateTargetBar.last) return; updateTargetBar.last = sig;
+      const ro = rosterGet();
+      const ags = ro.length && t ? detectMentions(t, ro) : [];
+      if (!ags.length) { bar.classList.remove('on'); bar.innerHTML = ''; return; }
+      const names = Array.from(new Set(ags.map(a => a.name)));
+      bar.style.setProperty('--ac', agColor(names[0]));
+      bar.innerHTML = names.map(n => '<span class="side-chip" style="--ac:' + agColor(n) + '"><i class="fa-solid fa-robot"></i>@' + escapeHtml(n) + '</span>').join('');
+      bar.classList.add('on');
+    }
+    els.userInput.addEventListener('input', () => { showMention(); updateTargetBar(); });
+    setInterval(updateTargetBar, 400); // 程式改動輸入框內容（選單挑選、送出後清空）時也要更新
     els.userInput.addEventListener('click', showMention);
     els.userInput.addEventListener('blur', () => setTimeout(hideMention, 120));
     els.userInput.addEventListener('keydown', (e) => {
@@ -2318,6 +2347,17 @@
     function serverMsgCount() { return Array.from(els.chatWindow.children).filter(d => (d.dataset.role === 'user' || d.dataset.role === 'assistant') && !d.dataset.local).length; }
     function lastAssistantText() { const a = Array.from(els.chatWindow.querySelectorAll('[data-role="assistant"]')); const d = a[a.length - 1]; return d && d.__raw ? String(d.__raw) : ''; }
     const cardsKey = () => state.currentThreadId || '_new';
+    // 新對話尚未有 thread id 時先以 '_new' 記錄 @ 的意見卡／支線；主對話取得 id 後搬過去，避免重新整理後消失或被下一個新對話沿用
+    function migrateNewKey(id) {
+      try {
+        ['agentCards', 'agentSideThreads'].forEach(k => {
+          const m = readJSON(k); if (!m._new) return;
+          if (Array.isArray(m._new)) m[id] = (m[id] || []).concat(m._new); else m[id] = Object.assign({}, m._new, m[id] || {});
+          delete m._new; writeJSON(k, m);
+        });
+      } catch (e) {}
+    }
+    function dropNewKey() { try { ['agentCards', 'agentSideThreads'].forEach(k => { const m = readJSON(k); if (m._new) { delete m._new; writeJSON(k, m); } }); } catch (e) {} }
     function cardsAdd(c) { const m = readJSON('agentCards'), k = cardsKey(); (m[k] = m[k] || []).push(c); if (m[k].length > 60) m[k].shift(); writeJSON('agentCards', m); }
     const sideKey = (ag) => ag.uid || (ag.id + '@' + (ag.base || 'main'));
     function sideThreadGet(ag) { return (readJSON('agentSideThreads')[cardsKey()] || {})[sideKey(ag)] || ''; }
@@ -2325,13 +2365,33 @@
     function makeLocalAsk(text, prefixText) {
       const prev = state.loadingHistory; state.loadingHistory = true;
       const d = appendMessage('user', (prefixText || '') + text); state.loadingHistory = prev;
-      if (d) d.dataset.local = '1'; return d;
+      if (d) { d.dataset.local = '1'; decorateSideAsk(d, text); } return d;
+    }
+    const AG_COLORS = ['#059669', '#b45309', '#e11d48', '#7c3aed', '#0e7490', '#c026d3'];
+    const agBase = (n) => String(n == null ? '' : n).replace(/\s*#\d+$/, '');
+    function agColor(name) {
+      const base = agBase(name); const m = readJSON('agentColors');
+      if (m[base] == null) {
+        const used = new Set(Object.values(m)); let i = -1;
+        for (let k = 0; k < AG_COLORS.length; k++) { if (!used.has(k)) { i = k; break; } }
+        if (i < 0) { let h = 0; for (const ch of base) h = (h * 31 + ch.charCodeAt(0)) >>> 0; i = h % AG_COLORS.length; }
+        m[base] = i; writeJSON('agentColors', m);
+      }
+      return AG_COLORS[m[base] % AG_COLORS.length];
+    }
+    function mentionNames(text) { const out = []; String(text || '').replace(/(^|\s)@([^\s@，。,.!?！？:：、；;]+)/g, (_, p, n) => { if (!out.includes(n)) out.push(n); return ''; }); return out; }
+    // 把「送給其他 Agent」的本機提問氣泡標成該 Agent 的顏色
+    function decorateSideAsk(div, text) {
+      if (!div) return;
+      const names = mentionNames(text); if (!names.length) return;
+      div.classList.add('side-ask'); div.style.setProperty('--ac', agColor(names[0]));
     }
     function buildAgentCard(c) {
       const div = document.createElement('div'); div.className = 'flex w-full mb-6 justify-start'; div.dataset.role = 'agent'; div.dataset.local = '1';
       div.dataset.label = ('@' + c.name + ' ' + c.text).replace(/\s+/g, ' ').slice(0, 80);
-      div.innerHTML = '<div class="max-w-[85%] sm:max-w-[75%] w-full"><div class="text-xs mb-1 ml-1 text-indigo-500 dark:text-indigo-300"><i class="fa-solid fa-at mr-1"></i><b></b><span class="text-slate-400 ml-1.5">· 其他 Agent 的意見，僅顯示在本機，主 Agent 尚未收到</span></div><div class="agent-card shadow-sm"><div class="md-output text-sm sm:text-base break-words"></div><div class="agent-actions"></div></div></div>';
-      div.querySelector('b').textContent = c.name + (c.env ? '（' + c.env + '）' : '');
+      div.innerHTML = '<div class="max-w-[85%] sm:max-w-[75%] w-full"><div class="agent-card shadow-sm"><div class="ac-head"><span class="ac-badge"><i class="fa-solid fa-robot"></i><span class="ac-name"></span></span></div><div class="ac-body"><div class="md-output text-sm sm:text-base break-words"></div><div class="agent-actions"></div></div></div></div>';
+      const card = div.querySelector('.agent-card'); card.style.setProperty('--ac', agColor(c.name));
+      div.querySelector('.ac-name').textContent = '@' + c.name;
       const md = div.querySelector('.md-output'); md.innerHTML = renderMarkdown(c.text); enhanceMarkdown(md);
       const act = div.querySelector('.agent-actions');
       const mk = (label, cls, fn) => { const b = document.createElement('button'); b.type = 'button'; b.className = cls || ''; b.innerHTML = label; b.onclick = fn; act.appendChild(b); };
@@ -2353,10 +2413,14 @@
       const cards = (readJSON('agentCards')[threadId] || []).slice().sort((a, b) => (a.ts || 0) - (b.ts || 0));
       if (!cards.length) return;
       const servers = Array.from(els.chatWindow.children).filter(d => (d.dataset.role === 'user' || d.dataset.role === 'assistant') && !d.dataset.local);
-      const last = {};
+      const last = {}, askSeen = {};
       cards.forEach(c => {
         const nodes = [];
-        const ask = makeLocalAsk(c.ask || '', c.prefix || ''); nodes.push(ask); nodes.push(buildAgentCard(c));
+        // 同一次 @ 多位 Agent 時只有一個提問氣泡（與即時顯示一致）
+        const ak = (c.ask || '') + '\u0001' + (c.prefix || '') + '\u0001' + (c.after || 0);
+        const dup = askSeen[ak] != null && (c.ts || 0) - askSeen[ak] < 300000;
+        if (!dup) { askSeen[ak] = c.ts || 0; nodes.push(makeLocalAsk(c.ask || '', c.prefix || '')); }
+        nodes.push(buildAgentCard(c));
         const after = Math.max(0, Math.min(c.after || 0, servers.length));
         let ref = last[after] || (after > 0 ? servers[after - 1] : null);
         nodes.forEach(n => { if (n.parentNode) n.remove(); });
@@ -2376,7 +2440,7 @@
       const afterCount = serverMsgCount();
       els.userInput.value = ''; els.userInput.style.height = 'auto'; hideMention();
       state.quotes.forEach(q => { if (q.el) q.el.classList.remove('qb-sel'); qUnhl(q); }); state.quotes = []; renderQuoteTray();
-      const askDiv = appendMessage('user', prefixText + typedText); if (askDiv) askDiv.dataset.local = '1';
+      const askDiv = appendMessage('user', prefixText + typedText); if (askDiv) { askDiv.dataset.local = '1'; decorateSideAsk(askDiv, typedText); }
       if (truncated) showToast('上一則回覆過長，只帶入前 ' + CTX_MAX + ' 字；可改用「選取段落」精準帶入', 'info');
       setSending(true);
       try {
@@ -2396,7 +2460,7 @@
             els.chatWindow.appendChild(buildAgentCard(card)); revealTop(els.chatWindow.lastElementChild);
           } catch (err) {
             removeThinking(think);
-            const el = buildAgentCard({ name: ag.label, text: '❌ 呼叫失敗：' + err.message });
+            const el = buildAgentCard({ name: ag.label, text: '❌ 呼叫失敗：' + err.message, err: true });
             el.querySelector('.agent-actions').remove(); els.chatWindow.appendChild(el);
           }
         }));
@@ -2484,6 +2548,7 @@
       const id = 'thinking-' + Date.now();
       const div = document.createElement('div'); div.id = id; div.className = 'flex w-full mb-6 justify-start';
       div.innerHTML = `<div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl rounded-tl-sm px-5 py-4 shadow-sm flex items-center gap-3"><div class="text-sm text-slate-500">${escapeHtml(label || '思考中')} <span class="rs-t tabular-nums"></span></div><div class="typing flex gap-1"><div class="dot w-1.5 h-1.5 bg-slate-400 rounded-full"></div><div class="dot w-1.5 h-1.5 bg-slate-400 rounded-full"></div><div class="dot w-1.5 h-1.5 bg-slate-400 rounded-full"></div></div></div>`;
+      if (label && label[0] === '@') { const nm = label.slice(1).replace(/\s*處理中$/, ''); const bx = div.firstElementChild; bx.style.border = '2px solid ' + agColor(nm); bx.style.borderLeftWidth = '6px'; }
       els.chatWindow.appendChild(div); scrollToBottom(); return id;
     }
     function removeThinking(id) { document.getElementById(id)?.remove(); }
@@ -2543,7 +2608,7 @@
     });
     els.settings.toggleKey.addEventListener('click', () => { const i = els.settings.apiKey; i.type = i.type === 'password' ? 'text' : 'password'; els.settings.toggleKey.innerHTML = i.type==='password'?'<i class="fa-regular fa-eye"></i>':'<i class="fa-regular fa-eye-slash"></i>'; });
     els.sidebarToggle.addEventListener('click', () => toggleSidebar(true)); els.sidebarClose.addEventListener('click', () => toggleSidebar(false)); els.sidebarBackdrop.addEventListener('click', () => toggleSidebar(false)); els.themeToggle.addEventListener('click', toggleTheme);
-    els.newThreadBtn.addEventListener('click', () => { clearQuotes(); state.currentThreadId = null; state.selectedFiles.clear(); renderSelectedFiles(); els.chatWindow.innerHTML = ''; els.chatWindow.appendChild(document.createElement('div')).innerHTML = '<div class="flex flex-col items-center justify-center h-full text-slate-400 dark:text-slate-500 opacity-60"><i class="fa-regular fa-comments text-5xl mb-4"></i><p>新對話</p></div>'; if(window.innerWidth < 1024) toggleSidebar(false); });
+    els.newThreadBtn.addEventListener('click', () => { clearQuotes(); dropNewKey(); state.currentThreadId = null; state.selectedFiles.clear(); renderSelectedFiles(); els.chatWindow.innerHTML = ''; els.chatWindow.appendChild(document.createElement('div')).innerHTML = '<div class="flex flex-col items-center justify-center h-full text-slate-400 dark:text-slate-500 opacity-60"><i class="fa-regular fa-comments text-5xl mb-4"></i><p>新對話</p></div>'; if(window.innerWidth < 1024) toggleSidebar(false); });
     els.userInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') {
         // 輸入法選字/確認時的 Enter 不送出（避免送出注音/拼音預覽並在 commit 後把文字又寫回輸入框）
         if (e.isComposing || imeComposing || e.keyCode === 229 || Date.now() - imeLastEnd < 80) return;
