@@ -687,9 +687,31 @@
           <button id="roster-add" type="button" class="w-full py-3 text-sm font-medium rounded-xl border-2 border-dashed border-slate-300 dark:border-slate-600 text-slate-500 dark:text-slate-300 hover:border-primary-500 hover:text-primary-600 transition-colors"><i class="fa-solid fa-plus mr-1.5"></i>新增 Agent</button>
         </div>
 
+        <div id="psync-card" class="w-full max-w-2xl mt-6 bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-700 p-6 space-y-3">
+          <h3 class="font-semibold text-slate-800 dark:text-slate-100"><i class="fa-solid fa-arrows-rotate mr-2 text-primary-600"></i>跨裝置同步 <span id="psync-badge" class="ml-1 px-2 py-0.5 text-xs font-medium rounded-full bg-slate-100 dark:bg-slate-700 text-slate-500">未啟用</span></h3>
+          <p class="text-xs text-slate-500 dark:text-slate-400">把 Agent 名單（含各自的 Key）、Assistant ID、顏色、釘選、自訂標題等，用「同步密碼」在瀏覽器內加密後存到你這組 API Key 底下的平台對話。其他裝置只要輸入主 API Key（與環境）＋同一組同步密碼，就會自動還原並持續同步。主 API Key 本身不會被同步（要先有它才連得到平台），同步密碼忘了無法復原。</p>
+          <div class="flex flex-wrap gap-2 items-center">
+            <input id="psync-pass" type="password" autocomplete="off" placeholder="同步密碼（至少 6 個字元）" class="flex-1 min-w-[12rem] p-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg text-sm outline-none focus:ring-2 focus:ring-primary-500">
+            <button id="psync-save" type="button" class="px-4 py-2.5 text-sm font-medium rounded-lg bg-primary-600 hover:bg-primary-700 text-white shadow">啟用並同步</button>
+            <button id="psync-now" type="button" class="px-3 py-2.5 text-sm font-medium rounded-lg border border-slate-300 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-700">立即同步</button>
+            <button id="psync-off" type="button" class="px-3 py-2.5 text-sm rounded-lg border border-slate-300 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-700">停用</button>
+          </div>
+          <div id="psync-status" class="text-xs text-slate-500 dark:text-slate-400"></div>
+          <details class="text-xs text-slate-500 dark:text-slate-400">
+            <summary class="cursor-pointer">進階</summary>
+            <div class="mt-2 space-y-2">
+              <div>同步用對話 ID（新裝置找不到時，可把這串貼到新裝置同一欄）：<input id="psync-tid" type="text" class="mt-1 w-full p-2 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-md font-mono text-xs outline-none"></div>
+              <button id="psync-del" type="button" class="px-3 py-1.5 rounded-lg border border-red-300 text-red-600 hover:bg-red-50 dark:hover:bg-slate-700">刪除平台上的同步資料並停用</button>
+              <div>同步資料會在平台上以一個名為「myagent-sync」的對話存在（側邊欄會自動隱藏，請勿在平台刪除）；每次內容變動會重建一次，平台會多一次 agent 呼叫。</div>
+            </div>
+          </details>
+        </div>
+
         <div id="changelog" class="w-full max-w-lg mt-6 mb-10 px-2 text-sm text-slate-600 dark:text-slate-300">
-          <h3 class="font-semibold text-slate-800 dark:text-slate-100 mb-2">版本紀錄 <span class="text-xs font-normal text-slate-400">目前版本 v14.10</span></h3>
+          <h3 class="font-semibold text-slate-800 dark:text-slate-100 mb-2">版本紀錄 <span class="text-xs font-normal text-slate-400">目前版本 v14.11</span></h3>
           <div class="space-y-3">
+            <div><div class="font-medium text-slate-700 dark:text-slate-200">v14.11 <span class="text-xs text-slate-400">2026-10-15</span></div>
+              <ul class="list-disc pl-5 space-y-0.5"><li><b>跨裝置同步（存在平台）</b>：設定頁新增「跨裝置同步」。Agent 名單（含各自 Key）、Assistant ID、Agent 顏色、釘選、自訂標題與檔案紀錄，以你設定的同步密碼（PBKDF2＋AES-256-GCM，在瀏覽器內加密）存成你這組 API Key 底下的一個專用對話；新裝置輸入主 API Key（與環境）＋同一組同步密碼即自動還原，之後改動自動同步（各區塊以最後修改為準）。主 API Key、環境網址、送出方式等裝置偏好不同步；同步對話在側邊欄自動隱藏</li></ul></div>
             <div><div class="font-medium text-slate-700 dark:text-slate-200">v14.10 <span class="text-xs text-slate-400">2026-10-13</span></div>
               <ul class="list-disc pl-5 space-y-0.5"><li><b>@Agent 以顏色區分</b>：每個 @ 的 Agent 有固定專屬顏色。回覆卡為同色粗框＋左側色條，標題只顯示 <code>@名稱</code>；你送給它的提問氣泡同色；輸入框內含 <code>@名稱</code> 時，上方以同色名稱標籤顯示收件者；主 Agent 的回覆維持原本白底灰框。不加額外文字、不編號</li><li>「帶回主對話」後主對話內的意見引用卡、引用區的「交給其他 Agent」按鈕也使用同一個顏色</li><li><b>修正</b>：在尚未送出訊息的新對話中使用 <code>@</code>，意見卡與支線對話會在主對話建立後歸入該對話（原本重新整理後意見卡會消失，且下一個新對話會沿用同一條支線）</li></ul></div>
             <div><div class="font-medium text-slate-700 dark:text-slate-200">v14.9 <span class="text-xs text-slate-400">2026-10-13</span></div>
@@ -974,8 +996,9 @@
       els.threadsList.innerHTML = '<div class="p-4 text-center text-slate-400 text-sm"><i class="fa-solid fa-spinner animate-spin"></i> 載入中...</div>';
       try {
         if (syncEnabled()) await syncPull();
+        if (psOn()) await psPullThrottled();
         const data = await apiCall('/v1/threads?limit=20');
-        state.threads = data.data || [];
+        state.threads = (data.data || []).filter(t => t.id !== rpLs('psyncTid'));
         renderThreads(); deriveTitles();
       } catch (err) { els.threadsList.innerHTML = `<div class="p-4 text-center text-red-400 text-sm">載入失敗<br>${escapeHtml(err.message)}</div>`; }
     }
@@ -2273,6 +2296,7 @@
       document.getElementById('roster-add').addEventListener('click', add);
       document.getElementById('roster-add-top').addEventListener('click', add);
       draw();
+      window.rosterReload = () => { rows = rosterRaw(); draw(); };
     }
     initRosterUi();
 
@@ -2731,6 +2755,7 @@
             let title = stripReport(contentToText(m)).replace(/[#>*`_\[\]]/g, '').replace(/\s+/g, ' ').trim();
             if (!title) { const f = extractServerFiles(m); if (f.length) title = '（附件）' + f[0].filename; }
             if (!title) continue;
+            if (/^myagent-sync v1/.test(title)) { rpLsSet('psyncTid', t.id); setDerivedTitle(t.id, ''); state.threads = (state.threads || []).filter(x => x.id !== t.id); const row0 = Array.from(els.threadsList.children).find(r => r.dataset && r.dataset.id === t.id); if (row0) row0.remove(); continue; }
             setDerivedTitle(t.id, title.slice(0, 28));
             const row = Array.from(els.threadsList.children).find(r => r.dataset && r.dataset.id === t.id);
             const el = row && row.querySelector('.thread-title');
@@ -2803,6 +2828,178 @@
     document.addEventListener('visibilitychange', () => {
       if (!document.hidden && syncEnabled()) syncPull().then(ch => { if (ch) renderThreads(); });
     });
+
+
+    // --- 跨裝置同步（存在平台）：設定以「同步密碼」在瀏覽器內加密後，存成你這組 API Key 底下的一個專用對話 ---
+    const PS_HDR = '[myagent-sync v1] 設定同步資料（已加密），請勿刪除。請只回覆「OK」，不要解讀下列內容。';
+    const PS_SECTIONS = { main: ['assistantId'], roster: ['agentRoster', 'agentColors'], pins: ['pinnedThreads'] };
+    const psOn = () => rpLs('psyncOn') === '1' && !!rpLs('psyncPass') && !!state.apiKey && !isRelay();
+    const psCanon = (o) => JSON.stringify(o, (k, v) => (v && typeof v === 'object' && !Array.isArray(v)) ? Object.keys(v).sort().reduce((a, x) => (a[x] = v[x], a), {}) : v);
+    function psHash(s) { let h1 = 0xdeadbeef, h2 = 0x41c6ce57; for (let i = 0; i < s.length; i++) { const c = s.charCodeAt(i); h1 = Math.imul(h1 ^ c, 2654435761); h2 = Math.imul(h2 ^ c, 1597334677); } h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507) ^ Math.imul(h2 ^ (h2 >>> 13), 3266489909); h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507) ^ Math.imul(h1 ^ (h1 >>> 13), 3266489909); return (4294967296 * (2097151 & h2) + (h1 >>> 0)).toString(36); }
+    const psB64 = (u8) => { let s = ''; for (let i = 0; i < u8.length; i += 8192) s += String.fromCharCode.apply(null, u8.subarray(i, i + 8192)); return btoa(s); };
+    const psUnB64 = (s) => Uint8Array.from(atob(s), c => c.charCodeAt(0));
+    async function psKey(pass, salt) {
+      const km = await crypto.subtle.importKey('raw', new TextEncoder().encode(pass), 'PBKDF2', false, ['deriveKey']);
+      return crypto.subtle.deriveKey({ name: 'PBKDF2', salt, iterations: 150000, hash: 'SHA-256' }, km, { name: 'AES-GCM', length: 256 }, false, ['encrypt', 'decrypt']);
+    }
+    async function psEncrypt(obj, pass) {
+      const salt = crypto.getRandomValues(new Uint8Array(16)), iv = crypto.getRandomValues(new Uint8Array(12));
+      const ct = new Uint8Array(await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, await psKey(pass, salt), new TextEncoder().encode(JSON.stringify(obj))));
+      return 'v1.' + psB64(salt) + '.' + psB64(iv) + '.' + psB64(ct);
+    }
+    async function psDecrypt(blob, pass) {
+      const p = blob.split('.'); if (p.length !== 4 || p[0] !== 'v1') throw new Error('format');
+      const pt = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: psUnB64(p[2]) }, await psKey(pass, psUnB64(p[1])), psUnB64(p[3]));
+      return JSON.parse(new TextDecoder().decode(pt));
+    }
+    const psSecVal = (sec) => { const o = {}; PS_SECTIONS[sec].forEach(k => { o[k] = rpLs(k); }); return o; };
+    const psMeta = () => readJSON('psyncMeta');
+    // 本機有未同步的改動 → 該區塊的時間戳記更新為現在（之後遇到平台上較舊的版本時，本機版本勝出）
+    function psBump() {
+      const m = psMeta(); let dirty = false;
+      Object.keys(PS_SECTIONS).forEach(sec => { const h = psHash(psCanon(psSecVal(sec))); if (!m[sec]) { m[sec] = { h, at: 0 }; dirty = true; } else if (m[sec].h !== h) { m[sec] = { h, at: Date.now() }; dirty = true; } });
+      if (dirty) writeJSON('psyncMeta', m);
+      return m;
+    }
+    function psBuild() {
+      const m = psBump(), s = {};
+      Object.keys(PS_SECTIONS).forEach(sec => { if (!m[sec].at) m[sec].at = Date.now(); s[sec] = { at: m[sec].at, v: psSecVal(sec) }; });
+      writeJSON('psyncMeta', m);
+      const snap = { v: 1, at: Date.now(), s, m: localSnapshot() };
+      if (JSON.stringify(snap).length > 200000) snap.m.threadFiles = {};
+      return snap;
+    }
+    const psSig = (snap) => { const s = {}; Object.keys(snap.s || {}).forEach(k => { s[k] = snap.s[k].v; }); return psHash(psCanon({ s, m: snap.m || {} })); };
+    function psStatus(msg, kind) {
+      const el = document.getElementById('psync-status'), b = document.getElementById('psync-badge'); if (!el) return;
+      el.textContent = msg || ''; el.className = 'text-xs ' + (kind === 'err' ? 'text-red-500' : kind === 'ok' ? 'text-emerald-600' : 'text-slate-500 dark:text-slate-400');
+      if (b) { const on = psOn(); b.textContent = on ? '已啟用' : '未啟用'; b.className = 'ml-1 px-2 py-0.5 text-xs font-medium rounded-full ' + (on ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300' : 'bg-slate-100 dark:bg-slate-700 text-slate-500'); }
+      const t = document.getElementById('psync-tid'); if (t && document.activeElement !== t) t.value = rpLs('psyncTid') || '';
+    }
+    function psStamp(extra) { const d = new Date(), p = n => String(n).padStart(2, '0'); rpLsSet('psyncAt', d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate()) + ' ' + p(d.getHours()) + ':' + p(d.getMinutes()) + ':' + p(d.getSeconds())); psStatus('上次同步：' + rpLs('psyncAt') + (extra || ''), 'ok'); }
+    const psReadBlob = async (id) => {
+      const d = await apiCall(`/v1/threads/${encodeURIComponent(id)}/messages?limit=2&order=asc`);
+      const m = (d.data || []).find(x => x.role === 'user'); if (!m) return null;
+      const t = contentToText(m); if (t.indexOf('[myagent-sync v1]') < 0) return null;
+      const b = (t.match(/v1\.[A-Za-z0-9+\/=]+\.[A-Za-z0-9+\/=]+\.[A-Za-z0-9+\/=]+/) || [])[0];
+      return b ? { tid: id, blob: b } : null;
+    };
+    let psScanned = false, psOthers = [];
+    async function psFind() {
+      psOthers = [];
+      const known = rpLs('psyncTid');
+      if (known) { try { const r = await psReadBlob(known); if (r) return r; } catch (e) { if (/404|not.?found/i.test(String(e.message))) { rpLsSet('psyncTid', null); psScanned = false; } else throw e; } }
+      if (psScanned) return null; psScanned = true;
+      const list = ((await apiCall('/v1/threads?limit=50')).data || []).filter(t => t.id !== known);
+      const found = [];
+      for (let i = 0; i < list.length && !found.length; i += 5) {
+        const rs = await Promise.all(list.slice(i, i + 5).map(t => psReadBlob(t.id).then(r => r && Object.assign(r, { created: t.created_at || 0 })).catch(() => null)));
+        rs.filter(Boolean).forEach(r => found.push(r));
+      }
+      if (!found.length) return null;
+      found.sort((a, b) => (b.created || 0) - (a.created || 0)); psOthers = found.slice(1).map(r => r.tid);
+      rpLsSet('psyncTid', found[0].tid); return found[0];
+    }
+    // 套用平台上的快照；回傳 {changed, remoteSig}
+    function psApply(snap) {
+      const m = psBump(); let changed = false;
+      Object.keys(PS_SECTIONS).forEach(sec => {
+        const rs = snap.s && snap.s[sec]; if (!rs || !rs.v) return;
+        if ((rs.at || 0) > (m[sec].at || 0)) {
+          const cur = psCanon(psSecVal(sec)), rem = psCanon(rs.v);
+          if (cur !== rem) {
+            PS_SECTIONS[sec].forEach(k => { const v = rs.v[k]; if (v == null) rpLsSet(k, null); else rpLsSet(k, String(v)); });
+            changed = true;
+            if (sec === 'main') { state.assistantId = rpLs('assistantId') || state.assistantId; if (els.settings && els.settings.asstId) els.settings.asstId.value = state.assistantId; }
+            if (sec === 'roster') { if (window.rosterReload) window.rosterReload(); updateTargetBar.last = null; }
+          }
+          m[sec] = { h: psHash(psCanon(psSecVal(sec))), at: rs.at };
+        }
+      });
+      writeJSON('psyncMeta', m);
+      if (snap.m && mergeRemote(snap.m)) changed = true;
+      if (changed) renderThreads();
+      return changed;
+    }
+    let psBusy = false, psLastPull = 0;
+    // 先拉再視需要推；回傳 {state:'ok'|'bad-pass'|'none'|'err', changed, pushed}
+    async function psSync(opts) {
+      opts = opts || {};
+      if (!psOn() || psBusy) return { state: 'busy' };
+      psBusy = true;
+      try {
+        psStatus('同步中…');
+        const pass = rpLs('psyncPass'); let r = null, snap = null, changed = false;
+        r = await psFind();
+        if (r) {
+          try { snap = await psDecrypt(r.blob, pass); } catch (e) { psStatus('同步密碼不符，無法解開平台上的同步資料；請輸入當初設定的密碼', 'err'); return { state: 'bad-pass' }; }
+          if (opts.confirmOverwrite && !opts.confirmOverwrite(snap)) { psStatus('已取消', ''); return { state: 'cancel' }; }
+          changed = psApply(snap);
+        }
+        psLastPull = Date.now();
+        const local = psBuild(), sig = psSig(local);
+        // 平台上的內容與（套用後的）本機內容不同 → 需要上傳
+        const needPush = !snap || opts.force || psSig(snap) !== sig;
+        if (!needPush) rpLsSet('psyncSig', sig);
+        if (needPush && !opts.noPush) {
+          rpLsSet('psyncSig', sig);
+          const blob = await psEncrypt(local, pass);
+          const res = await apiCall('/v1/chat/completions', 'POST', { model: state.assistantId, messages: [{ role: 'user', content: [{ type: 'text', text: PS_HDR + '\n' + blob }] }] });
+          const old = [rpLs('psyncTid')].concat(psOthers).filter(x => x && x !== res.thread_id);
+          if (res.thread_id) rpLsSet('psyncTid', res.thread_id);
+          for (const id of old) { try { await apiCall(`/v1/threads/${encodeURIComponent(id)}`, 'DELETE'); } catch (e) {} }
+          psOthers = [];
+          psStamp('（已上傳）'); loadThreadsQuiet();
+          return { state: 'ok', changed, pushed: true };
+        }
+        if (needPush) { psStatus('有本機改動，稍後自動上傳', ''); return { state: 'ok', changed, pushed: false }; }
+        psStamp(changed ? '（已從平台更新本機）' : '（已是最新）');
+        return { state: 'ok', changed, pushed: false };
+      } catch (e) { psStatus('同步失敗：' + (e && e.message || e), 'err'); return { state: 'err' }; }
+      finally { psBusy = false; }
+    }
+    function loadThreadsQuiet() { apiCall('/v1/threads?limit=20').then(d => { state.threads = (d.data || []).filter(t => t.id !== rpLs('psyncTid')); renderThreads(); }).catch(() => {}); }
+    // 啟動時只「拉」（不等推）；有本機改動再在背景推
+    async function psPullThrottled() {
+      if (Date.now() - psLastPull < 60000) return;
+      const res = await psSync({ noPush: true });
+      if (res.changed) showToast('已從平台同步設定', 'info');
+      psMaybePush();
+    }
+    let psPushTimer = 0;
+    function psMaybePush() {
+      if (!psOn()) return;
+      clearTimeout(psPushTimer);
+      psPushTimer = setTimeout(() => { if (psSig(psBuild()) !== rpLs('psyncSig') && !psBusy) psSync(); }, 4000);
+    }
+    setInterval(() => { if (psOn() && !psBusy && rpLs('psyncSig') && psSig(psBuild()) !== rpLs('psyncSig')) psMaybePush(); }, 15000);
+    document.addEventListener('visibilitychange', () => { if (!document.hidden && psOn()) psPullThrottled(); });
+    (function initPsyncUi() {
+      const $ = (id) => document.getElementById(id); if (!$('psync-card')) return;
+      $('psync-pass').value = rpLs('psyncPass') || '';
+      psStatus(psOn() ? ('上次同步：' + (rpLs('psyncAt') || '尚未同步')) : '尚未啟用');
+      $('psync-save').addEventListener('click', async () => {
+        const p = $('psync-pass').value; if (!state.apiKey) return showToast('請先儲存主 API Key', 'error');
+        if (isRelay()) return showToast('中繼模式不支援此同步', 'error');
+        if (p.length < 6) return showToast('同步密碼至少 6 個字元', 'error');
+        const tid = $('psync-tid').value.trim(); if (tid) rpLsSet('psyncTid', tid);
+        rpLsSet('psyncPass', p); rpLsSet('psyncOn', '1'); psScanned = false; psLastPull = 0;
+        const res = await psSync({ confirmOverwrite: (snap) => {
+          const hasLocal = rosterRaw().length > 0, rr = snap.s && snap.s.roster && snap.s.roster.v && snap.s.roster.v.agentRoster;
+          if (hasLocal && rr && rr !== localStorage.getItem('agentRoster')) return confirm('平台上已有同步資料。按「確定」以平台版本為準（本機的 Agent 名單會被取代）；按「取消」不啟用。');
+          return true; } });
+        if (res.state === 'bad-pass' || res.state === 'cancel') { rpLsSet('psyncOn', null); psStatus(res.state === 'bad-pass' ? '同步密碼不符；未啟用' : '未啟用', 'err'); }
+        else if (res.state === 'ok' && res.changed) showToast('已從平台還原設定', 'success');
+      });
+      $('psync-now').addEventListener('click', () => { if (!psOn()) return showToast('請先啟用', 'error'); psLastPull = 0; psSync({ force: false }); });
+      $('psync-off').addEventListener('click', () => { rpLsSet('psyncOn', null); rpLsSet('psyncPass', null); $('psync-pass').value = ''; psStatus('已停用（平台上的同步資料保留；本機設定不受影響）'); });
+      $('psync-del').addEventListener('click', async () => {
+        const id = rpLs('psyncTid'); if (!id) return showToast('找不到同步資料', 'error');
+        if (!confirm('刪除平台上的同步資料並停用？其他裝置將不再同步（各裝置本機設定仍保留）。')) return;
+        try { await apiCall(`/v1/threads/${encodeURIComponent(id)}`, 'DELETE'); } catch (e) { return showToast('刪除失敗：' + e.message, 'error'); }
+        rpLsSet('psyncTid', null); rpLsSet('psyncOn', null); rpLsSet('psyncPass', null); rpLsSet('psyncSig', null); $('psync-pass').value = ''; psStatus('已刪除並停用'); loadThreadsQuiet();
+      });
+    })();
 
     // --- image preprocessing: shrink big photos, convert HEIC to JPEG ---
     async function prepareImage(file) {
