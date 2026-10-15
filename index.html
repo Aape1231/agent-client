@@ -14,6 +14,7 @@
   </script>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
   <script src="https://cdn.jsdelivr.net/npm/marked@12.0.2/marked.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/dompurify@3.1.6/dist/purify.min.js"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" />
@@ -72,6 +73,7 @@ html[data-theme=warm] { --c-white:43 39 34; --sl-50:29 26 22; --sl-100:243 234 2
     #theme-menu .th-name { flex: 1; min-width: 0; }
     #theme-menu .th-name small { display: block; font-weight: 400; font-size: 11px; color: rgb(var(--sl-400)); }
     #theme-menu .th-ck { width: 14px; color: rgb(var(--pr-500)); }
+    @media (prefers-reduced-motion: reduce) { .animate__animated { animation: none !important; } }
     .msg-hidden { display: none !important; }
     .hid-ph { display: flex; justify-content: center; margin: 0 0 16px; }
     .hid-ph button { display: inline-flex; align-items: center; gap: 8px; max-width: 100%; padding: 4px 12px; border-radius: 999px; font-size: 11.5px; color: rgb(var(--sl-400)); border: 1px dashed rgb(var(--sl-300)); background: transparent; }
@@ -405,9 +407,9 @@ html[data-theme=warm] { --c-white:43 39 34; --sl-50:29 26 22; --sl-100:243 234 2
     #mention-pop .mi.on, #mention-pop .mi:hover { background: rgba(99,102,241,.14); }
     #mention-pop .mh { padding: 8px 10px; font-size: 12px; opacity: .7; }
     /* 其他 Agent（非主 Agent）的視覺識別：每個 Agent 一個固定顏色 --ac */
-    .agent-card { --ac: #6366f1; position: relative; background: #fff; background: color-mix(in srgb, var(--ac) 7%, #ffffff); border: 2px solid var(--ac); border-radius: 16px; border-top-left-radius: 4px; overflow: hidden; padding: 0; }
+    .agent-card { --ac: #6366f1; position: relative; background: #fff; background: color-mix(in srgb, var(--ac) 5%, #ffffff); border: 1px solid color-mix(in srgb, var(--ac) 55%, transparent); border-radius: 16px; border-top-left-radius: 4px; overflow: hidden; padding: 0; }
     html.dark .agent-card { background: #1e293b; background: color-mix(in srgb, var(--ac) 16%, #1e293b); }
-    .agent-card::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 6px; background: var(--ac); }
+    .agent-card::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background: var(--ac); }
     .ac-head { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; padding: 9px 14px 9px 20px; background: color-mix(in srgb, var(--ac) 14%, transparent); border-bottom: 1px solid color-mix(in srgb, var(--ac) 35%, transparent); font-size: 12px; }
     .ac-badge { display: inline-flex; align-items: center; gap: 6px; padding: 2px 10px; border-radius: 999px; background: var(--ac); color: #fff; font-weight: 600; font-size: 12.5px; }
     .agent-card .ac-body { padding: 12px 18px 14px 20px; }
@@ -432,7 +434,7 @@ html[data-theme=warm] { --c-white:43 39 34; --sl-50:29 26 22; --sl-100:243 234 2
 <body class="h-full bg-slate-50 text-slate-800 dark:bg-slate-900 dark:text-slate-200 overflow-hidden selection:bg-primary-100 selection:text-primary-700">
 
   <div id="app" class="h-full flex flex-col">
-    <header class="h-16 shrink-0 bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 px-4 flex items-center justify-between z-20 shadow-sm">
+    <header class="h-12 shrink-0 bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 px-4 flex items-center justify-between z-20 shadow-sm">
       <div class="flex items-center gap-4">
         <button id="sidebar-toggle" class="lg:hidden p-2 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition-colors">
           <i class="fa-solid fa-bars"></i>
@@ -519,7 +521,6 @@ html[data-theme=warm] { --c-white:43 39 34; --sl-50:29 26 22; --sl-100:243 234 2
               </span>
               <span id="edit-files" class="w-full text-[11px]"></span>
             </div>
-            <div id="run-status" class="hidden max-w-4xl mx-auto mb-2 flex-wrap items-center justify-between gap-x-3 gap-y-2 px-3 py-2 rounded-lg bg-sky-50 dark:bg-sky-900/20 border border-sky-200 dark:border-sky-900/50 text-xs text-sky-800 dark:text-sky-200" role="status" aria-live="polite"></div>
             <div id="target-bar" aria-live="polite"></div>
             <div id="quote-tray" class="hidden max-w-4xl mx-auto mb-2 flex-col gap-1.5 px-3 py-2 rounded-lg bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-200 dark:border-indigo-900/50 text-xs text-indigo-900 dark:text-indigo-100"></div>
             <div id="selected-files-area" class="flex flex-wrap gap-2 mb-2 empty:hidden"></div>
@@ -760,8 +761,10 @@ html[data-theme=warm] { --c-white:43 39 34; --sl-50:29 26 22; --sl-100:243 234 2
         </div>
 
         <div id="changelog" class="w-full max-w-lg mt-6 mb-10 px-2 text-sm text-slate-600 dark:text-slate-300">
-          <h3 class="font-semibold text-slate-800 dark:text-slate-100 mb-2">版本紀錄 <span class="text-xs font-normal text-slate-400">目前版本 v14.14</span></h3>
+          <h3 class="font-semibold text-slate-800 dark:text-slate-100 mb-2">版本紀錄 <span class="text-xs font-normal text-slate-400">目前版本 v14.15</span></h3>
           <div class="space-y-3">
+            <div><div class="font-medium text-slate-700 dark:text-slate-200">v14.15 <span class="text-xs text-slate-400">2026-10-15</span></div>
+              <ul class="list-disc pl-5 space-y-0.5"><li>介面精簡：側欄對話列只顯示標題（不再顯示 thread id）、移除輸入框上方「處理中」狀態列（計時改放在思考中的氣泡內，5 秒後才出現）、移除「Assistant」標籤、標題列縮矮</li><li>@Agent 配色降低飽和度，卡片改細框＋窄色條</li><li>新訊息加入淡入動畫（animate.css，並尊重系統「減少動態效果」設定）</li></ul></div>
             <div><div class="font-medium text-slate-700 dark:text-slate-200">v14.14 <span class="text-xs text-slate-400">2026-10-15</span></div>
               <ul class="list-disc pl-5 space-y-0.5"><li><b>編輯／重送看得到附件</b>：進入編輯後，橫幅會明確列出「這次將一起送出的附件」（📎 原訊息／新加入、📌 本對話持續附加），沒有附件也會寫「附件：無」，並有「全部移除」。送出後的提問氣泡也會列出實際送出的<b>所有</b>附件（持續附加的以 📌 標示），不再只顯示新加入的</li><li><b>直接重送</b>：提問氣泡新增 ↻，以相同文字、附件、引用與報表模式立刻再送一次（接在目前對話後）；要修改再送仍用 ✎，並可勾「以新對話送出」</li><li><b>本機隱藏問答</b>：提問氣泡新增 <i>眼睛斜線</i> 鈕，把該組問答（提問＋回覆＋Agent 意見卡）在這個瀏覽器隱藏，留下灰色提示列可還原；隱藏只是畫面整理，Agent 的上下文不變（平台 API 沒有刪除單則訊息的功能）。隱藏清單納入跨裝置同步</li></ul></div>
             <div><div class="font-medium text-slate-700 dark:text-slate-200">v14.13 <span class="text-xs text-slate-400">2026-10-15</span></div>
@@ -1107,8 +1110,8 @@ html[data-theme=warm] { --c-white:43 39 34; --sl-50:29 26 22; --sl-100:243 234 2
         const title = threadDisplayTitle(thread.id);
         const el = document.createElement('div');
         el.setAttribute('role', 'button'); el.tabIndex = 0; el.dataset.id = thread.id; if (isPin) el.dataset.pinned = '1';
-        el.className = `w-full text-left p-3 pr-24 lg:pr-3 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 text-sm transition-colors mb-1 group relative cursor-pointer ${state.currentThreadId === thread.id ? 'bg-primary-50 dark:bg-slate-700 border-l-4 border-primary-500' : ''}`;
-        el.innerHTML = `<div class="font-mono text-xs text-slate-500 truncate mb-1">${isPin ? '<i class="fa-solid fa-thumbtack mr-1 text-primary-600"></i>' : ''}${escapeHtml(thread.id)}</div><div class="thread-title text-slate-700 dark:text-slate-300 truncate font-medium">${title ? escapeHtml(title) : '對話紀錄'}</div><div class="absolute right-2 top-1/2 -translate-y-1/2 flex items-center opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity"><span class="pin-thread-btn p-2 ${isPin ? 'text-primary-600' : 'text-slate-400 hover:text-primary-600'} cursor-pointer" title="${isPin ? '取消釘選' : '釘選到最上方'}"><i class="fa-solid fa-thumbtack"></i></span><span class="rename-thread-btn p-2 text-slate-400 hover:text-primary-600 cursor-pointer" title="重新命名"><i class="fa-regular fa-pen-to-square"></i></span><span class="delete-thread-btn p-2 text-red-400 hover:text-red-600 cursor-pointer" title="刪除"><i class="fa-regular fa-trash-can"></i></span></div>`;
+        el.className = `w-full text-left py-2.5 pl-6 pr-24 lg:pr-3 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 text-sm transition-colors mb-1 group relative cursor-pointer ${state.currentThreadId === thread.id ? 'bg-primary-50 dark:bg-slate-700 border-l-4 border-primary-500' : ''}`;
+        el.innerHTML = `<div class="flex items-center gap-1.5 min-w-0">${isPin ? '<i class="fa-solid fa-thumbtack text-xs text-primary-600 shrink-0"></i>' : ''}<div class="thread-title flex-1 min-w-0 text-slate-700 dark:text-slate-300 truncate font-medium">${title ? escapeHtml(title) : '未命名對話'}</div></div><div class="absolute right-2 top-1/2 -translate-y-1/2 flex items-center opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity"><span class="pin-thread-btn p-2 ${isPin ? 'text-primary-600' : 'text-slate-400 hover:text-primary-600'} cursor-pointer" title="${isPin ? '取消釘選' : '釘選到最上方'}"><i class="fa-solid fa-thumbtack"></i></span><span class="rename-thread-btn p-2 text-slate-400 hover:text-primary-600 cursor-pointer" title="重新命名"><i class="fa-regular fa-pen-to-square"></i></span><span class="delete-thread-btn p-2 text-red-400 hover:text-red-600 cursor-pointer" title="刪除"><i class="fa-regular fa-trash-can"></i></span></div>`;
         el.onclick = (e) => {
           if (e.target.closest('.thread-title-input')) return;
           if (e.target.closest('.pin-thread-btn')) togglePin(thread.id);
@@ -1345,21 +1348,9 @@ html[data-theme=warm] { --c-white:43 39 34; --sl-50:29 26 22; --sl-100:243 234 2
     const SEND_PH_DEFAULT = els.userInput.getAttribute('placeholder') || '';
     const runUi = { t0: 0, timer: null };
     function fmtElapsed(s) { return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0'); }
-    function runHint(s) {
-      if (s < 20) return '回覆產生後會顯示在對話中';
-      if (s < 90) return '含檔案或報表的分析通常需 1–3 分鐘';
-      return '仍在處理中，資料量大時可能需要數分鐘';
-    }
     function renderRunStatus() {
-      const bar = document.getElementById('run-status'); if (!bar) return;
       const s = Math.max(0, Math.floor((Date.now() - runUi.t0) / 1000));
-      document.querySelectorAll('.rs-t').forEach(n => { n.textContent = '· ' + fmtElapsed(s); });
-      if (bar.dataset.mode !== 'run') {
-        bar.dataset.mode = 'run';
-        bar.innerHTML = '<span class="flex items-center gap-2 min-w-0"><i class="fa-solid fa-circle-notch fa-spin shrink-0"></i><span><b>Agent 處理中</b> <span id="rs-time" class="tabular-nums"></span><span class="mx-1.5 opacity-50">|</span><span id="rs-hint"></span></span></span>';
-      }
-      document.getElementById('rs-time').textContent = '已等待 ' + fmtElapsed(s);
-      document.getElementById('rs-hint').textContent = runHint(s);
+      document.querySelectorAll('.rs-t').forEach(n => { n.textContent = s >= 5 ? fmtElapsed(s) : ''; });
     }
     // v14.12：「處理中」改為依對話各自計算——此對話在處理中只會鎖住此對話；切到別的對話或新對話可以照常送出
     const pendings = new Map(); let pendSeq = 0;
@@ -1371,14 +1362,14 @@ html[data-theme=warm] { --c-white:43 39 34; --sl-50:29 26 22; --sl-100:243 234 2
       const busy = new Set(Array.from(pendings.values()).map(p => p.tid).filter(Boolean));
       els.threadsList.querySelectorAll('[data-id]').forEach(row => {
         const id = row.dataset.id; const old = row.querySelector(':scope > .t-badge'); if (old) old.remove();
-        const html = busy.has(id) ? '<span class="t-badge absolute left-1.5 top-1.5 text-primary-600 text-xs" title="處理中"><i class="fa-solid fa-circle-notch fa-spin"></i></span>'
-          : state.unread.has(id) ? '<span class="t-badge absolute left-1.5 top-2 inline-block w-2.5 h-2.5 rounded-full bg-emerald-500" title="有新回覆"></span>' : '';
+        const html = busy.has(id) ? '<span class="t-badge absolute left-2 top-1/2 -translate-y-1/2 text-primary-600 text-xs" title="處理中"><i class="fa-solid fa-circle-notch fa-spin"></i></span>'
+          : state.unread.has(id) ? '<span class="t-badge absolute left-2 top-1/2 -translate-y-1/2 inline-block w-2.5 h-2.5 rounded-full bg-emerald-500" title="有新回覆"></span>' : '';
         if (html) row.insertAdjacentHTML('afterbegin', html);
       });
     }
     function setSending(on, t0) {
       const was = state.isSending; state.isSending = on;
-      const b = els.sendBtn, bar = document.getElementById('run-status');
+      const b = els.sendBtn;
       b.innerHTML = on ? '<i class="fa-solid fa-circle-notch fa-spin"></i>' : '<i class="fa-solid fa-paper-plane"></i>';
       b.disabled = on;
       b.title = on ? '此對話處理中…' : '送出 (Enter)';
@@ -1387,9 +1378,9 @@ html[data-theme=warm] { --c-white:43 39 34; --sl-50:29 26 22; --sl-100:243 234 2
       if (on) {
         if (was && runUi.t0 === t0 && runUi.timer) return;
         clearInterval(runUi.timer);
-        runUi.t0 = t0 || Date.now(); if (bar) { bar.dataset.mode = ''; bar.classList.remove('hidden'); bar.classList.add('flex'); }
+        runUi.t0 = t0 || Date.now();
         renderRunStatus(); runUi.timer = setInterval(renderRunStatus, 1000);
-      } else { clearInterval(runUi.timer); runUi.timer = null; if (bar) { bar.classList.add('hidden'); bar.classList.remove('flex'); bar.dataset.mode = ''; bar.innerHTML = ''; } }
+      } else { clearInterval(runUi.timer); runUi.timer = null; }
     }
     state.uiReady = true;
     window.addEventListener('beforeunload', (e) => { if (pendings.size) { e.preventDefault(); e.returnValue = ''; } });
@@ -2522,7 +2513,7 @@ html[data-theme=warm] { --c-white:43 39 34; --sl-50:29 26 22; --sl-100:243 234 2
       const d = appendMessage('user', (prefixText || '') + text); state.loadingHistory = prev;
       if (d) { d.dataset.local = '1'; decorateSideAsk(d, text); } return d;
     }
-    const AG_COLORS = ['#059669', '#b45309', '#e11d48', '#7c3aed', '#0e7490', '#c026d3'];
+    const AG_COLORS = ['#3d8272', '#9a7437', '#a95a6c', '#6d5fa8', '#3f7f94', '#94609a'];
     const agBase = (n) => String(n == null ? '' : n).replace(/\s*#\d+$/, '');
     function agColor(name) {
       const base = agBase(name); const m = readJSON('agentColors');
@@ -2613,7 +2604,7 @@ html[data-theme=warm] { --c-white:43 39 34; --sl-50:29 26 22; --sl-100:243 234 2
             const card = { name: ag.label, env: agentTag(ag), ask: typedText, prefix: prefixText, text: reply || '（沒有內容）', after: afterCount, ts: Date.now() };
             const here = state.viewId === view0;
             if (here || tkey !== '_new') cardsAdd(card, tkey);
-            if (here) { els.chatWindow.appendChild(buildAgentCard(card)); revealTop(els.chatWindow.lastElementChild); } else late = true;
+            if (here) { els.chatWindow.appendChild(buildAgentCard(card)); animIn(els.chatWindow.lastElementChild, 'fadeInUp'); revealTop(els.chatWindow.lastElementChild); } else late = true;
           } catch (err) {
             removeThinking(think);
             if (state.viewId === view0) { const el = buildAgentCard({ name: ag.label, text: '❌ 呼叫失敗：' + err.message, err: true }); el.querySelector('.agent-actions').remove(); els.chatWindow.appendChild(el); }
@@ -2693,8 +2684,7 @@ html[data-theme=warm] { --c-white:43 39 34; --sl-50:29 26 22; --sl-100:243 234 2
 
       div.innerHTML = `
         <div class="max-w-[85%] sm:max-w-[75%] relative group">
-           ${role === 'assistant' ? '<div class="text-xs text-slate-400 mb-1 ml-1 flex justify-between items-center"><span>Assistant</span></div>' : ''}
-           <div class="${bubbleClass} shadow-sm relative group">
+                      <div class="${bubbleClass} shadow-sm relative group">
              ${attachmentHTML}
              <div class="md-output text-sm sm:text-base break-words"></div>
              <div class="absolute -bottom-7 right-0 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -2748,6 +2738,7 @@ html[data-theme=warm] { --c-white:43 39 34; --sl-50:29 26 22; --sl-100:243 234 2
 
       els.chatWindow.appendChild(div);
       if (state.loadingHistory) return div;
+      animIn(div, 'fadeInUp');
       if (role === 'assistant') revealTop(div); else scrollToBottom();
       return div;
     }
@@ -2756,10 +2747,11 @@ html[data-theme=warm] { --c-white:43 39 34; --sl-50:29 26 22; --sl-100:243 234 2
       const id = 'thinking-' + Date.now();
       const div = document.createElement('div'); div.id = id; div.className = 'flex w-full mb-6 justify-start';
       div.innerHTML = `<div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl rounded-tl-sm px-5 py-4 shadow-sm flex items-center gap-3"><div class="text-sm text-slate-500">${escapeHtml(label || '思考中')} <span class="rs-t tabular-nums"></span></div><div class="typing flex gap-1"><div class="dot w-1.5 h-1.5 bg-slate-400 rounded-full"></div><div class="dot w-1.5 h-1.5 bg-slate-400 rounded-full"></div><div class="dot w-1.5 h-1.5 bg-slate-400 rounded-full"></div></div></div>`;
-      if (label && label[0] === '@') { const nm = label.slice(1).replace(/\s*處理中$/, ''); const bx = div.firstElementChild; bx.style.border = '2px solid ' + agColor(nm); bx.style.borderLeftWidth = '6px'; }
-      els.chatWindow.appendChild(div); scrollToBottom(); return id;
+      if (label && label[0] === '@') { const nm = label.slice(1).replace(/\s*處理中$/, ''); const bx = div.firstElementChild; bx.style.border = '1px solid ' + agColor(nm); bx.style.borderLeftWidth = '4px'; }
+      els.chatWindow.appendChild(div); animIn(div, 'fadeIn'); scrollToBottom(); return id;
     }
     function removeThinking(id) { document.getElementById(id)?.remove(); }
+    function animIn(el, name) { if (!el || !el.classList) return; const c = 'animate__' + (name || 'fadeInUp'); el.style.setProperty('--animate-duration', '.35s'); el.classList.add('animate__animated', c); el.addEventListener('animationend', () => el.classList.remove('animate__animated', c), { once: true }); }
     function scrollToBottom(instant) { els.chatWindow.scrollTo({ top: els.chatWindow.scrollHeight, behavior: instant ? 'auto' : 'smooth' }); }
     // 回覆出現時停在回覆的開頭（長回覆從頭讀起；短回覆自然落在底部）
     function revealTop(el) { el.scrollIntoView({ block: 'start', behavior: 'smooth' }); }
