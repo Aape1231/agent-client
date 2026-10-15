@@ -72,6 +72,12 @@ html[data-theme=warm] { --c-white:43 39 34; --sl-50:29 26 22; --sl-100:243 234 2
     #theme-menu .th-name { flex: 1; min-width: 0; }
     #theme-menu .th-name small { display: block; font-weight: 400; font-size: 11px; color: rgb(var(--sl-400)); }
     #theme-menu .th-ck { width: 14px; color: rgb(var(--pr-500)); }
+    .msg-hidden { display: none !important; }
+    .hid-ph { display: flex; justify-content: center; margin: 0 0 16px; }
+    .hid-ph button { display: inline-flex; align-items: center; gap: 8px; max-width: 100%; padding: 4px 12px; border-radius: 999px; font-size: 11.5px; color: rgb(var(--sl-400)); border: 1px dashed rgb(var(--sl-300)); background: transparent; }
+    .hid-ph button span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .hid-ph button b { font-weight: 600; color: rgb(var(--pr-500)); }
+    .hid-ph button:hover { background: rgb(var(--sl-100)); }
     /* Custom Scrollbar */
     ::-webkit-scrollbar { width: 8px; height: 8px; }
     ::-webkit-scrollbar-track { background: transparent; }
@@ -511,6 +517,7 @@ html[data-theme=warm] { --c-white:43 39 34; --sl-50:29 26 22; --sl-100:243 234 2
                 <label class="flex items-center gap-1 cursor-pointer"><input type="checkbox" id="edit-newthread" /> 以新對話送出</label>
                 <button id="edit-cancel" type="button" class="underline hover:no-underline">取消</button>
               </span>
+              <span id="edit-files" class="w-full text-[11px]"></span>
             </div>
             <div id="run-status" class="hidden max-w-4xl mx-auto mb-2 flex-wrap items-center justify-between gap-x-3 gap-y-2 px-3 py-2 rounded-lg bg-sky-50 dark:bg-sky-900/20 border border-sky-200 dark:border-sky-900/50 text-xs text-sky-800 dark:text-sky-200" role="status" aria-live="polite"></div>
             <div id="target-bar" aria-live="polite"></div>
@@ -753,8 +760,10 @@ html[data-theme=warm] { --c-white:43 39 34; --sl-50:29 26 22; --sl-100:243 234 2
         </div>
 
         <div id="changelog" class="w-full max-w-lg mt-6 mb-10 px-2 text-sm text-slate-600 dark:text-slate-300">
-          <h3 class="font-semibold text-slate-800 dark:text-slate-100 mb-2">版本紀錄 <span class="text-xs font-normal text-slate-400">目前版本 v14.13</span></h3>
+          <h3 class="font-semibold text-slate-800 dark:text-slate-100 mb-2">版本紀錄 <span class="text-xs font-normal text-slate-400">目前版本 v14.14</span></h3>
           <div class="space-y-3">
+            <div><div class="font-medium text-slate-700 dark:text-slate-200">v14.14 <span class="text-xs text-slate-400">2026-10-15</span></div>
+              <ul class="list-disc pl-5 space-y-0.5"><li><b>編輯／重送看得到附件</b>：進入編輯後，橫幅會明確列出「這次將一起送出的附件」（📎 原訊息／新加入、📌 本對話持續附加），沒有附件也會寫「附件：無」，並有「全部移除」。送出後的提問氣泡也會列出實際送出的<b>所有</b>附件（持續附加的以 📌 標示），不再只顯示新加入的</li><li><b>直接重送</b>：提問氣泡新增 ↻，以相同文字、附件、引用與報表模式立刻再送一次（接在目前對話後）；要修改再送仍用 ✎，並可勾「以新對話送出」</li><li><b>本機隱藏問答</b>：提問氣泡新增 <i>眼睛斜線</i> 鈕，把該組問答（提問＋回覆＋Agent 意見卡）在這個瀏覽器隱藏，留下灰色提示列可還原；隱藏只是畫面整理，Agent 的上下文不變（平台 API 沒有刪除單則訊息的功能）。隱藏清單納入跨裝置同步</li></ul></div>
             <div><div class="font-medium text-slate-700 dark:text-slate-200">v14.13 <span class="text-xs text-slate-400">2026-10-15</span></div>
               <ul class="list-disc pl-5 space-y-0.5"><li><b>外觀主題</b>：右上角原本的深色切換鈕改為「外觀主題」選單，共 6 種：淺色、<b>護眼・米黃</b>（紙張色）、<b>護眼・豆沙綠</b>、<b>夜間暖光</b>（深色加暖色調，減少藍光）、深色、跟隨系統。選擇會記在該裝置的瀏覽器（舊的深色設定自動沿用）；對話、輸入框、側邊欄、報表與引用／Agent 卡都會跟著換色</li></ul></div>
             <div><div class="font-medium text-slate-700 dark:text-slate-200">v14.12 <span class="text-xs text-slate-400">2026-10-15</span></div>
@@ -1127,7 +1136,7 @@ html[data-theme=warm] { --c-white:43 39 34; --sl-50:29 26 22; --sl-100:243 234 2
       const run = () => {
         if (tok !== anchorTok || userMoved) return;
         if (getOpenAnchor() === 'bottom') { cw.scrollTo({ top: cw.scrollHeight, behavior: 'instant' }); return; }
-        const us = Array.from(cw.children).filter(d => d.dataset && d.dataset.role === 'user');
+        const us = Array.from(cw.children).filter(d => d.dataset && d.dataset.role === 'user' && !d.classList.contains('msg-hidden'));
         const last = us[us.length - 1];
         if (!last) { cw.scrollTo({ top: cw.scrollHeight, behavior: 'instant' }); return; }
         const top = last.getBoundingClientRect().top - cw.getBoundingClientRect().top + cw.scrollTop;
@@ -1169,6 +1178,7 @@ html[data-theme=warm] { --c-white:43 39 34; --sl-50:29 26 22; --sl-100:243 234 2
         });
         state.loadingHistory = false;
         restoreAgentCards(threadId);
+        applyHiddenAll(threadId);
         recs.forEach(r => r.files.forEach(f => restored.set(f.id, f)));
         state.selectedFiles.clear();
         if (isStickyFiles()) restored.forEach((f, id) => state.selectedFiles.set(id, { id, filename: f.filename || nameForFile(id) || id, carried: true }));
@@ -1218,7 +1228,7 @@ html[data-theme=warm] { --c-white:43 39 34; --sl-50:29 26 22; --sl-100:243 234 2
 
       const sentNewFiles = Array.from(state.selectedFiles.values()).filter(f => !f.carried).map(f => ({ id: f.id, filename: f.filename }));
       state.pendingReportChip = reportOn;
-      appendMessage('user', prefixBlocks + text, sentNewFiles);
+      appendMessage('user', prefixBlocks + text, Array.from(state.selectedFiles.values()).map(f => ({ id: f.id, filename: f.filename, carried: !!f.carried })));
       clearQuotes();
       const loadingId = showThinking();
       // 續問時仍需把檔案再帶一次：保留檔案為「持續附加」，可用 ✕ 移除
@@ -1398,7 +1408,7 @@ html[data-theme=warm] { --c-white:43 39 34; --sl-50:29 26 22; --sl-100:243 234 2
     function autoResizeInput() { els.userInput.style.height = 'auto'; els.userInput.style.height = Math.min(els.userInput.scrollHeight, 160) + 'px'; }
     function startEdit(text, files = []) {
       state.editing = true;
-      (files || []).forEach(f => { if (f && f.id && !state.selectedFiles.has(f.id)) state.selectedFiles.set(f.id, { id: f.id, filename: f.filename }); });
+      (files || []).forEach(f => { if (f && f.id) { const cur = state.selectedFiles.get(f.id); if (cur) cur.fromEdit = true; else state.selectedFiles.set(f.id, { id: f.id, filename: f.filename, fromEdit: true }); } });
       renderSelectedFiles();
       document.getElementById('edit-banner').classList.remove('hidden');
       document.getElementById('edit-banner').classList.add('flex');
@@ -1410,6 +1420,16 @@ html[data-theme=warm] { --c-white:43 39 34; --sl-50:29 26 22; --sl-100:243 234 2
       const banner = document.getElementById('edit-banner');
       banner.classList.add('hidden'); banner.classList.remove('flex');
       document.getElementById('edit-newthread').checked = false;
+      updateEditBanner();
+    }
+    // 編輯／重送時，明確列出「這次會一起送出的附件」（含本對話持續附加的）
+    function updateEditBanner() {
+      const el = document.getElementById('edit-files'); if (!el) return;
+      if (!state.editing) { el.innerHTML = ''; return; }
+      const fs = Array.from(state.selectedFiles.values());
+      if (!fs.length) { el.innerHTML = '<i class="fa-solid fa-paperclip mr-1"></i><b>附件：無</b>（這次不會帶任何檔案）'; return; }
+      el.innerHTML = '<i class="fa-solid fa-paperclip mr-1"></i><b>附件 ' + fs.length + ' 個將一起送出：</b>' + fs.map(f => (f.carried ? '📌 ' : '📎 ') + escapeHtml(f.filename || f.id) + (f.carried && f.fromEdit ? '（原訊息・持續附加）' : f.carried ? '（本對話持續附加）' : f.fromEdit ? '（原訊息）' : '（新加入）')).join('、') + ' <button type="button" id="edit-clearfiles" class="underline hover:no-underline ml-1">全部移除</button>';
+      const b = document.getElementById('edit-clearfiles'); if (b) b.onclick = () => { state.selectedFiles.clear(); renderSelectedFiles(); };
     }
     function cancelEdit() { endEdit(); els.userInput.value = ''; autoResizeInput(); }
 
@@ -2607,6 +2627,52 @@ html[data-theme=warm] { --c-white:43 39 34; --sl-50:29 26 22; --sl-100:243 234 2
       } finally { pendEnd(pend); loadThreads(); }
     }
 
+
+    // --- v14.14：直接重送／本機隱藏問答 ---
+    function resendMessage(text, files, pfx, reportChip) {
+      if (state.isSending) return showToast('此對話仍在處理上一則訊息，請稍候', 'info');
+      if (state.editing) cancelEdit();
+      state.selectedFiles.clear();
+      (files || []).forEach(f => { if (f && f.id) state.selectedFiles.set(f.id, { id: f.id, filename: f.filename }); });
+      renderSelectedFiles();
+      state.quotes = ((pfx && pfx.quotes) || []).map(q => { const s = splitNote(q); return { text: s.text, note: s.note, el: null }; });
+      state.opinions = ((pfx && pfx.opinions) || []).slice(); renderQuoteTray();
+      state.forceReport = !!reportChip;
+      els.userInput.value = text || ''; autoResizeInput();
+      const n = (files || []).filter(f => f && f.id).length;
+      showToast('重送：' + (n ? '附件 ' + n + ' 個一起送出' : '無附件'), 'info');
+      sendMessage();
+    }
+    const HID_KEY = 'hiddenMsgs';
+    const hidUsers = () => Array.from(els.chatWindow.children).filter(d => d.dataset && d.dataset.role === 'user');
+    function hidKeys() { const cnt = {}; return hidUsers().map(d => { const b = psHash(String(d.__raw || '')); cnt[b] = (cnt[b] || 0); return [d, b + '#' + (cnt[b]++)]; }); }
+    function hidGroup(div) { const g = [div]; let n = div.nextElementSibling; while (n && !(n.dataset && n.dataset.role === 'user') && !n.classList.contains('hid-ph')) { g.push(n); n = n.nextElementSibling; } return g; }
+    function hidApply(div, key) {
+      hidGroup(div).forEach(el => el.classList.add('msg-hidden'));
+      const ph = document.createElement('div'); ph.className = 'hid-ph'; ph.dataset.key = key;
+      const label = String(div.dataset.label || '').slice(0, 40);
+      ph.innerHTML = '<button type="button" title="還原這組問答"><i class="fa-regular fa-eye-slash"></i><span>已隱藏一組問答' + (label ? '：' + escapeHtml(label) : '') + '</span><b>還原</b></button>';
+      ph.querySelector('button').onclick = () => {
+        const tid = state.currentThreadId, m = readJSON(HID_KEY);
+        if (tid && m[tid]) { m[tid] = m[tid].filter(k => k !== key); if (!m[tid].length) delete m[tid]; writeJSON(HID_KEY, m); }
+        hidGroup(div).forEach(el => el.classList.remove('msg-hidden')); ph.remove(); scheduleRail();
+      };
+      div.before(ph);
+    }
+    function hideGroup(div) {
+      const tid = state.currentThreadId;
+      if (!tid) return showToast('請先等這個對話建立完成（回覆出現後）再隱藏', 'info');
+      if (pendHere()) return showToast('此對話仍在處理中，完成後再隱藏', 'info');
+      const hit = hidKeys().find(([d]) => d === div); if (!hit) return;
+      const m = readJSON(HID_KEY); (m[tid] = m[tid] || []); if (!m[tid].includes(hit[1])) m[tid].push(hit[1]); writeJSON(HID_KEY, m);
+      hidApply(div, hit[1]); scheduleRail();
+      showToast('已隱藏這組問答（可按灰色提示列還原；Agent 仍看得到這段內容）', 'info');
+    }
+    function applyHiddenAll(threadId) {
+      const set = (readJSON(HID_KEY)[threadId] || []); if (!set.length) return;
+      hidKeys().forEach(([d, k]) => { if (set.includes(k)) hidApply(d, k); });
+    }
+
     // --- Helper Functions ---
     function appendMessage(role, text, attachments = [], requestPayload = null) {
       let reportChip = false, autoQ = false, pfx = { quotes: [], opinions: [] };
@@ -2618,7 +2684,7 @@ html[data-theme=warm] { --c-white:43 39 34; --sl-50:29 26 22; --sl-100:243 234 2
 
       let attachmentHTML = '';
       if (attachments.length > 0) {
-        attachmentHTML = `<div class="flex flex-wrap gap-2 mb-2 justify-end">${attachments.map(f => f.id ? `<button type="button" class="attach-chip text-xs bg-white/20 hover:bg-white/30 text-white px-2 py-1 rounded border border-white/20 inline-flex items-center gap-1.5 max-w-full" data-id="${escapeHtml(String(f.id))}" data-name="${escapeHtml(f.filename || '')}" title="點擊下載"><i class="fa-solid fa-paperclip"></i><span class="truncate max-w-[14rem]">${escapeHtml(f.filename || String(f.id))}</span><i class="fa-solid fa-download opacity-70"></i></button>` : `<span class="text-xs bg-white/20 text-white px-2 py-1 rounded border border-white/20"><i class="fa-solid fa-paperclip mr-1"></i>${escapeHtml(f.filename || '')}</span>`).join('')}</div>`;
+        attachmentHTML = `<div class="flex flex-wrap gap-2 mb-2 justify-end">${attachments.map(f => f.id ? `<button type="button" class="attach-chip text-xs bg-white/20 hover:bg-white/30 text-white px-2 py-1 rounded border border-white/20 inline-flex items-center gap-1.5 max-w-full" data-id="${escapeHtml(String(f.id))}" data-name="${escapeHtml(f.filename || '')}" title="${f.carried ? '本對話持續附加的檔案（點擊下載）' : '點擊下載'}"><i class="fa-solid ${f.carried ? 'fa-thumbtack' : 'fa-paperclip'}"></i><span class="truncate max-w-[14rem]">${escapeHtml(f.filename || String(f.id))}</span><i class="fa-solid fa-download opacity-70"></i></button>` : `<span class="text-xs bg-white/20 text-white px-2 py-1 rounded border border-white/20"><i class="fa-solid fa-paperclip mr-1"></i>${escapeHtml(f.filename || '')}</span>`).join('')}</div>`;
       }
 
       const bubbleClass = role === 'user' 
@@ -2634,7 +2700,7 @@ html[data-theme=warm] { --c-white:43 39 34; --sl-50:29 26 22; --sl-100:243 234 2
              <div class="absolute -bottom-7 right-0 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                <button class="copy-btn text-xs text-slate-400 hover:text-primary-600 p-1 bg-slate-100 dark:bg-slate-700 rounded" title="複製內容"><i class="fa-regular fa-copy"></i></button>
                ${role === 'assistant' ? `<button class="quote-btn text-xs text-slate-400 hover:text-primary-600 p-1 bg-slate-100 dark:bg-slate-700 rounded" title="選取段落引用（可多選）"><i class="fa-solid fa-quote-left"></i></button>` : ''}
-               ${role === 'user' ? `<button class="edit-btn text-xs text-slate-400 hover:text-primary-600 p-1 bg-slate-100 dark:bg-slate-700 rounded" title="編輯後重新送出"><i class="fa-solid fa-pen"></i></button>` : ''}
+               ${role === 'user' ? `<button class="edit-btn text-xs text-slate-400 hover:text-primary-600 p-1 bg-slate-100 dark:bg-slate-700 rounded" title="編輯後重新送出"><i class="fa-solid fa-pen"></i></button><button class="resend-btn text-xs text-slate-400 hover:text-primary-600 p-1 bg-slate-100 dark:bg-slate-700 rounded" title="直接重送（相同內容與附件，接在目前對話後）"><i class="fa-solid fa-rotate-right"></i></button><button class="hide-btn text-xs text-slate-400 hover:text-primary-600 p-1 bg-slate-100 dark:bg-slate-700 rounded" title="在這個瀏覽器隱藏這組問答（只是畫面整理，Agent 的上下文不變）"><i class="fa-regular fa-eye-slash"></i></button>` : ''}
                ${role === 'assistant' && state.pendingRaw ? `<button class="raw-btn text-xs text-slate-400 hover:text-primary-600 p-1 bg-slate-100 dark:bg-slate-700 rounded font-mono" title="檢視原始回應 JSON">{ }</button>` : ''}
                ${requestPayload ? `<button class="code-btn text-xs text-slate-400 hover:text-primary-600 p-1 bg-slate-100 dark:bg-slate-700 rounded font-mono font-bold" title="檢視 API 程式碼">&lt; &gt;</button>` : ''}
              </div>
@@ -2670,6 +2736,8 @@ html[data-theme=warm] { --c-white:43 39 34; --sl-50:29 26 22; --sl-100:243 234 2
       div.querySelector('.raw-btn')?.addEventListener('click', () => openRawModal(raw, '用來確認 API 實際回傳的格式'));
       if (role === 'user' && text) state.lastUserText = text;
       div.querySelector('.edit-btn')?.addEventListener('click', () => { startEdit(autoQ ? '' : text, attachments); if (pfx.quotes.length || pfx.opinions.length) { state.quotes = pfx.quotes.map(q => { const s = splitNote(q); return { text: s.text, note: s.note, el: null }; }); state.opinions = pfx.opinions.slice(); renderQuoteTray(); } });
+      div.querySelector('.resend-btn')?.addEventListener('click', () => resendMessage(autoQ ? '' : text, attachments, pfx, reportChip));
+      div.querySelector('.hide-btn')?.addEventListener('click', () => hideGroup(div));
       div.querySelector('.quote-btn')?.addEventListener('click', () => toggleQuoteMode(div));
       div.querySelectorAll('.attach-chip').forEach(btn => btn.addEventListener('click', () => downloadFile(btn.dataset.id, btn.dataset.name)));
 
@@ -2711,6 +2779,7 @@ html[data-theme=warm] { --c-white:43 39 34; --sl-50:29 26 22; --sl-100:243 234 2
         els.selectedFilesArea.appendChild(tag);
       };
       state.selectedFiles.forEach((meta, id) => mk(meta.filename, 'bg-primary-100 text-primary-700 dark:bg-primary-900/30 dark:text-primary-300 border-primary-200 dark:border-primary-800', meta.carried ? '<i class="fa-solid fa-thumbtack" title="持續附加於本對話"></i>' : '<i class="fa-solid fa-paperclip"></i>', () => { state.selectedFiles.delete(id); renderSelectedFiles(); }));
+      updateEditBanner();
       state.uploading.forEach(meta => mk(meta.filename + ' (上傳中…)', 'bg-amber-50 text-amber-700 dark:bg-amber-900/20 dark:text-amber-300 border-amber-200 dark:border-amber-800', '<i class="fa-solid fa-spinner animate-spin"></i>', null));
     }
     window.removeSelectedFile = (id) => { state.selectedFiles.delete(id); renderSelectedFiles(); };
@@ -2948,7 +3017,7 @@ html[data-theme=warm] { --c-white:43 39 34; --sl-50:29 26 22; --sl-100:243 234 2
 
     // --- 跨裝置同步（存在平台）：設定以「同步密碼」在瀏覽器內加密後，存成你這組 API Key 底下的一個專用對話 ---
     const PS_HDR = '[myagent-sync v1] 設定同步資料（已加密），請勿刪除。請只回覆「OK」，不要解讀下列內容。';
-    const PS_SECTIONS = { main: ['assistantId'], roster: ['agentRoster', 'agentColors'], pins: ['pinnedThreads'] };
+    const PS_SECTIONS = { main: ['assistantId'], roster: ['agentRoster', 'agentColors'], pins: ['pinnedThreads', 'hiddenMsgs'] };
     const psOn = () => rpLs('psyncOn') === '1' && !!rpLs('psyncPass') && !!state.apiKey && !isRelay();
     const psCanon = (o) => JSON.stringify(o, (k, v) => (v && typeof v === 'object' && !Array.isArray(v)) ? Object.keys(v).sort().reduce((a, x) => (a[x] = v[x], a), {}) : v);
     function psHash(s) { let h1 = 0xdeadbeef, h2 = 0x41c6ce57; for (let i = 0; i < s.length; i++) { const c = s.charCodeAt(i); h1 = Math.imul(h1 ^ c, 2654435761); h2 = Math.imul(h2 ^ c, 1597334677); } h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507) ^ Math.imul(h2 ^ (h2 >>> 13), 3266489909); h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507) ^ Math.imul(h1 ^ (h1 >>> 13), 3266489909); return (4294967296 * (2097151 & h2) + (h1 >>> 0)).toString(36); }
@@ -3196,7 +3265,7 @@ html[data-theme=warm] { --c-white:43 39 34; --sl-50:29 26 22; --sl-100:243 234 2
     function openSheet() { rail.sheet.classList.add('open'); rail.backdrop.classList.add('open'); const a = rail.list.querySelector('.active'); if (a) rail.list.scrollTop = a.offsetTop - rail.list.clientHeight / 2; }
     function closeSheet() { rail.sheet.classList.remove('open'); rail.backdrop.classList.remove('open'); }
     function buildRail() {
-      railItems = Array.from(els.chatWindow.children).filter(n => n.dataset && n.dataset.role === 'user');
+      railItems = Array.from(els.chatWindow.children).filter(n => n.dataset && n.dataset.role === 'user' && !n.classList.contains('msg-hidden'));
       const show = railItems.length >= 2;
       rail.box.classList.toggle('has-items', show); rail.fab.classList.toggle('has-items', show);
       rail.dots.innerHTML = ''; rail.list.innerHTML = '';
