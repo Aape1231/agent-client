@@ -761,8 +761,10 @@ html[data-theme=warm] { --c-white:43 39 34; --sl-50:29 26 22; --sl-100:243 234 2
         </div>
 
         <div id="changelog" class="w-full max-w-lg mt-6 mb-10 px-2 text-sm text-slate-600 dark:text-slate-300">
-          <h3 class="font-semibold text-slate-800 dark:text-slate-100 mb-2">版本紀錄 <span class="text-xs font-normal text-slate-400">目前版本 v14.15</span></h3>
+          <h3 class="font-semibold text-slate-800 dark:text-slate-100 mb-2">版本紀錄 <span class="text-xs font-normal text-slate-400">目前版本 v14.16</span></h3>
           <div class="space-y-3">
+            <div><div class="font-medium text-slate-700 dark:text-slate-200">v14.16 <span class="text-xs text-slate-400">2026-10-16</span></div>
+              <ul class="list-disc pl-5 space-y-0.5"><li>檔案管理庫移除「下載」鈕（平台 API 沒有檔案下載端點，按了只會失敗）</li></ul></div>
             <div><div class="font-medium text-slate-700 dark:text-slate-200">v14.15 <span class="text-xs text-slate-400">2026-10-15</span></div>
               <ul class="list-disc pl-5 space-y-0.5"><li>介面精簡：側欄對話列只顯示標題（不再顯示 thread id）、移除輸入框上方「處理中」狀態列（計時改放在思考中的氣泡內，5 秒後才出現）、移除「Assistant」標籤、標題列縮矮</li><li>@Agent 配色降低飽和度，卡片改細框＋窄色條</li><li>新訊息加入淡入動畫（animate.css，並尊重系統「減少動態效果」設定）</li></ul></div>
             <div><div class="font-medium text-slate-700 dark:text-slate-200">v14.14 <span class="text-xs text-slate-400">2026-10-15</span></div>
@@ -2790,7 +2792,7 @@ html[data-theme=warm] { --c-white:43 39 34; --sl-50:29 26 22; --sl-100:243 234 2
         if(!data.data || data.data.length === 0) { els.fileDrawer.list.innerHTML = '<div class="text-center py-4 text-slate-400 text-sm">暫無檔案</div>'; return; }
         data.data.forEach(f => { rememberFileName(f.id, f.filename);
           const div = document.createElement('div'); div.className = 'flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 group';
-          div.innerHTML = `<div class="flex items-center gap-3 overflow-hidden"><div class="w-8 h-8 rounded bg-blue-100 text-blue-600 flex items-center justify-center shrink-0"><i class="fa-solid fa-file"></i></div><div class="min-w-0"><div class="text-sm font-medium text-slate-700 dark:text-slate-200 truncate">${escapeHtml(f.filename)}</div><div class="text-xs text-slate-400">${(f.bytes/1024).toFixed(1)} KB</div></div></div><div class="flex items-center gap-2"><button class="download-file-btn text-slate-400 hover:text-primary-600 p-1" title="下載" data-id="${f.id}" data-name="${escapeHtml(f.filename)}"><i class="fa-solid fa-download"></i></button><button class="select-file-btn px-2 py-1 text-xs bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded hover:bg-slate-100 dark:hover:bg-slate-600 text-slate-600 dark:text-slate-300" data-id="${f.id}" data-name="${escapeHtml(f.filename)}">選取</button><button class="delete-file-btn text-slate-400 hover:text-red-500 p-1" data-id="${f.id}"><i class="fa-solid fa-trash"></i></button></div>`;
+          div.innerHTML = `<div class="flex items-center gap-3 overflow-hidden"><div class="w-8 h-8 rounded bg-blue-100 text-blue-600 flex items-center justify-center shrink-0"><i class="fa-solid fa-file"></i></div><div class="min-w-0"><div class="text-sm font-medium text-slate-700 dark:text-slate-200 truncate">${escapeHtml(f.filename)}</div><div class="text-xs text-slate-400">${(f.bytes/1024).toFixed(1)} KB</div></div></div><div class="flex items-center gap-2"><button class="select-file-btn px-2 py-1 text-xs bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded hover:bg-slate-100 dark:hover:bg-slate-600 text-slate-600 dark:text-slate-300" data-id="${f.id}" data-name="${escapeHtml(f.filename)}">選取</button><button class="delete-file-btn text-slate-400 hover:text-red-500 p-1" data-id="${f.id}"><i class="fa-solid fa-trash"></i></button></div>`;
           els.fileDrawer.list.appendChild(div);
         });
       } catch (err) { els.fileDrawer.list.innerHTML = `<div class="text-red-500 text-sm text-center">無法載入: ${err.message}</div>`; }
@@ -2820,8 +2822,7 @@ html[data-theme=warm] { --c-white:43 39 34; --sl-50:29 26 22; --sl-100:243 234 2
     const toggleFileDrawer = (show) => { if (show) { els.fileDrawer.root.classList.remove('hidden'); loadFileLibrary(); setTimeout(() => els.fileDrawer.panel.classList.remove('translate-x-full'), 10); } else { els.fileDrawer.panel.classList.add('translate-x-full'); setTimeout(() => els.fileDrawer.root.classList.add('hidden'), 500); } };
     els.fileDrawer.trigger.addEventListener('click', () => toggleFileDrawer(true)); els.fileDrawer.close.addEventListener('click', () => toggleFileDrawer(false)); els.fileDrawer.backdrop.addEventListener('click', () => toggleFileDrawer(false)); els.fileDrawer.refresh.addEventListener('click', loadFileLibrary); els.fileDrawer.upload.addEventListener('change', (e) => { if(e.target.files[0]) uploadFile(e.target.files[0]); e.target.value = ''; });
     els.fileDrawer.list.addEventListener('click', async (e) => {
-      const selectBtn = e.target.closest('.select-file-btn'), deleteBtn = e.target.closest('.delete-file-btn'), dlBtn = e.target.closest('.download-file-btn');
-      if (dlBtn) { downloadFile(dlBtn.dataset.id, dlBtn.dataset.name); return; }
+      const selectBtn = e.target.closest('.select-file-btn'), deleteBtn = e.target.closest('.delete-file-btn');
       if (selectBtn) { state.selectedFiles.set(selectBtn.dataset.id, { id: selectBtn.dataset.id, filename: selectBtn.dataset.name }); renderSelectedFiles(); toggleFileDrawer(false); showToast(`已選取 ${selectBtn.dataset.name}`, 'success'); }
       else if (deleteBtn) { if(!confirm('確定永久刪除此檔案？')) return; try { await apiCall(`/v1/files/${deleteBtn.dataset.id}`, 'DELETE'); showToast('檔案已刪除'); loadFileLibrary(); } catch(err) { showToast(`刪除失敗: ${err.message}`, 'error'); } }
     });
