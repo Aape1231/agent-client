@@ -761,8 +761,10 @@ html[data-theme=warm] { --c-white:43 39 34; --sl-50:29 26 22; --sl-100:243 234 2
         </div>
 
         <div id="changelog" class="w-full max-w-lg mt-6 mb-10 px-2 text-sm text-slate-600 dark:text-slate-300">
-          <h3 class="font-semibold text-slate-800 dark:text-slate-100 mb-2">版本紀錄 <span class="text-xs font-normal text-slate-400">目前版本 v14.16</span></h3>
+          <h3 class="font-semibold text-slate-800 dark:text-slate-100 mb-2">版本紀錄 <span class="text-xs font-normal text-slate-400">目前版本 v14.17</span></h3>
           <div class="space-y-3">
+            <div><div class="font-medium text-slate-700 dark:text-slate-200">v14.17 <span class="text-xs text-slate-400">2026-10-22</span></div>
+              <ul class="list-disc pl-5 space-y-0.5"><li>修正：回覆中只要附了平台檔案連結（xlsx／pptx／Markdown 等）就誤顯示「這份報表是 HTML 檔案…」的提示；現在只有連結看起來是 HTML 報表時才顯示</li></ul></div>
             <div><div class="font-medium text-slate-700 dark:text-slate-200">v14.16 <span class="text-xs text-slate-400">2026-10-16</span></div>
               <ul class="list-disc pl-5 space-y-0.5"><li>檔案管理庫移除「下載」鈕（平台 API 沒有檔案下載端點，按了只會失敗）</li></ul></div>
             <div><div class="font-medium text-slate-700 dark:text-slate-200">v14.15 <span class="text-xs text-slate-400">2026-10-15</span></div>
@@ -1332,7 +1334,7 @@ html[data-theme=warm] { --c-white:43 39 34; --sl-50:29 26 22; --sl-100:243 234 2
         let u; try { u = new URL(a.href, location.href); } catch (e) { return; }
         const isFile = DOWNLOAD_RE.test(u.pathname + u.search) || /\/files\/[^/]+(\/content)?\/?$/i.test(u.pathname) || /download/i.test(a.textContent + a.href);
         if (isFile) a.classList.add('md-download');
-        if (/\/resource\//i.test(u.pathname) || /\.html?$/i.test(u.pathname) || /\.html?$/i.test(a.textContent.trim())) { (root.__reportLinks = root.__reportLinks || []).push(a); }
+        if (isHtmlReportLink(a, u)) { (root.__reportLinks = root.__reportLinks || []).push(a); }
         if (apiOrigin && u.origin === apiOrigin) {
           a.addEventListener('click', async (e) => {
             e.preventDefault();
@@ -1978,6 +1980,14 @@ html[data-theme=warm] { --c-white:43 39 34; --sl-50:29 26 22; --sl-100:243 234 2
       state.forceReport = true;
       els.userInput.value = '請把上一份報表改用「頁內報表」方式呈現：不要產生任何檔案或 HTML，直接依同一份資料與剛才的分析結果，在回覆中輸出 dashboard JSON。';
       sendMessage();
+    }
+    // v14.17：只有「看起來真的是 HTML 報表」的連結才顯示報表提示列；平台的 /resource/ 連結沒有副檔名，xlsx／pptx／md 等檔案下載不應觸發
+    function isHtmlReportLink(a, u) {
+      const NON_HTML_EXT_RE = /\.(xlsx?|xlsm|csv|tsv|docx?|pptx?|pdf|md|markdown|txt|json|zip|png|jpe?g|gif|svg|py|js)\b/i;
+      const txt = (a.textContent || '').trim();
+      if (NON_HTML_EXT_RE.test(txt) || NON_HTML_EXT_RE.test(u.pathname)) return false;
+      if (/\.html?$/i.test(u.pathname) || /\.html?\b/i.test(txt) || /\bhtml\b/i.test(txt)) return true;
+      return /\/resource\//i.test(u.pathname) && /(報表|儀表板|dashboard|report)/i.test(txt) && !/(Excel|Word|PowerPoint|簡報|Markdown|對話紀錄)/i.test(txt);
     }
     // 助理回覆含「檔案型報表」連結時，在訊息下方提供：預覽已下載檔案、一鍵改為頁內報表
     function buildFileReportBar(links) {
