@@ -744,7 +744,7 @@ html[data-theme=warm] { --c-white:43 39 34; --sl-50:29 26 22; --sl-100:243 234 2
           <h3 class="font-semibold text-slate-800 dark:text-slate-100"><i class="fa-solid fa-arrows-rotate mr-2 text-primary-600"></i>跨裝置同步 <span id="psync-badge" class="ml-1 px-2 py-0.5 text-xs font-medium rounded-full bg-slate-100 dark:bg-slate-700 text-slate-500">未啟用</span></h3>
           <p class="text-xs text-slate-500 dark:text-slate-400">把 Agent 名單（含各自的 Key）、Assistant ID、顏色、釘選、自訂標題等，用「同步密碼」在瀏覽器內加密後存到你這組 API Key 底下的平台對話。其他裝置只要輸入主 API Key（與環境）＋同一組同步密碼，就會自動還原並持續同步。主 API Key 本身不會被同步（要先有它才連得到平台），同步密碼忘了無法復原。</p>
           <div class="flex flex-wrap gap-2 items-center">
-            <input id="psync-pass" type="password" autocomplete="off" placeholder="同步密碼（至少 6 個字元）" class="flex-1 min-w-[12rem] p-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg text-sm outline-none focus:ring-2 focus:ring-primary-500">
+            <div class="relative flex-1 min-w-[12rem]"><input id="psync-pass" type="password" autocomplete="off" placeholder="同步密碼（至少 6 個字元）" class="w-full p-2.5 pr-10 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg text-sm outline-none focus:ring-2 focus:ring-primary-500"><button id="psync-eye" type="button" title="顯示／隱藏密碼" class="absolute right-3 top-3 text-slate-400 hover:text-slate-600"><i class="fa-regular fa-eye"></i></button></div>
             <button id="psync-save" type="button" class="px-4 py-2.5 text-sm font-medium rounded-lg bg-primary-600 hover:bg-primary-700 text-white shadow">啟用並同步</button>
             <button id="psync-now" type="button" class="px-3 py-2.5 text-sm font-medium rounded-lg border border-slate-300 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-700">立即同步</button>
             <button id="psync-off" type="button" class="px-3 py-2.5 text-sm rounded-lg border border-slate-300 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-700">停用</button>
@@ -761,8 +761,10 @@ html[data-theme=warm] { --c-white:43 39 34; --sl-50:29 26 22; --sl-100:243 234 2
         </div>
 
         <div id="changelog" class="w-full max-w-lg mt-6 mb-10 px-2 text-sm text-slate-600 dark:text-slate-300">
-          <h3 class="font-semibold text-slate-800 dark:text-slate-100 mb-2">版本紀錄 <span class="text-xs font-normal text-slate-400">目前版本 v14.18</span></h3>
+          <h3 class="font-semibold text-slate-800 dark:text-slate-100 mb-2">版本紀錄 <span class="text-xs font-normal text-slate-400">目前版本 v14.19</span></h3>
           <div class="space-y-3">
+            <div><div class="font-medium text-slate-700 dark:text-slate-200">v14.19 <span class="text-xs text-slate-400">2026-11-08</span></div>
+              <ul class="list-disc pl-5 space-y-0.5"><li>新增：跨裝置同步密碼欄位加上「顯示／隱藏」眼睛按鈕（預設隱藏），忘記密碼時可到已啟用同步的裝置查看</li></ul></div>
             <div><div class="font-medium text-slate-700 dark:text-slate-200">v14.18 <span class="text-xs text-slate-400">2026-11-08</span></div>
               <ul class="list-disc pl-5 space-y-0.5"><li>修正：換裝置（如手機）看不到 @Agent 的意見。現在會同步「主對話 × Agent → 側對話」對應，並由平台上各 Agent 的側對話重建意見卡（提問取自側對話；原本引用的段落文字無法還原）</li></ul></div>
             <div><div class="font-medium text-slate-700 dark:text-slate-200">v14.17 <span class="text-xs text-slate-400">2026-10-22</span></div>
@@ -3218,6 +3220,7 @@ html[data-theme=warm] { --c-white:43 39 34; --sl-50:29 26 22; --sl-100:243 234 2
     (function initPsyncUi() {
       const $ = (id) => document.getElementById(id); if (!$('psync-card')) return;
       $('psync-pass').value = rpLs('psyncPass') || '';
+      $('psync-eye').addEventListener('click', () => { const i = $('psync-pass'), show = i.type === 'password'; i.type = show ? 'text' : 'password'; $('psync-eye').innerHTML = '<i class="fa-regular ' + (show ? 'fa-eye-slash' : 'fa-eye') + '"></i>'; });
       psStatus(psOn() ? ('上次同步：' + (rpLs('psyncAt') || '尚未同步')) : '尚未啟用');
       $('psync-save').addEventListener('click', async () => {
         const p = $('psync-pass').value; if (!state.apiKey) return showToast('請先儲存主 API Key', 'error');
