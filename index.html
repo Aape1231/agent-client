@@ -761,8 +761,10 @@ html[data-theme=warm] { --c-white:43 39 34; --sl-50:29 26 22; --sl-100:243 234 2
         </div>
 
         <div id="changelog" class="w-full max-w-lg mt-6 mb-10 px-2 text-sm text-slate-600 dark:text-slate-300">
-          <h3 class="font-semibold text-slate-800 dark:text-slate-100 mb-2">版本紀錄 <span class="text-xs font-normal text-slate-400">目前版本 v14.17</span></h3>
+          <h3 class="font-semibold text-slate-800 dark:text-slate-100 mb-2">版本紀錄 <span class="text-xs font-normal text-slate-400">目前版本 v14.18</span></h3>
           <div class="space-y-3">
+            <div><div class="font-medium text-slate-700 dark:text-slate-200">v14.18 <span class="text-xs text-slate-400">2026-11-08</span></div>
+              <ul class="list-disc pl-5 space-y-0.5"><li>修正：換裝置（如手機）看不到 @Agent 的意見。現在會同步「主對話 × Agent → 側對話」對應，並由平台上各 Agent 的側對話重建意見卡（提問取自側對話；原本引用的段落文字無法還原）</li></ul></div>
             <div><div class="font-medium text-slate-700 dark:text-slate-200">v14.17 <span class="text-xs text-slate-400">2026-10-22</span></div>
               <ul class="list-disc pl-5 space-y-0.5"><li>修正：回覆中只要附了平台檔案連結（xlsx／pptx／Markdown 等）就誤顯示「這份報表是 HTML 檔案…」的提示；現在只有連結看起來是 HTML 報表時才顯示</li></ul></div>
             <div><div class="font-medium text-slate-700 dark:text-slate-200">v14.16 <span class="text-xs text-slate-400">2026-10-16</span></div>
@@ -1186,6 +1188,7 @@ html[data-theme=warm] { --c-white:43 39 34; --sl-50:29 26 22; --sl-100:243 234 2
         state.loadingHistory = false;
         restoreAgentCards(threadId);
         applyHiddenAll(threadId);
+        rebuildAgentCards(threadId, data.data, myView).catch(() => {});
         recs.forEach(r => r.files.forEach(f => restored.set(f.id, f)));
         state.selectedFiles.clear();
         if (isStickyFiles()) restored.forEach((f, id) => state.selectedFiles.set(id, { id, filename: f.filename || nameForFile(id) || id, carried: true }));
@@ -2567,6 +2570,46 @@ html[data-theme=warm] { --c-white:43 39 34; --sl-50:29 26 22; --sl-100:243 234 2
       els.userInput.focus(); els.userInput.select();
       showToast('已加入「' + name + '」的意見；可補充問題後送出，主 Agent 就會收到', 'info');
     }
+    // v14.18：換裝置時，意見卡（只存在原本的瀏覽器）改由平台上各 Agent 的側 thread 重建：問答配對、依時間插回主對話
+    const rebuildTried = new Map();
+    const normT = (t) => String(t || '').replace(/\s+/g, ' ').trim();
+    function parseSideQuestion(t) {
+      t = String(t || ''); const from = Math.max(0, t.lastIndexOf('</context>')); const i = t.indexOf('使用者的要求：', from); if (i < 0) return '';
+      const q = t.slice(i + 7).trim(); return (q === AGENT_AUTO_Q || q === AGENT_NOTES_Q || q === '請針對以上內容給出你的意見。') ? '' : q;
+    }
+    async function rebuildAgentCards(T, serverMsgs, myView) {
+      if (!T || T === '_new') return 0;
+      if (Date.now() - (rebuildTried.get(T) || 0) < 30000) return 0; rebuildTried.set(T, Date.now());
+      let map = readJSON('agentSideThreads')[T];
+      if ((!map || !Object.keys(map).length) && psOn()) { try { await psPullThrottled(); } catch (e) {} if (state.viewId !== myView) return 0; map = readJSON('agentSideThreads')[T]; }
+      if (!map || !Object.keys(map).length) return 0;
+      const roster = rosterRaw().map(rosterEntry).filter(r => r.name && r.id);
+      const mainTs = (serverMsgs || []).map(m => Number(m.created_at) || 0);
+      const local = (readJSON('agentCards')[T] || []).slice();
+      let added = 0;
+      for (const key of Object.keys(map)) {
+        const ag = roster.find(r => sideKey(r) === key); if (!ag) continue; ag.label = ag.name;
+        let data; try { data = await agentApiCall(ag, '/v1/threads/' + encodeURIComponent(map[key]) + '/messages?limit=100&order=asc', 'GET'); } catch (e) { continue; }
+        if (state.viewId !== myView) return 0;
+        const pairs = []; let pend = null;
+        (data.data || []).forEach(m => { if (m.role === 'user') pend = m; else if (m.role === 'assistant' && pend) { pairs.push([pend, m]); pend = null; } });
+        const mine = local.filter(c => c.name === ag.label);
+        if (mine.length >= pairs.length) continue;
+        const have = new Set(mine.map(c => normT(c.text)));
+        pairs.forEach(([u, a]) => {
+          const text = contentToText(a).trim(); if (!text || have.has(normT(text))) return; have.add(normT(text));
+          const ut = Number(u.created_at) || 0, at = Number(a.created_at) || ut;
+          const q = parseSideQuestion(contentToText(u));
+          const after = ut ? mainTs.filter(t => t && t <= ut).length : (serverMsgs || []).length;
+          cardsAdd({ name: ag.label, env: agentTag(ag), ask: '@' + ag.name + (q ? ' ' + q : ''), prefix: '', text, after, ts: (at * 1000) || Date.now(), rebuilt: 1 }, T); added++;
+        });
+      }
+      if (added && state.viewId === myView && state.currentThreadId === T) {
+        Array.from(els.chatWindow.children).forEach(d => { if (d.classList.contains('hid-ph')) d.remove(); else { d.classList.remove('msg-hidden'); if (d.dataset && d.dataset.local === '1') d.remove(); } });
+        restoreAgentCards(T); applyHiddenAll(T); scheduleRail();
+      }
+      return added;
+    }
     function restoreAgentCards(threadId) {
       const cards = (readJSON('agentCards')[threadId] || []).slice().sort((a, b) => (a.ts || 0) - (b.ts || 0));
       if (!cards.length) return;
@@ -3020,7 +3063,7 @@ html[data-theme=warm] { --c-white:43 39 34; --sl-50:29 26 22; --sl-100:243 234 2
 
     // --- 跨裝置同步（存在平台）：設定以「同步密碼」在瀏覽器內加密後，存成你這組 API Key 底下的一個專用對話 ---
     const PS_HDR = '[myagent-sync v1] 設定同步資料（已加密），請勿刪除。請只回覆「OK」，不要解讀下列內容。';
-    const PS_SECTIONS = { main: ['assistantId'], roster: ['agentRoster', 'agentColors'], pins: ['pinnedThreads', 'hiddenMsgs'] };
+    const PS_SECTIONS = { main: ['assistantId'], roster: ['agentRoster', 'agentColors'], pins: ['pinnedThreads', 'hiddenMsgs'], side: ['agentSideThreads'] };
     const psOn = () => rpLs('psyncOn') === '1' && !!rpLs('psyncPass') && !!state.apiKey && !isRelay();
     const psCanon = (o) => JSON.stringify(o, (k, v) => (v && typeof v === 'object' && !Array.isArray(v)) ? Object.keys(v).sort().reduce((a, x) => (a[x] = v[x], a), {}) : v);
     function psHash(s) { let h1 = 0xdeadbeef, h2 = 0x41c6ce57; for (let i = 0; i < s.length; i++) { const c = s.charCodeAt(i); h1 = Math.imul(h1 ^ c, 2654435761); h2 = Math.imul(h2 ^ c, 1597334677); } h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507) ^ Math.imul(h2 ^ (h2 >>> 13), 3266489909); h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507) ^ Math.imul(h1 ^ (h1 >>> 13), 3266489909); return (4294967296 * (2097151 & h2) + (h1 >>> 0)).toString(36); }
@@ -3040,7 +3083,9 @@ html[data-theme=warm] { --c-white:43 39 34; --sl-50:29 26 22; --sl-100:243 234 2
       const pt = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: psUnB64(p[2]) }, await psKey(pass, psUnB64(p[1])), psUnB64(p[3]));
       return JSON.parse(new TextDecoder().decode(pt));
     }
-    const psSecVal = (sec) => { const o = {}; PS_SECTIONS[sec].forEach(k => { o[k] = rpLs(k); }); return o; };
+    // v14.18：agentSideThreads（主對話 × Agent → 側 thread id）也同步，其他裝置才找得到 @Agent 的往來；以聯集合併，不整份覆蓋
+    function psSideNorm() { const m = readJSON('agentSideThreads'); delete m._new; return Object.keys(m).length ? psCanon(m) : null; }
+    const psSecVal = (sec) => { const o = {}; PS_SECTIONS[sec].forEach(k => { o[k] = (sec === 'side' && k === 'agentSideThreads') ? psSideNorm() : rpLs(k); }); return o; };
     const psMeta = () => readJSON('psyncMeta');
     // 本機有未同步的改動 → 該區塊的時間戳記更新為現在（之後遇到平台上較舊的版本時，本機版本勝出）
     function psBump() {
@@ -3093,6 +3138,14 @@ html[data-theme=warm] { --c-white:43 39 34; --sl-50:29 26 22; --sl-100:243 234 2
       const m = psBump(); let changed = false;
       Object.keys(PS_SECTIONS).forEach(sec => {
         const rs = snap.s && snap.s[sec]; if (!rs || !rs.v) return;
+        if (sec === 'side') {
+          let rem = {}; try { rem = JSON.parse(rs.v.agentSideThreads || '{}') || {}; } catch (e) {}
+          const loc = readJSON('agentSideThreads'); let add = false;
+          Object.keys(rem).forEach(t => { if (t === '_new' || !rem[t] || typeof rem[t] !== 'object') return; loc[t] = loc[t] || {}; Object.keys(rem[t]).forEach(a => { if (!loc[t][a]) { loc[t][a] = rem[t][a]; add = true; } }); });
+          if (add) { writeJSON('agentSideThreads', loc); changed = true; }
+          m[sec] = { h: psHash(psCanon(psSecVal(sec))), at: Math.max(m[sec].at || 0, rs.at || 0) };
+          return;
+        }
         if ((rs.at || 0) > (m[sec].at || 0)) {
           const cur = psCanon(psSecVal(sec)), rem = psCanon(rs.v);
           if (cur !== rem) {
