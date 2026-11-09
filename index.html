@@ -3,13 +3,14 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content" />
-  <title>My Agent 客戶端</title>
+  <title>Counsel</title>
   <script>
     // v14.13：先套用主題，避免載入時閃一下
     (function () { try {
       var t = localStorage.getItem('theme') || (localStorage.getItem('darkMode') === 'true' ? 'dark' : 'light');
+      if (t === 'paper' || t === 'green') t = 'light'; if (t === 'warm') t = 'dark';
       if (t === 'auto') t = (window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light';
-      var h = document.documentElement; h.setAttribute('data-theme', t); if (t === 'dark' || t === 'warm') h.classList.add('dark');
+      var h = document.documentElement; h.setAttribute('data-theme', t); if (t === 'dark') h.classList.add('dark');
     } catch (e) {} })();
   </script>
   <script src="https://cdn.tailwindcss.com"></script>
@@ -17,7 +18,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+TC:wght@400;500;600;700&display=swap" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&family=Noto+Sans+TC:wght@400;500;600;700&display=swap" />
   <script src="https://cdn.jsdelivr.net/npm/marked@12.0.2/marked.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/dompurify@3.1.6/dist/purify.min.js"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" />
@@ -42,7 +43,8 @@
   </script>
   <style>
     /* ===== v14.13：主題（顏色變數）===== */
-:root, html[data-theme=light], html[data-theme=dark] { --c-white:255 255 255; --sl-50:245 245 247; --sl-100:236 236 240; --sl-200:227 227 232; --sl-300:210 210 215; --sl-400:142 142 147; --sl-500:110 110 115; --sl-600:72 72 74; --sl-700:44 44 46; --sl-800:28 28 30; --sl-900:0 0 0; --pr-50:242 242 247; --pr-100:229 229 234; --pr-500:0 113 227; --pr-600:29 29 31; --pr-700:0 0 0; }
+:root, html[data-theme=light], html[data-theme=dark] { --c-white:255 255 255; --sl-50:247 245 241; --sl-100:241 238 232; --sl-200:226 221 211; --sl-300:214 208 196; --sl-400:107 114 118; --sl-500:90 97 100; --sl-600:60 67 71; --sl-700:52 58 62; --sl-800:29 33 36; --sl-900:22 25 27; --pr-50:251 243 226; --pr-100:243 232 206; --pr-500:138 100 32; --pr-600:142 106 34; --pr-700:110 79 24; --bub:235 211 164; --bub-fg:38 33 26; --rail:241 238 232; --hair:234 229 220; }
+html[data-theme=dark] { --pr-50:38 32 22; --pr-100:46 38 25; --pr-500:217 177 114; --pr-600:217 177 114; --pr-700:235 198 139; --bub:217 177 114; --bub-fg:20 21 15; --rail:18 20 22; --hair:35 39 42; }
 html[data-theme=paper] { --c-white:251 245 230; --sl-50:241 232 208; --sl-100:234 223 194; --sl-200:224 211 176; --sl-300:205 191 154; --sl-400:140 128 104; --sl-500:106 96 77; --sl-600:77 70 54; --sl-700:58 52 40; --sl-800:43 38 28; --sl-900:28 24 16; --pr-50:241 232 208; --pr-100:230 217 184; --pr-500:47 106 143; --pr-600:74 65 50; --pr-700:43 38 28; }
 html[data-theme=green] { --c-white:237 247 234; --sl-50:213 235 211; --sl-100:201 227 198; --sl-200:185 217 182; --sl-300:163 198 161; --sl-400:107 141 112; --sl-500:80 105 90; --sl-600:60 84 66; --sl-700:44 64 50; --sl-800:31 46 36; --sl-900:19 29 23; --pr-50:213 235 211; --pr-100:195 220 192; --pr-500:47 111 86; --pr-600:44 64 50; --pr-700:31 46 36; }
 html[data-theme=warm] { --c-white:43 39 34; --sl-50:29 26 22; --sl-100:243 234 219; --sl-200:232 220 200; --sl-300:210 196 171; --sl-400:163 150 130; --sl-500:138 125 105; --sl-600:106 95 80; --sl-700:68 61 51; --sl-800:43 39 34; --sl-900:26 23 19; --pr-50:43 39 34; --pr-100:58 52 44; --pr-500:217 163 91; --pr-600:217 163 91; --pr-700:232 184 115; }
@@ -524,32 +526,129 @@ html[data-theme=warm] { --c-white:43 39 34; --sl-50:29 26 22; --sl-100:243 234 2
       .ag-group.multi .ag-pane.on { display: block; }
       .ag-group.multi .ag-chip { cursor: pointer; }
     }
+    /* ===== v16.0 Counsel：三欄工作台 ===== */
+    html, body { font-family: Inter, 'Noto Sans TC', -apple-system, BlinkMacSystemFont, sans-serif; background: rgb(var(--sl-50)); }
+    html.dark body { background: rgb(var(--sl-900)); }
+
+    #rail { width: 56px; flex: none; background: rgb(var(--rail)); border-right: 1px solid rgb(var(--hair)); display: none; flex-direction: column; align-items: center; padding: 14px 0 12px; gap: 4px; z-index: 30; }
+    @media (min-width: 1024px) { #rail { display: flex; } }
+    #rail-mark { width: 32px; height: 32px; border-radius: 9px; background: rgb(var(--pr-600)); color: #fff; display: flex; align-items: center; justify-content: center; font-family: 'Instrument Serif', Georgia, serif; font-size: 22px; line-height: 1; margin-bottom: 12px; }
+    html.dark #rail-mark { color: #171311; }
+    .rail-ic { width: 38px; height: 38px; border-radius: 11px; display: inline-flex; align-items: center; justify-content: center; color: rgb(var(--sl-400)); font-size: 16px; transition: background .15s, color .15s; }
+    .rail-ic:hover { background: rgba(128,128,128,.13); color: rgb(var(--sl-600)); }
+    html.dark .rail-ic:hover { color: rgb(var(--sl-200)); }
+    .rail-ic.on { background: rgba(128,128,128,.17); color: rgb(var(--pr-500)); }
+    .rail-sp { flex: 1; }
+    #rail #theme-wrap { position: relative; }
+    #rail #theme-toggle { width: 38px; height: 38px; border-radius: 11px; background: none !important; color: rgb(var(--sl-400)); }
+    #rail #theme-toggle:hover { background: rgba(128,128,128,.13) !important; }
+    #rail #theme-menu { left: calc(100% + 8px); right: auto; top: auto; bottom: 0; }
+
+    #sidebar { width: 250px; background: rgb(var(--rail)); border-right: 1px solid rgb(var(--hair)); box-shadow: none; }
+    #sidebar > div:first-child { border-bottom: 0; padding: 14px 10px 6px 16px; }
+    #threads-list { padding: 6px 10px; }
+
+    #chat-head { height: 56px; flex: none; display: flex; align-items: center; gap: 10px; padding: 0 12px 0 16px; border-bottom: 1px solid rgb(var(--hair)); background: rgb(var(--sl-50)); z-index: 5; }
+    html.dark #chat-head { background: rgb(var(--sl-900)); }
+    #chat-title { margin: 0; font-size: 15px; font-weight: 600; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: rgb(var(--sl-800)); }
+    html.dark #chat-title { color: rgb(var(--sl-100)); }
+    #env-chip { flex: none; height: 22px; display: none; align-items: center; padding: 0 8px; border-radius: 6px; background: rgb(var(--c-white)); border: 1px solid rgb(var(--sl-200)); font-size: 12px; font-weight: 500; color: rgb(var(--sl-500)); }
+    html.dark #env-chip { background: rgb(var(--sl-800)); border-color: rgb(var(--sl-700)); color: rgb(var(--sl-300)); }
+    #head-agents { display: none; align-items: center; }
+    @media (min-width: 640px) { #head-agents { display: flex; } }
+    #head-agents .hag { width: 25px; height: 25px; border-radius: 999px; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600; border: 1px solid var(--ac); color: var(--ac); background: rgb(var(--c-white)); }
+    html.dark #head-agents .hag { background: rgb(var(--sl-800)); filter: brightness(1.2); }
+    #head-agents .hag + .hag { margin-left: -6px; }
+    #op-toggle { display: inline-flex; align-items: center; gap: 6px; height: 32px; padding: 0 11px; border-radius: 9px; border: 1px solid rgb(var(--sl-200)); font-size: 13px; color: rgb(var(--sl-600)); }
+    html.dark #op-toggle { border-color: rgb(var(--sl-700)); color: rgb(var(--sl-300)); }
+    #op-toggle:hover { background: rgba(128,128,128,.1); }
+    #op-toggle b { min-width: 18px; height: 18px; padding: 0 5px; border-radius: 999px; background: rgb(var(--pr-600)); color: #fff; font-size: 11px; font-weight: 600; display: inline-flex; align-items: center; justify-content: center; }
+    html.dark #op-toggle b { color: #171311; }
+
+    #op-backdrop { display: none; position: absolute; inset: 0; background: rgba(0,0,0,.34); z-index: 24; }
+    #op-backdrop.on { display: block; }
+    @media (min-width: 1280px) { #op-backdrop.on { display: none; } }
+    #op-panel { width: 340px; flex: none; background: rgb(var(--rail)); border-left: 1px solid rgb(var(--hair)); display: none; flex-direction: column; }
+    #op-panel.open { display: flex; }
+    @media (max-width: 1279px) { #op-panel.open { position: absolute; top: 0; right: 0; bottom: 0; z-index: 25; width: min(360px, 92vw); box-shadow: -10px 0 30px rgba(0,0,0,.22); } }
+    @media (min-width: 1280px) { #op-close { display: none; } }
+    #op-head { height: 56px; flex: none; display: flex; align-items: center; gap: 16px; padding: 0 10px 0 16px; border-bottom: 1px solid rgb(var(--hair)); }
+    .op-tab { height: 56px; font-size: 14px; color: rgb(var(--sl-500)); display: inline-flex; align-items: center; gap: 6px; border-bottom: 2px solid transparent; }
+    .op-tab.on { color: rgb(var(--sl-800)); font-weight: 600; border-bottom-color: rgb(var(--pr-500)); }
+    html.dark .op-tab.on { color: rgb(var(--sl-100)); }
+    .op-tab b { font-weight: 500; font-size: 11px; min-width: 17px; height: 17px; padding: 0 4px; border-radius: 999px; background: rgba(128,128,128,.2); color: rgb(var(--sl-600)); display: inline-flex; align-items: center; justify-content: center; }
+    html.dark .op-tab b { color: rgb(var(--sl-200)); }
+    #op-close { width: 32px; height: 32px; border-radius: 8px; color: rgb(var(--sl-400)); }
+    .op-pane { display: none; flex: 1; overflow-y: auto; padding: 14px; }
+    .op-pane.on { display: block; }
+
+    .opg { margin-bottom: 16px; }
+    .opg-q { display: flex; gap: 7px; font-size: 12.5px; line-height: 1.65; color: rgb(var(--sl-500)); margin: 0 2px 9px; cursor: pointer; }
+    .opg-q i { margin-top: 3px; opacity: .6; }
+    .opg-q .t { flex: 1; min-width: 0; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+    .opg-q.open .t { display: block; }
+    .opc { --ac: #888; background: rgb(var(--c-white)); border: 1px solid rgb(var(--sl-200)); border-radius: 13px; padding: 12px 13px; margin-bottom: 10px; }
+    html.dark .opc { background: rgb(var(--sl-800)); border-color: rgb(var(--sl-700)); }
+    .opc-h { display: flex; align-items: center; gap: 8px; margin-bottom: 9px; }
+    .opc-dot { width: 7px; height: 7px; border-radius: 999px; background: var(--ac); flex: none; }
+    .opc-n { font-size: 13.5px; font-weight: 600; color: rgb(var(--sl-700)); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    html.dark .opc-n { color: rgb(var(--sl-200)); }
+    .opc-st { margin-left: auto; flex: none; font-size: 12px; color: rgb(var(--sl-400)); }
+    .opc-b { position: relative; max-height: 200px; overflow: hidden; }
+    .opc-b.open { max-height: none; }
+    .opc-b .md-output { font-size: 13.5px; line-height: 1.75; color: rgb(var(--sl-600)); }
+    html.dark .opc-b .md-output { color: rgb(var(--sl-300)); }
+    .opc-b:not(.open)::after { content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 48px; pointer-events: none; background: linear-gradient(to bottom, rgb(var(--c-white) / 0), rgb(var(--c-white))); }
+    html.dark .opc-b:not(.open)::after { background: linear-gradient(to bottom, rgb(var(--sl-800) / 0), rgb(var(--sl-800))); }
+    .opc-a { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 11px; }
+    .opc-a button { height: 29px; padding: 0 11px; border-radius: 8px; border: 1px solid rgb(var(--sl-200)); font-size: 12.5px; color: rgb(var(--sl-600)); }
+    html.dark .opc-a button { border-color: rgb(var(--sl-700)); color: rgb(var(--sl-300)); }
+    .opc-a button:hover { background: rgba(128,128,128,.1); }
+    .opc-a button.pri { border-color: rgb(var(--pr-500) / .55); background: rgb(var(--pr-50)); color: rgb(var(--pr-700)); font-weight: 500; }
+    html.dark .opc-a button.pri { color: rgb(var(--pr-500)); }
+    .opc-sk i { display: block; height: 9px; border-radius: 5px; background: rgba(128,128,128,.18); margin: 9px 0; animation: agpulse 1.2s ease-in-out infinite; }
+    .opc-sk i:nth-child(2) { width: 86%; } .opc-sk i:nth-child(3) { width: 62%; }
+    .opc-err { font-size: 13px; color: #d9534f; line-height: 1.7; }
+    .op-empty { padding: 34px 14px; text-align: center; font-size: 13px; line-height: 1.9; color: rgb(var(--sl-400)); }
+    .op-files-bar { display: flex; gap: 8px; margin-bottom: 14px; }
+    .op-up { display: inline-flex; align-items: center; gap: 7px; height: 34px; padding: 0 12px; border-radius: 9px; background: rgb(var(--pr-600)); color: #fff; font-size: 13px; cursor: pointer; }
+    html.dark .op-up { color: #171311; }
+    .op-files-bar button { height: 34px; padding: 0 12px; border-radius: 9px; border: 1px solid rgb(var(--sl-200)); font-size: 13px; color: rgb(var(--sl-600)); display: inline-flex; align-items: center; gap: 7px; }
+    html.dark .op-files-bar button { border-color: rgb(var(--sl-700)); color: rgb(var(--sl-300)); }
+    .op-note { margin-top: 16px; font-size: 12px; line-height: 1.75; color: rgb(var(--sl-400)); }
+
+    /* 訊息：你的訊息是實心色塊，Agent 回覆是純文字 */
+    #chat-window > div { --rw: 50rem; }
+    .user-bubble { background: rgb(var(--bub)) !important; color: rgb(var(--bub-fg)) !important; }
+    .user-bubble .md-output { font-size: 15.5px; line-height: 1.75; }
+    .user-bubble .md-output a, .user-bubble .md-output a:hover { color: #5c4512; }
+    .assistant-plain .md-output { font-size: 16px; line-height: 1.85; }
+    .asst-tag { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; font-size: 13px; color: rgb(var(--sl-500)); }
+    .asst-tag .c { width: 22px; height: 22px; border-radius: 7px; background: rgb(var(--c-white)); border: 1px solid rgb(var(--sl-200)); color: rgb(var(--pr-500)); font-family: 'Instrument Serif', Georgia, serif; font-size: 14px; display: flex; align-items: center; justify-content: center; }
+    html.dark .asst-tag .c { background: rgb(var(--sl-800)); border-color: rgb(var(--sl-700)); }
+    #user-input { font-size: 15.5px; }
+    html.dark .bg-primary-600, html.dark .bg-primary-700, html.dark .bg-primary-600 *, html.dark .bg-primary-700 * { color: #171311; }
   </style>
 </head>
 <body class="h-full bg-slate-50 text-slate-800 dark:bg-slate-900 dark:text-slate-200 overflow-hidden selection:bg-primary-100 selection:text-primary-700">
 
   <div id="app" class="h-full flex flex-col">
-    <header id="top-bar" class="h-14 shrink-0 bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 px-2 sm:px-4 flex items-center justify-between z-20">
-      <div class="flex items-center gap-1 min-w-0">
-        <button id="sidebar-toggle" class="lg:hidden w-9 h-9 flex items-center justify-center text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition-colors" aria-label="展開側欄">
-          <i class="fa-solid fa-bars"></i>
-        </button>
-        <h1 class="px-2 font-semibold text-[15px] tracking-tight truncate">My Agent 客戶端</h1>
-        <span id="env-chip" style="display:none" class="items-center h-6 px-2 rounded-full text-[11px] font-medium bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-300 shrink-0"></span>
-      </div>
 
-      <div class="flex items-center gap-1.5">
-        <div id="theme-wrap">
-          <button id="theme-toggle" type="button" aria-label="外觀主題" aria-haspopup="true" aria-expanded="false" title="外觀主題" class="w-9 h-9 rounded-full bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors"><i class="fa-solid fa-palette"></i></button>
-          <div id="theme-menu" role="menu"></div>
-        </div>
-        <button id="settings-btn" type="button" title="設定" aria-label="設定" class="w-9 h-9 rounded-full bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors flex items-center justify-center" onclick="switchView('settings')"><i class="fa-solid fa-gear"></i></button>
-      </div>
-    </header>
 
     <main class="flex-1 min-h-0 relative overflow-hidden">
       
       <div id="view-chat" class="absolute inset-0 flex transition-opacity duration-300 z-10 bg-slate-50 dark:bg-slate-900">
+        <nav id="rail" aria-label="主要導覽">
+          <span id="rail-mark" aria-hidden="true">C</span>
+          <button type="button" class="rail-ic on" aria-label="對話" aria-current="page"><i class="fa-regular fa-comments"></i></button>
+          <button type="button" id="rail-roster" class="rail-ic" title="Agent 名單" aria-label="Agent 名單"><i class="fa-solid fa-user-group"></i></button>
+          <div class="rail-sp"></div>
+          <div id="theme-wrap">
+          <button id="theme-toggle" type="button" aria-label="外觀主題" aria-haspopup="true" aria-expanded="false" title="外觀主題" class="w-9 h-9 rounded-full bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors"><i class="fa-solid fa-palette"></i></button>
+          <div id="theme-menu" role="menu"></div>
+        </div>
+          <button id="settings-btn" type="button" class="rail-ic" title="設定" aria-label="設定" onclick="switchView('settings')"><i class="fa-solid fa-sliders"></i></button>
+        </nav>
         <aside id="sidebar" class="w-72 bg-white dark:bg-slate-800 border-r border-slate-200 dark:border-slate-700 flex flex-col absolute lg:relative h-full z-20 transform -translate-x-full lg:translate-x-0 transition-transform duration-300 shadow-xl lg:shadow-none">
           <div class="p-4 border-b border-slate-200 dark:border-slate-700 flex justify-between items-center gap-2">
             <h2 class="sb-hide-mini text-[13px] font-semibold text-slate-500 dark:text-slate-400">對話</h2>
@@ -563,9 +662,9 @@ html[data-theme=warm] { --c-white:43 39 34; --sl-50:29 26 22; --sl-100:243 234 2
           </div>
           <div id="threads-list" class="flex-1 overflow-y-auto p-2 space-y-1">
             </div>
-          <div class="p-3 border-t border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50">
-             <button id="file-manager-btn" title="檔案管理庫" class="w-full flex items-center gap-3 px-3 py-2 text-sm text-slate-600 dark:text-slate-300 hover:bg-white dark:hover:bg-slate-700 rounded-md border border-slate-200 dark:border-slate-600 transition-colors">
-               <i class="fa-solid fa-folder-open text-primary-500"></i><span class="sb-hide-mini">檔案管理庫</span>
+          <div class="p-3 border-t border-slate-200 dark:border-slate-700 lg:hidden">
+             <button type="button" onclick="switchView('settings')" class="w-full flex items-center gap-3 px-3 py-2 text-sm text-slate-600 dark:text-slate-300 hover:bg-white dark:hover:bg-slate-700 rounded-lg transition-colors">
+               <i class="fa-solid fa-sliders text-slate-400"></i><span>設定</span>
              </button>
           </div>
           <div id="sidebar-resizer" class="hidden lg:block" role="separator" aria-orientation="vertical" aria-label="拖曳調整側欄寬度" title="拖曳調整寬度，雙擊還原"></div>
@@ -573,6 +672,14 @@ html[data-theme=warm] { --c-white:43 39 34; --sl-50:29 26 22; --sl-100:243 234 2
         <div id="sidebar-backdrop" class="fixed inset-0 bg-black/50 z-10 lg:hidden hidden backdrop-blur-sm"></div>
 
         <section id="chat-section" class="relative flex-1 flex flex-col min-w-0 bg-slate-50 dark:bg-slate-900">
+          <header id="chat-head">
+            <button id="sidebar-toggle" class="lg:hidden rail-ic" aria-label="對話清單"><i class="fa-solid fa-bars"></i></button>
+            <h1 id="chat-title">新對話</h1>
+            <span id="env-chip"></span>
+            <div style="flex:1"></div>
+            <div id="head-agents"></div>
+            <button id="op-toggle" type="button" aria-label="意見面板"><i class="fa-regular fa-comment-dots"></i><span>意見</span><b id="op-count" hidden>0</b></button>
+          </header>
           <div id="drop-overlay" class="hidden absolute inset-0 z-30 items-center justify-center bg-primary-50/90 dark:bg-slate-900/90 border-2 border-dashed border-primary-500 text-primary-700 dark:text-primary-300 text-lg font-medium pointer-events-none"><i class="fa-solid fa-cloud-arrow-up mr-2"></i>放開以上傳並附加檔案</div>
           <div id="msg-rail" role="navigation" aria-label="對話定位點">
             <button type="button" class="rail-btn" id="rail-top" title="回到頂端" aria-label="回到頂端"><i class="fa-solid fa-angle-up"></i></button>
@@ -620,6 +727,24 @@ html[data-theme=warm] { --c-white:43 39 34; --sl-50:29 26 22; --sl-100:243 234 2
             </div>
           </div>
         </section>
+        <div id="op-backdrop"></div>
+        <aside id="op-panel" aria-label="意見與檔案">
+          <div id="op-head">
+            <button type="button" class="op-tab on" data-t="op">意見<b id="op-tab-count" hidden>0</b></button>
+            <button type="button" class="op-tab" data-t="files">檔案</button>
+            <div style="flex:1"></div>
+            <button type="button" id="op-close" aria-label="關閉面板"><i class="fa-solid fa-xmark"></i></button>
+          </div>
+          <div class="op-pane on" data-p="op"><div id="op-list"></div></div>
+          <div class="op-pane" data-p="files">
+            <div class="op-files-bar">
+              <label class="op-up"><i class="fa-solid fa-cloud-arrow-up"></i>上傳檔案<input type="file" id="file-upload-input" class="hidden" /></label>
+              <button id="refresh-files-btn" type="button"><i class="fa-solid fa-rotate"></i>重整</button>
+            </div>
+            <div id="files-list" class="space-y-2"></div>
+            <p class="op-note">平台 API 沒有檔案下載端點，這裡只能上傳、查看與刪除。</p>
+          </div>
+        </aside>
       </div>
 
       <div id="view-settings" class="fixed inset-0 z-50 hidden">
@@ -722,8 +847,10 @@ html[data-theme=warm] { --c-white:43 39 34; --sl-50:29 26 22; --sl-100:243 234 2
         </div>
 
         <div id="changelog" class="mt-8 pt-7 border-t border-slate-200 dark:border-slate-700 pb-6 text-sm text-slate-600 dark:text-slate-300">
-          <h3 class="font-semibold text-slate-800 dark:text-slate-100 mb-2">版本紀錄 <span class="text-xs font-normal text-slate-400">目前版本 v15.1</span></h3>
+          <h3 class="font-semibold text-slate-800 dark:text-slate-100 mb-2">版本紀錄 <span class="text-xs font-normal text-slate-400">目前版本 v16.0</span></h3>
           <div class="space-y-3">
+            <div><div class="font-medium text-slate-700 dark:text-slate-200">v16.0 <span class="text-xs text-slate-400">2026-11-10</span></div>
+              <ul class="list-disc pl-5 space-y-0.5"><li><b>改名為 Counsel</b>，字標與介面重做：石墨底色的「深色」與暖白底色的「明亮」兩種主題（原本的米黃／豆沙綠／夜間暖光併入這兩種），強調色為黃銅</li><li><b>三欄工作台</b>：左側 icon 導覽列、對話清單、對話、右側「意見」面板。@Agent 的意見不再插在對話流裡，改成常駐面板，處理中會顯示骨架</li><li>你的訊息改為實心色塊、Agent 回覆加上名稱標籤，兩邊一眼分得出來；內文字級加大</li><li>檔案管理庫從側欄移到意見面板的「檔案」分頁（平台沒有下載端點，只能上傳／查看／刪除）</li></ul></div>
             <div><div class="font-medium text-slate-700 dark:text-slate-200">v15.1 <span class="text-xs text-slate-400">2026-11-09</span></div>
               <ul class="list-disc pl-5 space-y-0.5"><li><b>@Agent 意見組</b>：同一次 @ 的所有 Agent 收成一張卡，頭部顯示提問與各 Agent 狀態（處理中／失敗），不再一位一張往下拉長</li><li>寬螢幕時多位 Agent 的意見並排比較，窄螢幕改為點 chip 切換；過長的意見預設收合，可展開全部</li><li>「帶回主對話」不再把整段文字塞進輸入框，改為掛在輸入框上方的引用區</li><li>修正中文標點旁的 <code>**粗體**</code> 不生效（例如「**重點：**說明」）</li></ul></div>
             <div><div class="font-medium text-slate-700 dark:text-slate-200">v15.0 <span class="text-xs text-slate-400">2026-11-09</span></div>
@@ -783,32 +910,6 @@ html[data-theme=warm] { --c-white:43 39 34; --sl-50:29 26 22; --sl-100:243 234 2
       </div>
 
     </main>
-  </div>
-
-  <div id="file-drawer" class="fixed inset-0 z-50 hidden" aria-labelledby="slide-over-title" role="dialog" aria-modal="true">
-    <div class="absolute inset-0 bg-black/25 dark:bg-black/55 transition-opacity backdrop-blur-[2px]" id="file-drawer-backdrop"></div>
-    <div class="fixed inset-y-0 right-0 z-10 flex max-w-full pl-10">
-      <div class="pointer-events-auto w-screen max-w-2xl transform transition ease-in-out duration-500 sm:duration-700 translate-x-full" id="file-drawer-panel">
-        <div class="flex h-full flex-col overflow-y-scroll bg-white dark:bg-slate-900 shadow-xl">
-          <div class="px-4 py-6 sm:px-6 border-b border-slate-200 dark:border-slate-700">
-            <div class="flex items-start justify-between">
-              <h2 class="text-lg font-semibold leading-6 text-slate-900 dark:text-white">檔案管理庫</h2>
-              <button id="file-drawer-close" class="rounded-md bg-white dark:bg-slate-800 text-slate-400 hover:text-slate-500"><i class="fa-solid fa-xmark text-xl"></i></button>
-            </div>
-            <div class="mt-4 flex gap-2">
-              <label class="flex items-center justify-center gap-2 px-4 py-2 bg-primary-600 text-white text-sm font-medium rounded-md hover:bg-primary-700 cursor-pointer shadow-sm">
-                <i class="fa-solid fa-cloud-arrow-up"></i> 上傳檔案
-                <input type="file" id="file-upload-input" class="hidden" />
-              </label>
-              <button id="refresh-files-btn" class="px-4 py-2 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 rounded-md text-sm font-medium hover:bg-slate-50 dark:hover:bg-slate-800">
-                <i class="fa-solid fa-rotate"></i> 重整
-              </button>
-            </div>
-          </div>
-          <div class="relative mt-6 flex-1 px-4 sm:px-6"><div id="files-list" class="space-y-2"></div></div>
-        </div>
-      </div>
-    </div>
   </div>
 
   <dialog id="raw-modal" class="rounded-xl backdrop:bg-black/60 w-[92%] max-w-4xl p-0 bg-slate-900 text-slate-100 shadow-2xl border border-slate-700">
@@ -895,14 +996,9 @@ html[data-theme=warm] { --c-white:43 39 34; --sl-50:29 26 22; --sl-100:243 234 2
         toggleKey: document.getElementById('toggle-key-visibility')
       },
       fileDrawer: {
-        root: document.getElementById('file-drawer'),
-        panel: document.getElementById('file-drawer-panel'),
-        close: document.getElementById('file-drawer-close'),
-        backdrop: document.getElementById('file-drawer-backdrop'),
         list: document.getElementById('files-list'),
         upload: document.getElementById('file-upload-input'),
-        refresh: document.getElementById('refresh-files-btn'),
-        trigger: document.getElementById('file-manager-btn')
+        refresh: document.getElementById('refresh-files-btn')
       },
       selectedFilesArea: document.getElementById('selected-files-area'),
       codeModal: document.getElementById('code-modal'),
@@ -954,22 +1050,20 @@ html[data-theme=warm] { --c-white:43 39 34; --sl-50:29 26 22; --sl-100:243 234 2
 
     // v14.13：主題選單（取代原本的深色切換鈕）
     const THEMES = [
-      { id: 'light', name: '淺色', sub: '預設', dark: false, sw: ['#ffffff', '#f5f5f7', '#1d1d1f'] },
-      { id: 'paper', name: '護眼・米黃', sub: '紙張色，降低刺眼的白', dark: false, sw: ['#fbf5e6', '#f1e8d0', '#4a4132'] },
-      { id: 'green', name: '護眼・豆沙綠', sub: '柔和綠底，適合長時間閱讀', dark: false, sw: ['#edf7ea', '#d5ebd3', '#2c4032'] },
-      { id: 'warm', name: '夜間暖光', sub: '深色加暖色調，減少藍光', dark: true, sw: ['#2b2722', '#1a1713', '#d9a35b'] },
-      { id: 'dark', name: '深色', sub: '中性深灰', dark: true, sw: ['#1c1c1e', '#000000', '#0a84ff'] },
-      { id: 'auto', name: '跟隨系統', sub: '依裝置的淺色／深色設定', dark: null, sw: ['#ffffff', '#8e8e93', '#1c1c1e'] }
+      { id: 'dark', name: '深色', sub: '石墨底色，長時間閱讀較不刺眼', dark: true, sw: ['#16191B', '#1D2124', '#D9B172'] },
+      { id: 'light', name: '明亮', sub: '暖白底色，白天或投影時清楚', dark: false, sw: ['#F7F5F1', '#FFFFFF', '#8E6A22'] },
+      { id: 'auto', name: '跟隨系統', sub: '依裝置的淺色／深色設定', dark: null, sw: ['#F7F5F1', '#8A9297', '#16191B'] }
     ];
     function curTheme() { try { return localStorage.getItem('theme') || (localStorage.getItem('darkMode') === 'true' ? 'dark' : 'light'); } catch (e) { return 'light'; } }
     function resolveTheme(id) { return id === 'auto' ? ((window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light') : id; }
     function applyTheme(id) {
       if (!THEMES.some(t => t.id === id)) id = 'light';
-      const real = resolveTheme(id), isDark = real === 'dark' || real === 'warm', h = document.documentElement;
+      if (id === 'paper' || id === 'green') id = 'light'; if (id === 'warm') id = 'dark';
+      const real = resolveTheme(id), isDark = real === 'dark', h = document.documentElement;
       h.setAttribute('data-theme', real); h.classList.toggle('dark', isDark); state.isDark = isDark;
       try { localStorage.setItem('theme', id); localStorage.setItem('darkMode', isDark); } catch (e) {}
       const meta = document.querySelector('meta[name=theme-color]') || Object.assign(document.head.appendChild(document.createElement('meta')), { name: 'theme-color' });
-      meta.content = { light: '#ffffff', paper: '#fbf5e6', green: '#edf7ea', warm: '#2b2722', dark: '#1c1c1e' }[real] || '#ffffff';
+      meta.content = { light: '#F7F5F1', dark: '#16191B' }[real] || '#F7F5F1';
       renderThemeMenu(id);
     }
     function renderThemeMenu(sel) {
@@ -1079,7 +1173,7 @@ html[data-theme=warm] { --c-white:43 39 34; --sl-50:29 26 22; --sl-100:243 234 2
         if (psOn()) await psPullThrottled();
         const data = await apiCall('/v1/threads?limit=20');
         state.threads = (data.data || []).filter(t => t.id !== rpLs('psyncTid'));
-        renderThreads(); deriveTitles();
+        renderThreads(); deriveTitles(); updateChatHeader();
       } catch (err) { els.threadsList.innerHTML = `<div class="p-4 text-center text-red-400 text-sm">載入失敗<br>${escapeHtml(err.message)}</div>`; }
     }
 
@@ -1176,6 +1270,7 @@ html[data-theme=warm] { --c-white:43 39 34; --sl-50:29 26 22; --sl-100:243 234 2
         if (isStickyFiles()) restored.forEach((f, id) => state.selectedFiles.set(id, { id, filename: f.filename || nameForFile(id) || id, carried: true }));
         renderSelectedFiles();
         rememberThread(threadId);
+        updateChatHeader();
         anchorAfterLoad();
         updateThreadBadges();
         if (Array.from(pendings.values()).some(p => p.tid === threadId && p.kind === 'chat')) showThinking();   // 這個對話仍在等回覆
@@ -2674,26 +2769,98 @@ html[data-theme=warm] { --c-white:43 39 34; --sl-50:29 26 22; --sl-100:243 234 2
       }
       return added;
     }
+    // v16.0：意見改渲染到右側面板（不再插在對話流裡）
+    function opPanelEl() { return document.getElementById('op-panel'); }
+    function opSetOpen(on) {
+      const p = opPanelEl(); if (!p) return;
+      p.classList.toggle('open', !!on);
+      const b = document.getElementById('op-backdrop'); if (b) b.classList.toggle('on', !!on);
+    }
+    function opTab(name) {
+      document.querySelectorAll('.op-tab').forEach(b => b.classList.toggle('on', b.dataset.t === name));
+      document.querySelectorAll('.op-pane').forEach(p => p.classList.toggle('on', p.dataset.p === name));
+      if (name === 'files') loadFileLibrary();
+    }
+    function opCount(n) {
+      ['op-count', 'op-tab-count'].forEach(id => { const el = document.getElementById(id); if (!el) return; el.textContent = n; el.hidden = !n; });
+    }
+    function opCountRefresh() { opCount(document.querySelectorAll('#op-list .opc').length); }
+    function updateHeadAgents(names) {
+      const box = document.getElementById('head-agents'); if (!box) return;
+      const uniq = []; (names || []).forEach(n => { if (n && uniq.indexOf(n) < 0) uniq.push(n); });
+      box.innerHTML = '';
+      uniq.slice(0, 3).forEach(n => {
+        const el = document.createElement('span'); el.className = 'hag'; el.title = n;
+        el.style.setProperty('--ac', agColor(n));
+        const ini = String(n).replace(/[^A-Za-z\u4e00-\u9fa5]/g, '').slice(0, 2);
+        el.textContent = (ini || String(n).slice(0, 2)).toUpperCase();
+        box.appendChild(el);
+      });
+      if (uniq.length > 3) { const el = document.createElement('span'); el.className = 'hag'; el.style.setProperty('--ac', '#8A9297'); el.textContent = '+' + (uniq.length - 3); box.appendChild(el); }
+    }
+    function updateChatHeader() {
+      const t = document.getElementById('chat-title'); if (!t) return;
+      const id = state.currentThreadId;
+      t.textContent = id ? (threadDisplayTitle(id) || '對話') : '新對話';
+    }
+    function opFill(el, name, text, isErr) {
+      if (!el) return;
+      const st = el.querySelector('.opc-st'), body = el.querySelector('.opc-b'), acts = el.querySelector('.opc-a');
+      st.textContent = isErr ? '失敗' : '';
+      if (isErr) { body.classList.add('open'); body.innerHTML = '<div class="opc-err"><i class="fa-solid fa-triangle-exclamation mr-1"></i>' + escapeHtml(String(text || '呼叫失敗')) + '</div>'; acts.innerHTML = ''; return; }
+      body.classList.remove('open');
+      body.innerHTML = '<div class="md-output break-words"></div>';
+      const md = body.querySelector('.md-output'); md.innerHTML = renderMarkdown(text); enhanceMarkdown(md);
+      el.__raw = text;
+      acts.innerHTML = '';
+      const mk = (label, cls, fn) => { const b = document.createElement('button'); b.type = 'button'; b.className = cls || ''; b.innerHTML = label; b.onclick = fn; acts.appendChild(b); return b; };
+      mk('<i class="fa-solid fa-arrow-turn-down mr-1"></i>帶回主對話', 'pri', () => bringBack(name, text));
+      mk('<i class="fa-solid fa-quote-left mr-1"></i>選取段落', '', () => toggleQuoteMode(el));
+      mk('<i class="fa-regular fa-copy mr-1"></i>複製', '', () => { navigator.clipboard.writeText(text); showToast('已複製內容', 'info'); });
+      const more = mk('展開全文', '', () => { const on = body.classList.toggle('open'); more.textContent = on ? '收合' : '展開全文'; });
+      requestAnimationFrame(() => { if (body.scrollHeight <= 200) more.remove(); });
+    }
+    function buildOpCard(c, i) {
+      const el = document.createElement('article'); el.className = 'opc'; el.dataset.i = i;
+      el.style.setProperty('--ac', agColor(c.name));
+      el.innerHTML = '<div class="opc-h"><span class="opc-dot"></span><span class="opc-n"></span><span class="opc-st"></span></div><div class="opc-b"></div><div class="opc-a"></div>';
+      el.querySelector('.opc-n').textContent = c.name;
+      if (c.pending) { el.querySelector('.opc-st').textContent = '處理中'; el.querySelector('.opc-b').classList.add('open'); el.querySelector('.opc-b').innerHTML = '<div class="opc-sk"><i></i><i></i><i></i></div>'; return el; }
+      opFill(el, c.name, c.text, c.err);
+      return el;
+    }
+    function buildOpGroup(cards) {
+      const first = cards[0] || {};
+      const wrap = document.createElement('div'); wrap.className = 'opg';
+      const pf = splitPrefix(String(first.prefix || '') + String(first.ask || ''));
+      let ask = String(pf.rest || '').trim();
+      cards.forEach(c => { if (c.name) ask = ask.split('@' + c.name).join(' '); });
+      ask = ask.replace(/\s{2,}/g, ' ').trim();
+      const q = document.createElement('div'); q.className = 'opg-q';
+      q.innerHTML = '<i class="fa-solid fa-quote-left"></i><span class="t"></span>';
+      q.querySelector('.t').textContent = (ask || '（未附問題，由 Agent 自行判斷）') + (pf.quotes.length ? '　· 含 ' + pf.quotes.length + ' 段引用' : '');
+      q.addEventListener('click', () => q.classList.toggle('open'));
+      wrap.appendChild(q);
+      cards.forEach((c, i) => wrap.appendChild(buildOpCard(c, i)));
+      return wrap;
+    }
     function restoreAgentCards(threadId) {
-      const cards = (readJSON('agentCards')[threadId] || []).slice().sort((a, b) => (a.ts || 0) - (b.ts || 0));
-      if (!cards.length) return;
-      const servers = Array.from(els.chatWindow.children).filter(d => (d.dataset.role === 'user' || d.dataset.role === 'assistant') && !d.dataset.local);
-      // 同一次 @（相同提問／引用／插入位置、且時間相近）的卡片合併成一組
+      const list = document.getElementById('op-list'); if (!list) return;
+      const cards = threadId ? (readJSON('agentCards')[threadId] || []).slice().sort((a, b) => (a.ts || 0) - (b.ts || 0)) : [];
+      list.innerHTML = '';
+      if (!cards.length) {
+        list.innerHTML = '<div class="op-empty">這個對話還沒有其他 Agent 的意見。<br>在輸入框打 <b>@</b> 找 Agent 給意見，<br>或先選取一段回覆再 @。</div>';
+        opCount(0); updateHeadAgents([]); return;
+      }
       const groups = [], idx = {};
       cards.forEach(c => {
         const k = agGroupKey(c), g = idx[k];
         if (g && (c.ts || 0) - g.ts0 < 300000) g.cards.push(c);
-        else { const ng = { ts0: c.ts || 0, after: c.after || 0, cards: [c] }; idx[k] = ng; groups.push(ng); }
+        else { const ng = { ts0: c.ts || 0, cards: [c] }; idx[k] = ng; groups.push(ng); }
       });
-      const last = {};
-      groups.forEach(g => {
-        const node = buildAgentGroup(g.cards);
-        const after = Math.max(0, Math.min(g.after, servers.length));
-        const ref = last[after] || (after > 0 ? servers[after - 1] : null);
-        if (ref) { ref.after(node); last[after] = node; }
-        else if (after === 0) { els.chatWindow.prepend(node); last[0] = node; }
-        else els.chatWindow.appendChild(node);
-      });
+      groups.forEach(g => list.appendChild(buildOpGroup(g.cards)));
+      opCount(cards.length);
+      updateHeadAgents(cards.map(c => c.name));
     }
     async function runAgentCalls(typedText, mentions) {
       const question = stripMentions(typedText, mentions);
@@ -2706,8 +2873,12 @@ html[data-theme=warm] { --c-white:43 39 34; --sl-50:29 26 22; --sl-100:243 234 2
       const afterCount = serverMsgCount(); const tkey = cardsKey(), view0 = state.viewId; let late = false;
       els.userInput.value = ''; els.userInput.style.height = 'auto'; hideMention();
       state.quotes.forEach(q => { if (q.el) q.el.classList.remove('qb-sel'); qUnhl(q); }); state.quotes = []; renderQuoteTray();
-      const grp = buildAgentGroup(mentions.map(ag => ({ name: ag.label, env: agentTag(ag), ask: typedText, prefix: prefixText, pending: true })));
-      els.chatWindow.appendChild(grp); animIn(grp, 'fadeInUp'); revealTop(grp);
+      const grp = buildOpGroup(mentions.map(ag => ({ name: ag.label, env: agentTag(ag), ask: typedText, prefix: prefixText, pending: true })));
+      const opList = document.getElementById('op-list');
+      if (opList) { const e0 = opList.querySelector('.op-empty'); if (e0) e0.remove(); opList.appendChild(grp); animIn(grp, 'fadeIn'); }
+      opSetOpen(true); opTab('op');
+      grp.scrollIntoView({ block: 'nearest' });
+      updateHeadAgents(mentions.map(ag => ag.label));
       if (truncated) showToast('上一則回覆過長，只帶入前 ' + CTX_MAX + ' 字；可改用「選取段落」精準帶入', 'info');
       const pend = pendStart('agent');
       try {
@@ -2723,9 +2894,9 @@ html[data-theme=warm] { --c-white:43 39 34; --sl-50:29 26 22; --sl-100:243 234 2
             const card = { name: ag.label, env: agentTag(ag), ask: typedText, prefix: prefixText, text: reply || '（沒有內容）', after: afterCount, ts: Date.now() };
             const here = state.viewId === view0;
             if (here || tkey !== '_new') cardsAdd(card, tkey);
-            if (here) agFillPane(grp, gi, card.text); else late = true;
+            if (here) { opFill(grp.querySelectorAll('.opc')[gi], ag.label, card.text); opCountRefresh(); } else late = true;
           } catch (err) {
-            if (state.viewId === view0) agFillPane(grp, gi, '呼叫失敗：' + err.message, true);
+            if (state.viewId === view0) opFill(grp.querySelectorAll('.opc')[gi], ag.label, '呼叫失敗：' + err.message, true);
             else showToast('@' + ag.label + ' 呼叫失敗：' + err.message, 'error');
           }
         }));
@@ -2818,6 +2989,7 @@ html[data-theme=warm] { --c-white:43 39 34; --sl-50:29 26 22; --sl-100:243 234 2
       `;
       
       const mdEl = div.querySelector('.md-output');
+      if (role === 'assistant') mdEl.insertAdjacentHTML('beforebegin', '<div class="asst-tag"><span class="c">C</span>Agent</div>');
       if (pfx.quotes.length || pfx.opinions.length) mdEl.insertAdjacentHTML('beforebegin', prefixChipsHtml(pfx));
       if (reportChip) mdEl.insertAdjacentHTML('beforebegin', '<div class="rp-chip">📊 報表模式</div>');
       const raw = state.pendingRaw; state.pendingRaw = null;
@@ -2928,7 +3100,7 @@ html[data-theme=warm] { --c-white:43 39 34; --sl-50:29 26 22; --sl-100:243 234 2
     });
     els.settings.toggleKey.addEventListener('click', () => { const i = els.settings.apiKey; i.type = i.type === 'password' ? 'text' : 'password'; els.settings.toggleKey.innerHTML = i.type==='password'?'<i class="fa-regular fa-eye"></i>':'<i class="fa-regular fa-eye-slash"></i>'; });
     els.sidebarToggle.addEventListener('click', () => toggleSidebar(true)); els.sidebarClose.addEventListener('click', () => toggleSidebar(false)); els.sidebarBackdrop.addEventListener('click', () => toggleSidebar(false)); els.themeToggle.addEventListener('click', toggleTheme);
-    els.newThreadBtn.addEventListener('click', () => { clearQuotes(); dropNewKey(); state.viewId++; state.currentThreadId = null; refreshSending(); state.selectedFiles.clear(); renderSelectedFiles(); els.chatWindow.innerHTML = ''; els.chatWindow.appendChild(document.createElement('div')).innerHTML = '<div class="flex flex-col items-center justify-center h-full text-slate-400 dark:text-slate-500 opacity-60"><i class="fa-regular fa-comments text-5xl mb-4"></i><p>新對話</p></div>'; if(window.innerWidth < 1024) toggleSidebar(false); });
+    els.newThreadBtn.addEventListener('click', () => { clearQuotes(); dropNewKey(); state.viewId++; state.currentThreadId = null; refreshSending(); updateChatHeader(); restoreAgentCards(null); state.selectedFiles.clear(); renderSelectedFiles(); els.chatWindow.innerHTML = ''; els.chatWindow.appendChild(document.createElement('div')).innerHTML = '<div class="flex flex-col items-center justify-center h-full text-slate-400 dark:text-slate-500 opacity-60"><i class="fa-regular fa-comments text-5xl mb-4"></i><p>新對話</p></div>'; if(window.innerWidth < 1024) toggleSidebar(false); });
     els.userInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') {
         // 輸入法選字/確認時的 Enter 不送出（避免送出注音/拼音預覽並在 commit 後把文字又寫回輸入框）
         if (e.isComposing || imeComposing || e.keyCode === 229 || Date.now() - imeLastEnd < 80) return;
@@ -2936,8 +3108,8 @@ html[data-theme=warm] { --c-white:43 39 34; --sl-50:29 26 22; --sl-100:243 234 2
         if (shouldSend) { e.preventDefault(); if (!e.repeat) sendMessage(); }
       } setTimeout(() => { els.userInput.style.height = 'auto'; els.userInput.style.height = Math.min(els.userInput.scrollHeight, 160) + 'px'; }, 0); });
     els.sendBtn.addEventListener('click', () => { if (!state.isSending) sendMessage(); });
-    const toggleFileDrawer = (show) => { if (show) { els.fileDrawer.root.classList.remove('hidden'); loadFileLibrary(); setTimeout(() => els.fileDrawer.panel.classList.remove('translate-x-full'), 10); } else { els.fileDrawer.panel.classList.add('translate-x-full'); setTimeout(() => els.fileDrawer.root.classList.add('hidden'), 500); } };
-    els.fileDrawer.trigger.addEventListener('click', () => toggleFileDrawer(true)); els.fileDrawer.close.addEventListener('click', () => toggleFileDrawer(false)); els.fileDrawer.backdrop.addEventListener('click', () => toggleFileDrawer(false)); els.fileDrawer.refresh.addEventListener('click', loadFileLibrary); els.fileDrawer.upload.addEventListener('change', (e) => { if(e.target.files[0]) uploadFile(e.target.files[0]); e.target.value = ''; });
+    const toggleFileDrawer = (show) => { if (show) { opSetOpen(true); opTab('files'); } };
+    els.fileDrawer.refresh.addEventListener('click', loadFileLibrary); els.fileDrawer.upload.addEventListener('change', (e) => { if(e.target.files[0]) uploadFile(e.target.files[0]); e.target.value = ''; });
     els.fileDrawer.list.addEventListener('click', async (e) => {
       const selectBtn = e.target.closest('.select-file-btn'), deleteBtn = e.target.closest('.delete-file-btn');
       if (selectBtn) { state.selectedFiles.set(selectBtn.dataset.id, { id: selectBtn.dataset.id, filename: selectBtn.dataset.name }); renderSelectedFiles(); toggleFileDrawer(false); showToast(`已選取 ${selectBtn.dataset.name}`, 'success'); }
@@ -3279,6 +3451,18 @@ html[data-theme=warm] { --c-white:43 39 34; --sl-50:29 26 22; --sl-100:243 234 2
     }
     setInterval(() => { if (psOn() && !psBusy && rpLs('psyncSig') && psSig(psBuild()) !== rpLs('psyncSig')) psMaybePush(); }, 15000);
     document.addEventListener('visibilitychange', () => { if (!document.hidden && psOn()) psPullThrottled(); });
+    (function initOpPanel() {
+      const p = document.getElementById('op-panel'); if (!p) return;
+      document.querySelectorAll('.op-tab').forEach(b => b.addEventListener('click', () => opTab(b.dataset.t)));
+      const close = document.getElementById('op-close'); if (close) close.addEventListener('click', () => opSetOpen(false));
+      const bd = document.getElementById('op-backdrop'); if (bd) bd.addEventListener('click', () => opSetOpen(false));
+      const tg = document.getElementById('op-toggle'); if (tg) tg.addEventListener('click', () => opSetOpen(!p.classList.contains('open')));
+      const rr = document.getElementById('rail-roster');
+      if (rr) rr.addEventListener('click', () => { switchView('settings'); setTimeout(() => { const c = document.getElementById('roster-card'); if (c) c.scrollIntoView({ block: 'center', behavior: 'smooth' }); }, 140); });
+      restoreAgentCards(state.currentThreadId);
+      if (window.innerWidth >= 1280) opSetOpen(true);
+    })();
+
     (function initPsyncUi() {
       const $ = (id) => document.getElementById(id); if (!$('psync-card')) return;
       $('psync-pass').value = rpLs('psyncPass') || '';
