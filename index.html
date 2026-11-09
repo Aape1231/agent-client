@@ -628,6 +628,24 @@ html[data-theme=warm] { --c-white:43 39 34; --sl-50:29 26 22; --sl-100:243 234 2
     html.dark .asst-tag .c { background: rgb(var(--sl-800)); border-color: rgb(var(--sl-700)); }
     #user-input { font-size: 15.5px; }
     html.dark .bg-primary-600, html.dark .bg-primary-700, html.dark .bg-primary-600 *, html.dark .bg-primary-700 * { color: #171311; }
+    /* v16.0：統一強調色，蓋掉舊版殘留的藍／靛 */
+    html.dark .bg-primary-600 { background-color: rgb(var(--pr-600)); }
+    html.dark .hover\:bg-primary-700:hover { background-color: rgb(var(--pr-700)); }
+    html.dark .hover\:text-primary-600:hover { color: rgb(var(--pr-500)); }
+    .md-output a, .dark .md-output a { color: rgb(var(--pr-500)); }
+    .md-output a:hover, .dark .md-output a:hover { color: rgb(var(--pr-700)); }
+    html.dark .md-output a:hover { color: rgb(var(--pr-500)); filter: brightness(1.14); }
+    .md-output a.md-download, .dark .md-output a.md-download { background: rgb(var(--pr-50)); border-color: rgb(var(--sl-300)); color: rgb(var(--pr-700)); }
+    html.dark .md-output a.md-download { border-color: rgb(var(--sl-700)); color: rgb(var(--pr-500)); }
+    .md-output a.md-download:hover, .dark .md-output a.md-download:hover { background: rgb(var(--pr-100)); }
+    #report-btn.on { background: rgb(var(--pr-600)); color: #fff; }
+    html.dark #report-btn.on { background: rgb(var(--pr-600)); color: #171311; }
+    .rp-hint button.pri { background: rgb(var(--pr-600)); border-color: rgb(var(--pr-600)); color: #fff; }
+    html.dark .rp-hint button.pri { background: rgb(var(--pr-600)); border-color: rgb(var(--pr-600)); color: #171311; }
+    #prev-drop.over { border-color: rgb(var(--pr-500)); background: rgb(var(--pr-50)); }
+    .prev-btn { border-color: rgb(var(--sl-300)); }
+    .rp { --acc: #8E6A22; --info: #4C5AA8; }
+    html.dark .rp { --bg:#1C2023; --card:#23282B; --bd:#343A3E; --tx:#E7EAEB; --mut:#9EA6AB; --acc:#D9B172; --info:#8E9BD6; --hd:#262B2F; }
   </style>
 </head>
 <body class="h-full bg-slate-50 text-slate-800 dark:bg-slate-900 dark:text-slate-200 overflow-hidden selection:bg-primary-100 selection:text-primary-700">
