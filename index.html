@@ -473,6 +473,57 @@ html[data-theme=warm] { --c-white:43 39 34; --sl-50:29 26 22; --sl-100:243 234 2
     /* 側欄：更輕 */
     #threads-list { padding: 8px; }
     #new-thread-btn { box-shadow: none; }
+    /* ===== v15.1：@Agent 意見組 ===== */
+    .ag-group { border: 1px solid rgba(128,128,128,.22); border-radius: 16px; overflow: hidden; background: rgb(var(--c-white)); }
+    html.dark .ag-group { background: rgb(var(--sl-800)); border-color: rgb(var(--sl-700)); }
+    .ag-head { display: flex; flex-direction: column; gap: 8px; padding: 10px 14px; border-bottom: 1px solid rgba(128,128,128,.18); background: rgba(128,128,128,.045); }
+    .ag-q { display: flex; gap: 8px; align-items: flex-start; font-size: 12.5px; line-height: 1.55; color: rgb(var(--sl-500)); cursor: pointer; }
+    .ag-qi { margin-top: 3px; opacity: .55; flex: none; }
+    .ag-qt { flex: 1; min-width: 0; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+    .ag-q.open .ag-qt { display: block; }
+    .ag-pf { margin-top: 6px; display: none; flex-direction: column; gap: 4px; }
+    .ag-q.open + .ag-pf { display: flex; }
+    .ag-pf .qt-item { background: rgba(128,128,128,.10); border-left-color: rgba(128,128,128,.45); color: rgb(var(--sl-600)); }
+    .ag-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+    .ag-chip { --ac: #666; display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px; border-radius: 999px; font-size: 12px; font-weight: 500; color: var(--ac); border: 1px solid color-mix(in srgb, var(--ac) 40%, transparent); background: color-mix(in srgb, var(--ac) 7%, transparent); }
+    html.dark .ag-chip { filter: brightness(1.3); }
+    .ag-chip .dot { width: 7px; height: 7px; border-radius: 999px; background: var(--ac); flex: none; }
+    .ag-chip .st { font-size: 11px; opacity: .7; }
+    .ag-chip.on { background: color-mix(in srgb, var(--ac) 17%, transparent); }
+    .ag-chip.wait .dot, .ag-sk i { animation: agpulse 1.2s ease-in-out infinite; }
+    .ag-chip.err { --ac: #dc2626; }
+    @keyframes agpulse { 0%, 100% { opacity: .3; } 50% { opacity: 1; } }
+    .ag-panes { display: grid; }
+    .ag-pane { --ac: #666; position: relative; padding: 12px 16px 14px 18px; min-width: 0; }
+    .ag-pane::before { content: ''; position: absolute; left: 0; top: 12px; bottom: 12px; width: 3px; border-radius: 999px; background: var(--ac); opacity: .85; }
+    .ag-pane + .ag-pane { border-top: 1px solid rgba(128,128,128,.16); }
+    .ag-nm { font-size: 12px; font-weight: 600; color: var(--ac); margin-bottom: 6px; display: none; }
+    html.dark .ag-nm { filter: brightness(1.3); }
+    .ag-body { position: relative; }
+    .ag-body.clip { max-height: 360px; overflow: hidden; }
+    .ag-body.clip::after { content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 72px; pointer-events: none; background: linear-gradient(to bottom, rgb(var(--c-white) / 0), rgb(var(--c-white))); }
+    html.dark .ag-body.clip::after { background: linear-gradient(to bottom, rgb(var(--sl-800) / 0), rgb(var(--sl-800))); }
+    .ag-more { margin-top: 6px; font-size: 12px; color: rgb(var(--sl-500)); }
+    .ag-more:hover { color: rgb(var(--sl-700)); text-decoration: underline; }
+    .ag-sk i { display: block; height: 10px; border-radius: 6px; background: rgba(128,128,128,.2); margin: 9px 0; }
+    .ag-sk i:nth-child(2) { width: 86%; } .ag-sk i:nth-child(3) { width: 62%; }
+    .ag-acts { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+    .ag-acts button { font-size: 12px; padding: 3px 9px; border-radius: 8px; border: 1px solid rgba(128,128,128,.28); color: rgb(var(--sl-500)); }
+    .ag-acts button:hover { background: rgba(128,128,128,.1); color: rgb(var(--sl-700)); }
+    .ag-acts button.pri { border-color: color-mix(in srgb, var(--ac) 50%, transparent); color: var(--ac); }
+    html.dark .ag-acts button.pri { filter: brightness(1.3); }
+    .ag-acts button.pri:hover { background: color-mix(in srgb, var(--ac) 12%, transparent); }
+    .ag-err { color: #dc2626; font-size: 13px; }
+    @media (min-width: 1100px) {
+      .ag-group.multi .ag-panes { grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); }
+      .ag-group.multi .ag-pane + .ag-pane { border-top: 0; border-left: 1px solid rgba(128,128,128,.16); }
+      .ag-group.multi .ag-nm { display: block; }
+    }
+    @media (max-width: 1099px) {
+      .ag-group.multi .ag-pane { display: none; }
+      .ag-group.multi .ag-pane.on { display: block; }
+      .ag-group.multi .ag-chip { cursor: pointer; }
+    }
   </style>
 </head>
 <body class="h-full bg-slate-50 text-slate-800 dark:bg-slate-900 dark:text-slate-200 overflow-hidden selection:bg-primary-100 selection:text-primary-700">
@@ -671,8 +722,10 @@ html[data-theme=warm] { --c-white:43 39 34; --sl-50:29 26 22; --sl-100:243 234 2
         </div>
 
         <div id="changelog" class="mt-8 pt-7 border-t border-slate-200 dark:border-slate-700 pb-6 text-sm text-slate-600 dark:text-slate-300">
-          <h3 class="font-semibold text-slate-800 dark:text-slate-100 mb-2">版本紀錄 <span class="text-xs font-normal text-slate-400">目前版本 v15.0</span></h3>
+          <h3 class="font-semibold text-slate-800 dark:text-slate-100 mb-2">版本紀錄 <span class="text-xs font-normal text-slate-400">目前版本 v15.1</span></h3>
           <div class="space-y-3">
+            <div><div class="font-medium text-slate-700 dark:text-slate-200">v15.1 <span class="text-xs text-slate-400">2026-11-09</span></div>
+              <ul class="list-disc pl-5 space-y-0.5"><li><b>@Agent 意見組</b>：同一次 @ 的所有 Agent 收成一張卡，頭部顯示提問與各 Agent 狀態（處理中／失敗），不再一位一張往下拉長</li><li>寬螢幕時多位 Agent 的意見並排比較，窄螢幕改為點 chip 切換；過長的意見預設收合，可展開全部</li><li>「帶回主對話」不再把整段文字塞進輸入框，改為掛在輸入框上方的引用區</li><li>修正中文標點旁的 <code>**粗體**</code> 不生效（例如「**重點：**說明」）</li></ul></div>
             <div><div class="font-medium text-slate-700 dark:text-slate-200">v15.0 <span class="text-xs text-slate-400">2026-11-09</span></div>
               <ul class="list-disc pl-5 space-y-0.5"><li><b>介面改版（中性極簡）</b>：移除「API 說明」整頁與頂部頁籤；設定改為右側抽屜，對話不再被整頁切換遮住</li><li>對話改為固定閱讀欄置中；助理回覆不再用氣泡框，使用者訊息改中性底色；輸入框改為浮起的卡片</li><li>字體改用 Inter + Noto Sans TC；標題列高度與圖示統一，右上角新增環境標記（SBX／PRD）</li></ul></div>
             <div><div class="font-medium text-slate-700 dark:text-slate-200">v14.19 <span class="text-xs text-slate-400">2026-11-08</span></div>
@@ -1210,13 +1263,18 @@ html[data-theme=warm] { --c-white:43 39 34; --sl-50:29 26 22; --sl-100:243 234 2
     }
     const escapeHtml = (s) => s.replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
+    // v15.1：中文標點旁的 **粗體** 依 CommonMark 規則不會生效（例如「**重點：**說明」），補一個零寬字元讓它成立
+    function cjkBold(t) {
+      return String(t || '').split(/(```[\s\S]*?```|`[^`\n]*`)/).map((seg, i) => i % 2 ? seg
+        : seg.replace(/([\u3000-\u303f\uff01-\uff65\u2014\u2018-\u201d])(\*\*|__)(?=[^\s*_])/g, '$1\u200b$2')).join('');
+    }
     function renderMarkdown(text) {
       let src = String(text ?? '');
       // 有些後端會回傳字面上的 "\n"（反斜線+n）而非真正換行，這裡還原
       if (!src.includes('\n') && src.includes('\\n')) src = src.replace(/(?:\\r)?\\n/g, '\n');
       if (window.marked && window.DOMPurify) {
         try {
-          const html = marked.parse(src, { gfm: true, breaks: true });
+          const html = marked.parse(cjkBold(src), { gfm: true, breaks: true });
           return DOMPurify.sanitize(html);
         } catch (e) { console.warn('Markdown render failed', e); }
       }
@@ -2476,6 +2534,84 @@ html[data-theme=warm] { --c-white:43 39 34; --sl-50:29 26 22; --sl-100:243 234 2
       const names = mentionNames(text); if (!names.length) return;
       div.classList.add('side-ask'); div.style.setProperty('--ac', agColor(names[0]));
     }
+    // v15.1：同一次 @ 的所有 Agent 收進一張「意見組」：頭部是狀態 chips，寬螢幕並排、窄螢幕分頁
+    const AG_CLIP = 360;
+    function agGroupKey(c) { return (c.ask || '') + '\u0001' + (c.prefix || '') + '\u0001' + (c.after || 0); }
+    function buildAgentGroup(cards) {
+      const first = cards[0] || {};
+      const row = document.createElement('div');
+      row.className = 'flex w-full mb-6 justify-start'; row.dataset.role = 'agent'; row.dataset.local = '1';
+      row.dataset.label = '@' + cards.map(c => c.name).join(' @') + ' ' + String(first.ask || '').replace(/\s+/g, ' ').slice(0, 60);
+      row.innerHTML = '<div class="w-full"><div class="ag-group"><div class="ag-head"><div class="ag-q"><i class="fa-solid fa-at ag-qi"></i><span class="ag-qt"></span></div><div class="ag-pf"></div><div class="ag-chips"></div></div><div class="ag-panes"></div></div></div>';
+      const grp = row.querySelector('.ag-group');
+      if (cards.length > 1) grp.classList.add('multi');
+      const pf = splitPrefix(String(first.prefix || '') + String(first.ask || ''));
+      const qEl = row.querySelector('.ag-q');
+      let askTxt = String(pf.rest || '').trim();
+      cards.forEach(c => { if (c.name) askTxt = askTxt.split('@' + c.name).join(' '); });
+      askTxt = askTxt.replace(/\s{2,}/g, ' ').trim();
+      row.querySelector('.ag-qt').textContent = askTxt || '（未附問題，由 Agent 自行判斷）';
+      if (pf.quotes.length || pf.opinions.length) {
+        row.querySelector('.ag-pf').innerHTML = prefixChipsHtml(pf);
+        row.querySelector('.ag-qt').textContent = (askTxt || '（未附問題，由 Agent 自行判斷）') + '　· 含 ' + (pf.quotes.length + pf.opinions.length) + ' 段引用';
+      }
+      qEl.addEventListener('click', () => qEl.classList.toggle('open'));
+      cards.forEach((c, i) => agAddPane(row, c, i));
+      return row;
+    }
+    function agAddPane(row, c, i) {
+      const col = agColor(c.name);
+      const chip = document.createElement('button');
+      chip.type = 'button'; chip.className = 'ag-chip' + (i === 0 ? ' on' : '') + (c.pending ? ' wait' : '');
+      chip.style.setProperty('--ac', col); chip.dataset.i = i;
+      chip.innerHTML = '<span class="dot"></span><span class="nm"></span><span class="st"></span>';
+      chip.querySelector('.nm').textContent = c.name;
+      chip.querySelector('.st').textContent = c.pending ? '處理中' : '';
+      chip.addEventListener('click', () => agActivate(row, i));
+      row.querySelector('.ag-chips').appendChild(chip);
+
+      const pane = document.createElement('div');
+      pane.className = 'ag-pane' + (i === 0 ? ' on' : ''); pane.dataset.i = i;
+      pane.style.setProperty('--ac', col);
+      pane.innerHTML = '<div class="ag-nm"></div><div class="ag-body">' + (c.pending ? '<div class="ag-sk"><i></i><i></i><i></i></div>' : '<div class="md-output text-sm sm:text-base break-words"></div>') + '</div><div class="ag-acts"></div>';
+      pane.querySelector('.ag-nm').textContent = '@' + c.name;
+      row.querySelector('.ag-panes').appendChild(pane);
+      if (!c.pending) agFillPane(row, i, c.text, c.err);
+      return pane;
+    }
+    function agActivate(row, i) {
+      row.querySelectorAll('.ag-chip').forEach(b => b.classList.toggle('on', +b.dataset.i === i));
+      row.querySelectorAll('.ag-pane').forEach(p => p.classList.toggle('on', +p.dataset.i === i));
+      if (window.matchMedia('(min-width: 1100px)').matches) {
+        const p = row.querySelector('.ag-pane[data-i="' + i + '"]'); if (p) p.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+      }
+    }
+    function agFillPane(row, i, text, isErr) {
+      const pane = row.querySelector('.ag-pane[data-i="' + i + '"]'); if (!pane) return;
+      const chip = row.querySelector('.ag-chip[data-i="' + i + '"]');
+      if (chip) { chip.classList.remove('wait'); chip.classList.toggle('err', !!isErr); chip.querySelector('.st').textContent = isErr ? '失敗' : ''; }
+      const body = pane.querySelector('.ag-body');
+      body.innerHTML = '<div class="md-output text-sm sm:text-base break-words"></div>';
+      const md = body.querySelector('.md-output');
+      if (isErr) { md.innerHTML = '<div class="ag-err"><i class="fa-solid fa-triangle-exclamation mr-1"></i>' + escapeHtml(String(text || '呼叫失敗')) + '</div>'; return; }
+      md.innerHTML = renderMarkdown(text); enhanceMarkdown(md);
+      pane.__raw = text;
+      const acts = pane.querySelector('.ag-acts'); acts.innerHTML = '';
+      const mk = (label, cls, fn) => { const b = document.createElement('button'); b.type = 'button'; b.className = cls || ''; b.innerHTML = label; b.onclick = fn; acts.appendChild(b); };
+      const name = (chip && chip.querySelector('.nm').textContent) || '';
+      mk('<i class="fa-solid fa-arrow-turn-down mr-1"></i>帶回主對話', 'pri', () => bringBack(name, text));
+      mk('<i class="fa-solid fa-quote-left mr-1"></i>選取段落', '', () => toggleQuoteMode(pane));
+      mk('<i class="fa-regular fa-copy mr-1"></i>複製', '', () => { navigator.clipboard.writeText(text); showToast('已複製內容', 'info'); });
+      requestAnimationFrame(() => {
+        if (body.scrollHeight > AG_CLIP + 40) {
+          body.classList.add('clip');
+          const more = document.createElement('button');
+          more.type = 'button'; more.className = 'ag-more'; more.textContent = '展開全部';
+          more.onclick = () => { body.classList.remove('clip'); more.remove(); };
+          body.after(more);
+        }
+      });
+    }
     function buildAgentCard(c) {
       const div = document.createElement('div'); div.className = 'flex w-full mb-6 justify-start'; div.dataset.role = 'agent'; div.dataset.local = '1';
       div.dataset.label = ('@' + c.name + ' ' + c.text).replace(/\s+/g, ' ').slice(0, 80);
@@ -2495,9 +2631,8 @@ html[data-theme=warm] { --c-white:43 39 34; --sl-50:29 26 22; --sl-100:243 234 2
       state.opinions = state.opinions.filter(o => o.name !== name);
       state.opinions.push({ name, text: text.length > OPINION_MAX ? text.slice(0, OPINION_MAX) + '…' : text });
       renderQuoteTray();
-      if (!els.userInput.value.trim()) { els.userInput.value = OPINION_DEFAULT_Q; autoResizeInput(); }
-      els.userInput.focus(); els.userInput.select();
-      showToast('已加入「' + name + '」的意見；可補充問題後送出，主 Agent 就會收到', 'info');
+      els.userInput.focus();
+      showToast('已帶上「' + name + '」的意見；直接送出，或先補充你的要求', 'info');
     }
     // v14.18：換裝置時，意見卡（只存在原本的瀏覽器）改由平台上各 Agent 的側 thread 重建：問答配對、依時間插回主對話
     const rebuildTried = new Map();
@@ -2543,20 +2678,21 @@ html[data-theme=warm] { --c-white:43 39 34; --sl-50:29 26 22; --sl-100:243 234 2
       const cards = (readJSON('agentCards')[threadId] || []).slice().sort((a, b) => (a.ts || 0) - (b.ts || 0));
       if (!cards.length) return;
       const servers = Array.from(els.chatWindow.children).filter(d => (d.dataset.role === 'user' || d.dataset.role === 'assistant') && !d.dataset.local);
-      const last = {}, askSeen = {};
+      // 同一次 @（相同提問／引用／插入位置、且時間相近）的卡片合併成一組
+      const groups = [], idx = {};
       cards.forEach(c => {
-        const nodes = [];
-        // 同一次 @ 多位 Agent 時只有一個提問氣泡（與即時顯示一致）
-        const ak = (c.ask || '') + '\u0001' + (c.prefix || '') + '\u0001' + (c.after || 0);
-        const dup = askSeen[ak] != null && (c.ts || 0) - askSeen[ak] < 300000;
-        if (!dup) { askSeen[ak] = c.ts || 0; nodes.push(makeLocalAsk(c.ask || '', c.prefix || '')); }
-        nodes.push(buildAgentCard(c));
-        const after = Math.max(0, Math.min(c.after || 0, servers.length));
-        let ref = last[after] || (after > 0 ? servers[after - 1] : null);
-        nodes.forEach(n => { if (n.parentNode) n.remove(); });
-        if (ref) { let cur = ref; nodes.forEach(n => { cur.after(n); cur = n; }); last[after] = cur; }
-        else if (after === 0) { let cur = null; nodes.forEach(n => { if (!cur) els.chatWindow.prepend(n); else cur.after(n); cur = n; }); last[0] = cur; }
-        else els.chatWindow.append(...nodes);
+        const k = agGroupKey(c), g = idx[k];
+        if (g && (c.ts || 0) - g.ts0 < 300000) g.cards.push(c);
+        else { const ng = { ts0: c.ts || 0, after: c.after || 0, cards: [c] }; idx[k] = ng; groups.push(ng); }
+      });
+      const last = {};
+      groups.forEach(g => {
+        const node = buildAgentGroup(g.cards);
+        const after = Math.max(0, Math.min(g.after, servers.length));
+        const ref = last[after] || (after > 0 ? servers[after - 1] : null);
+        if (ref) { ref.after(node); last[after] = node; }
+        else if (after === 0) { els.chatWindow.prepend(node); last[0] = node; }
+        else els.chatWindow.appendChild(node);
       });
     }
     async function runAgentCalls(typedText, mentions) {
@@ -2570,12 +2706,12 @@ html[data-theme=warm] { --c-white:43 39 34; --sl-50:29 26 22; --sl-100:243 234 2
       const afterCount = serverMsgCount(); const tkey = cardsKey(), view0 = state.viewId; let late = false;
       els.userInput.value = ''; els.userInput.style.height = 'auto'; hideMention();
       state.quotes.forEach(q => { if (q.el) q.el.classList.remove('qb-sel'); qUnhl(q); }); state.quotes = []; renderQuoteTray();
-      const askDiv = appendMessage('user', prefixText + typedText); if (askDiv) { askDiv.dataset.local = '1'; decorateSideAsk(askDiv, typedText); }
+      const grp = buildAgentGroup(mentions.map(ag => ({ name: ag.label, env: agentTag(ag), ask: typedText, prefix: prefixText, pending: true })));
+      els.chatWindow.appendChild(grp); animIn(grp, 'fadeInUp'); revealTop(grp);
       if (truncated) showToast('上一則回覆過長，只帶入前 ' + CTX_MAX + ' 字；可改用「選取段落」精準帶入', 'info');
       const pend = pendStart('agent');
       try {
-        await Promise.all(mentions.map(async (ag) => {
-          const think = showThinking('@' + ag.label + ' 處理中');
+        await Promise.all(mentions.map(async (ag, gi) => {
           try {
             const prompt = (ag.instr ? ag.instr.trim() + '\n\n' : '') + (ctx ? '以下是' + ctxLabel + '：\n<context>\n' + ctx + '\n</context>\n\n' : '') + '使用者的要求：' + (question || (quoteTexts.length ? (hasNotes ? AGENT_NOTES_Q : AGENT_AUTO_Q) : '請針對以上內容給出你的意見。'));
             const payload = { model: ag.id, messages: [{ role: 'user', content: prompt }] };
@@ -2584,14 +2720,12 @@ html[data-theme=warm] { --c-white:43 39 34; --sl-50:29 26 22; --sl-100:243 234 2
             if (res.thread_id && res.thread_id !== stid) { sideThreadSet(ag, res.thread_id, tkey); if (!ag.base && !ag.key) setThreadTitle(res.thread_id, '@' + ag.label + ' · ' + (question || '意見').slice(0, 20)); }
             const ch = res.choices && res.choices[0] && res.choices[0].message;
             const reply = ch ? (Array.isArray(ch.content) ? ch.content.map(c => c.text ? c.text.value : '').join('\n') : String(ch.content || '')) : '';
-            removeThinking(think);
             const card = { name: ag.label, env: agentTag(ag), ask: typedText, prefix: prefixText, text: reply || '（沒有內容）', after: afterCount, ts: Date.now() };
             const here = state.viewId === view0;
             if (here || tkey !== '_new') cardsAdd(card, tkey);
-            if (here) { els.chatWindow.appendChild(buildAgentCard(card)); animIn(els.chatWindow.lastElementChild, 'fadeInUp'); revealTop(els.chatWindow.lastElementChild); } else late = true;
+            if (here) agFillPane(grp, gi, card.text); else late = true;
           } catch (err) {
-            removeThinking(think);
-            if (state.viewId === view0) { const el = buildAgentCard({ name: ag.label, text: '❌ 呼叫失敗：' + err.message, err: true }); el.querySelector('.agent-actions').remove(); els.chatWindow.appendChild(el); }
+            if (state.viewId === view0) agFillPane(grp, gi, '呼叫失敗：' + err.message, true);
             else showToast('@' + ag.label + ' 呼叫失敗：' + err.message, 'error');
           }
         }));
