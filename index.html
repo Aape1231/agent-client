@@ -706,6 +706,20 @@ html[data-theme=warm] { --c-white:43 39 34; --sl-50:29 26 22; --sl-100:243 234 2
       #user-input { padding-top: 9px; padding-bottom: 9px; line-height: 1.45; }
       #send-btn { align-self: center; margin-bottom: 0; width: 38px; height: 38px; }
     }
+    /* ===== v16.3：意見卡的刪除與重試 ===== */
+    .opc-h { position: relative; }
+    .opc-x { width: 24px; height: 24px; margin: -3px -4px -3px 0; border-radius: 7px; flex: none; color: rgb(var(--sl-400)); font-size: 12px; opacity: 0; transition: opacity .15s, background .15s; }
+    .opc:hover .opc-x, .opc:focus-within .opc-x { opacity: 1; }
+    .opc-x:hover { background: rgba(200,70,60,.14); color: #d9534f; }
+    @media (pointer: coarse) { .opc-x { opacity: .75; } }
+    .opg-q { position: relative; padding-right: 22px; }
+    .opg-x { position: absolute; right: -2px; top: -2px; width: 22px; height: 22px; border-radius: 6px; color: rgb(var(--sl-400)); font-size: 11.5px; opacity: 0; transition: opacity .15s, background .15s; }
+    .opg:hover .opg-x { opacity: 1; }
+    .opg-x:hover { background: rgba(200,70,60,.14); color: #d9534f; }
+    .cl-head { display: flex; align-items: center; gap: 8px; cursor: pointer; }
+    .cl-caret { margin-left: auto; font-size: 12px; color: rgb(var(--sl-400)); }
+    #changelog.cl-collapsed > div { display: none; }
+    @media (pointer: coarse) { .opg-x { opacity: .7; } }
   </style>
 </head>
 <body class="h-full bg-slate-50 text-slate-800 dark:bg-slate-900 dark:text-slate-200 overflow-hidden selection:bg-primary-100 selection:text-primary-700">
@@ -941,8 +955,10 @@ html[data-theme=warm] { --c-white:43 39 34; --sl-50:29 26 22; --sl-100:243 234 2
         </div>
 
         <div id="changelog" class="mt-8 pt-7 border-t border-slate-200 dark:border-slate-700 pb-6 text-sm text-slate-600 dark:text-slate-300">
-          <h3 class="font-semibold text-slate-800 dark:text-slate-100 mb-2">版本紀錄 <span class="text-xs font-normal text-slate-400">目前版本 v16.2</span></h3>
+          <h3 class="font-semibold text-slate-800 dark:text-slate-100 mb-2">版本紀錄 <span class="text-xs font-normal text-slate-400">目前版本 v16.3</span></h3>
           <div class="space-y-3">
+            <div><div class="font-medium text-slate-700 dark:text-slate-200">v16.3 <span class="text-xs text-slate-400">2026-11-10</span></div>
+              <ul class="list-disc pl-5 space-y-0.5"><li><b>@Agent 失敗或中斷不再消失</b>：送出時就先寫入一張「處理中」的意見卡，成功才換成回覆；失敗、逾時或等待中被重新整理，重新載入後會看到「未完成／失敗」並附<b>重試</b>（沿用原本的引用與要求，不用重打）</li><li>意見卡右上角新增刪除鈕，提問那一行可刪整組；刪除只影響這台裝置的顯示，平台上的側對話不受影響，也不會在換裝置時被重建回來</li><li>設定頁的版本紀錄預設摺疊</li><li>側欄不再列出「myagent-sync」同步用對話（原本只隱藏目前這一個，舊的殘留會跑出來）</li></ul></div>
             <div><div class="font-medium text-slate-700 dark:text-slate-200">v16.2 <span class="text-xs text-slate-400">2026-11-10</span></div>
               <ul class="list-disc pl-5 space-y-0.5"><li>手機版輸入列的「＋」與文字垂直對齊；輸入框提示在窄螢幕只顯示「輸入訊息…」，不再被截斷</li><li>「對話目錄」每一則提問加上編號，右側的定位點提示也帶編號</li></ul></div>
             <div><div class="font-medium text-slate-700 dark:text-slate-200">v16.1 <span class="text-xs text-slate-400">2026-11-10</span></div>
@@ -1284,7 +1300,8 @@ html[data-theme=warm] { --c-white:43 39 34; --sl-50:29 26 22; --sl-100:243 234 2
       if (!pinned.length && !rest.length) { els.threadsList.innerHTML = '<div class="p-4 text-center text-slate-400 text-sm">尚無對話</div>'; return; }
       const hdr = (txt) => { const h = document.createElement('div'); h.className = 'px-2 pt-2 pb-1 text-xs font-medium text-slate-400 dark:text-slate-500'; h.textContent = txt; els.threadsList.appendChild(h); };
       if (pinned.length) hdr('已釘選');
-      const rows = pinned.map(t => [t, true]).concat(rest.map(t => [t, false]));
+      const isSync = (id) => /myagent-sync/i.test(String(threadDisplayTitle(id) || ''));
+      const rows = pinned.map(t => [t, true]).concat(rest.map(t => [t, false])).filter(([t]) => !isSync(t.id));
       let restHdr = false, thNo = 0;
       rows.forEach(([thread, isPin]) => {
         if (!isPin && pinned.length && !restHdr) { hdr('全部對話'); restHdr = true; }
@@ -2706,6 +2723,12 @@ html[data-theme=warm] { --c-white:43 39 34; --sl-50:29 26 22; --sl-100:243 234 2
       } catch (e) {}
     }
     function dropNewKey() { try { ['agentCards', 'agentSideThreads'].forEach(k => { const m = readJSON(k); if (m._new) { delete m._new; writeJSON(k, m); } }); } catch (e) {} }
+    function newCid() { return 'c' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7); }
+    function cardPatch(key, cid, patch) {
+      const m = readJSON('agentCards'), arr = m[key] || [], i = arr.findIndex(c => c.cid === cid);
+      if (i < 0) return null;
+      arr[i] = Object.assign({}, arr[i], patch); m[key] = arr; writeJSON('agentCards', m); return arr[i];
+    }
     function cardsAdd(c, key) { const m = readJSON('agentCards'), k = key || cardsKey(); (m[k] = m[k] || []).push(c); if (m[k].length > 60) m[k].shift(); writeJSON('agentCards', m); }
     const sideKey = (ag) => ag.uid || (ag.id + '@' + (ag.base || 'main'));
     function sideThreadGet(ag, key) { return (readJSON('agentSideThreads')[key || cardsKey()] || {})[sideKey(ag)] || ''; }
@@ -2908,11 +2931,24 @@ html[data-theme=warm] { --c-white:43 39 34; --sl-50:29 26 22; --sl-100:243 234 2
       const id = state.currentThreadId;
       t.textContent = id ? (threadDisplayTitle(id) || '對話') : '新對話';
     }
-    function opFill(el, name, text, isErr) {
+    function opFill(el, name, text, isErr, opt) {
       if (!el) return;
+      opt = opt || {};
       const st = el.querySelector('.opc-st'), body = el.querySelector('.opc-b'), acts = el.querySelector('.opc-a');
-      st.textContent = isErr ? '失敗' : '';
-      if (isErr) { body.classList.add('open'); body.innerHTML = '<div class="opc-err"><i class="fa-solid fa-triangle-exclamation mr-1"></i>' + escapeHtml(String(text || '呼叫失敗')) + '</div>'; acts.innerHTML = ''; return; }
+      const cid = opt.cid || el.dataset.cid;
+      st.textContent = isErr ? (opt.stale ? '未完成' : '失敗') : '';
+      if (isErr) {
+        body.classList.add('open');
+        body.innerHTML = '<div class="opc-err"><i class="fa-solid fa-triangle-exclamation mr-1"></i>' + escapeHtml(String(text || '呼叫失敗')) + '</div>';
+        acts.innerHTML = '';
+        if (cid) {
+          const rb = document.createElement('button'); rb.type = 'button'; rb.className = 'pri';
+          rb.innerHTML = '<i class="fa-solid fa-rotate-right mr-1"></i>重試';
+          rb.onclick = () => retryOpinion(cid, rb);
+          acts.appendChild(rb);
+        }
+        return;
+      }
       body.classList.remove('open');
       body.innerHTML = '<div class="md-output break-words"></div>';
       const md = body.querySelector('.md-output'); md.innerHTML = renderMarkdown(text); enhanceMarkdown(md);
@@ -2927,12 +2963,66 @@ html[data-theme=warm] { --c-white:43 39 34; --sl-50:29 26 22; --sl-100:243 234 2
     }
     function buildOpCard(c, i) {
       const el = document.createElement('article'); el.className = 'opc'; el.dataset.i = i;
+      if (c.cid) el.dataset.cid = c.cid;
       el.style.setProperty('--ac', agColor(c.name));
-      el.innerHTML = '<div class="opc-h"><span class="opc-dot"></span><span class="opc-n"></span><span class="opc-st"></span></div><div class="opc-b"></div><div class="opc-a"></div>';
+      el.innerHTML = '<div class="opc-h"><span class="opc-dot"></span><span class="opc-n"></span><span class="opc-st"></span><button type="button" class="opc-x" title="刪除這則意見" aria-label="刪除這則意見"><i class="fa-solid fa-xmark"></i></button></div><div class="opc-b"></div><div class="opc-a"></div>';
       el.querySelector('.opc-n').textContent = c.name;
+      el.querySelector('.opc-x').onclick = () => deleteOpinion(c.cid, el);
       if (c.pending) { el.querySelector('.opc-st').textContent = '處理中'; el.querySelector('.opc-b').classList.add('open'); el.querySelector('.opc-b').innerHTML = '<div class="opc-sk"><i></i><i></i><i></i></div>'; return el; }
-      opFill(el, c.name, c.text, c.err);
+      if (c.pend) { opFill(el, c.name, '這次呼叫沒有收到回覆（可能逾時、網路中斷，或頁面在等待時被重新整理）。', true, { stale: true, cid: c.cid }); return el; }
+      opFill(el, c.name, c.text, c.err, { cid: c.cid });
       return el;
+    }
+    function opThreadKey() { return state.currentThreadId || '_new'; }
+    function deleteOpinion(cid, el) {
+      if (!cid) { if (el) el.remove(); opCountRefresh(); return; }
+      if (!confirm('刪除這則意見？（只影響這台裝置的顯示，平台上的對話不受影響）')) return;
+      cardPatch(opThreadKey(), cid, { del: 1 });
+      restoreAgentCards(state.currentThreadId);
+      showToast('已刪除這則意見', 'info');
+    }
+    function deleteOpGroup(cids) {
+      if (!cids.length) return;
+      if (!confirm('刪除這一組共 ' + cids.length + ' 則意見？（只影響這台裝置的顯示）')) return;
+      cids.forEach(cid => cardPatch(opThreadKey(), cid, { del: 1 }));
+      restoreAgentCards(state.currentThreadId);
+      showToast('已刪除這組意見', 'info');
+    }
+    // 重試：用同一段引用與要求重新呼叫同一個 Agent
+    async function retryOpinion(cid, btn) {
+      const key = opThreadKey(), m = readJSON('agentCards'), c = (m[key] || []).find(x => x.cid === cid);
+      if (!c) return showToast('找不到這則意見的紀錄', 'error');
+      const list = rosterGet();
+      const ag = list.find(a => a.label === c.name) || list.find(a => agBase(a.label) === agBase(c.name));
+      if (!ag) return showToast('Agent 名單裡沒有「' + c.name + '」，請先到設定頁加回來', 'error');
+      const pf = splitPrefix(String(c.prefix || '') + String(c.ask || ''));
+      let ctx = pf.quotes.length ? pf.quotes.map((q, i) => '[' + (i + 1) + '] ' + q).join('\n') : lastAssistantText();
+      if (ctx.length > CTX_MAX) ctx = ctx.slice(0, CTX_MAX) + '\n…（以下省略）';
+      const ctxLabel = pf.quotes.length ? '使用者選取的段落' : '主 Agent 的上一則回覆';
+      let question = String(pf.rest || '').trim();
+      [c.name, agBase(c.name)].forEach(n => { if (n) question = question.split('@' + n).join(' '); });
+      question = question.replace(/\s{2,}/g, ' ').trim();
+      const el = document.querySelector('#op-list .opc[data-cid="' + cid + '"]');
+      if (el) { el.querySelector('.opc-st').textContent = '處理中'; el.querySelector('.opc-b').classList.add('open'); el.querySelector('.opc-b').innerHTML = '<div class="opc-sk"><i></i><i></i><i></i></div>'; el.querySelector('.opc-a').innerHTML = ''; }
+      cardPatch(key, cid, { pend: 1, err: 0 });
+      const pend = pendStart('agent');
+      try {
+        const prompt = (ag.instr ? ag.instr.trim() + '\n\n' : '') + (ctx ? '以下是' + ctxLabel + '：\n<context>\n' + ctx + '\n</context>\n\n' : '') + '使用者的要求：' + (question || AGENT_AUTO_Q);
+        const payload = { model: ag.id, messages: [{ role: 'user', content: prompt }] };
+        const stid = sideThreadGet(ag, key); if (stid) payload.thread_id = stid;
+        const res = await agentApiCall(ag, '/v1/chat/completions', 'POST', payload);
+        if (res.thread_id && res.thread_id !== stid) sideThreadSet(ag, res.thread_id, key);
+        const ch = res.choices && res.choices[0] && res.choices[0].message;
+        const reply = ch ? (Array.isArray(ch.content) ? ch.content.map(x => x.text ? x.text.value : '').join('\n') : String(ch.content || '')) : '';
+        cardPatch(key, cid, { text: reply || '（沒有內容）', pend: 0, err: 0, ts: Date.now() });
+        if (el) opFill(el, c.name, reply || '（沒有內容）', false, { cid: cid });
+        opCountRefresh();
+        showToast('@' + c.name + ' 已重新回覆', 'success');
+      } catch (err) {
+        cardPatch(key, cid, { pend: 0, err: 1, text: '呼叫失敗：' + err.message, ts: Date.now() });
+        if (el) opFill(el, c.name, '呼叫失敗：' + err.message, true, { cid: cid });
+        showToast('@' + c.name + ' 重試失敗：' + err.message, 'error');
+      } finally { pendEnd(pend); }
     }
     function buildOpGroup(cards) {
       const first = cards[0] || {};
@@ -2945,13 +3035,25 @@ html[data-theme=warm] { --c-white:43 39 34; --sl-50:29 26 22; --sl-100:243 234 2
       q.innerHTML = '<i class="fa-solid fa-quote-left"></i><span class="t"></span>';
       q.querySelector('.t').textContent = (ask || '（未附問題，由 Agent 自行判斷）') + (pf.quotes.length ? '　· 含 ' + pf.quotes.length + ' 段引用' : '');
       q.addEventListener('click', () => q.classList.toggle('open'));
+      const gx = document.createElement('button');
+      gx.type = 'button'; gx.className = 'opg-x'; gx.title = '刪除這組意見'; gx.setAttribute('aria-label', '刪除這組意見');
+      gx.innerHTML = '<i class="fa-solid fa-xmark"></i>';
+      gx.onclick = (e) => { e.stopPropagation(); deleteOpGroup(cards.map(c => c.cid).filter(Boolean)); };
+      q.appendChild(gx);
       wrap.appendChild(q);
       cards.forEach((c, i) => wrap.appendChild(buildOpCard(c, i)));
       return wrap;
     }
+    function ensureCids(threadId) {
+      if (!threadId) return;
+      const m = readJSON('agentCards'), arr = m[threadId] || []; let changed = false;
+      arr.forEach(c => { if (c && !c.cid) { c.cid = newCid(); changed = true; } });
+      if (changed) { m[threadId] = arr; writeJSON('agentCards', m); }
+    }
     function restoreAgentCards(threadId) {
       const list = document.getElementById('op-list'); if (!list) return;
-      const cards = threadId ? (readJSON('agentCards')[threadId] || []).slice().sort((a, b) => (a.ts || 0) - (b.ts || 0)) : [];
+      ensureCids(threadId);
+      const cards = threadId ? (readJSON('agentCards')[threadId] || []).filter(c => !c.del).slice().sort((a, b) => (a.ts || 0) - (b.ts || 0)) : [];
       list.innerHTML = '';
       if (!cards.length) {
         list.innerHTML = '<div class="op-empty">這個對話還沒有其他 Agent 的意見。<br>在輸入框打 <b>@</b> 找 Agent 給意見，<br>或先選取一段回覆再 @。</div>';
@@ -2978,7 +3080,9 @@ html[data-theme=warm] { --c-white:43 39 34; --sl-50:29 26 22; --sl-100:243 234 2
       const afterCount = serverMsgCount(); const tkey = cardsKey(), view0 = state.viewId; let late = false;
       els.userInput.value = ''; els.userInput.style.height = 'auto'; hideMention();
       state.quotes.forEach(q => { if (q.el) q.el.classList.remove('qb-sel'); qUnhl(q); }); state.quotes = []; renderQuoteTray();
-      const grp = buildOpGroup(mentions.map(ag => ({ name: ag.label, env: agentTag(ag), ask: typedText, prefix: prefixText, pending: true })));
+      const cids = mentions.map(() => newCid());
+      mentions.forEach((ag, gi) => cardsAdd({ cid: cids[gi], name: ag.label, env: agentTag(ag), ask: typedText, prefix: prefixText, text: '', after: afterCount, ts: Date.now(), pend: 1 }, tkey));
+      const grp = buildOpGroup(mentions.map((ag, gi) => ({ cid: cids[gi], name: ag.label, env: agentTag(ag), ask: typedText, prefix: prefixText, pending: true })));
       const opList = document.getElementById('op-list');
       if (opList) { const e0 = opList.querySelector('.op-empty'); if (e0) e0.remove(); opList.appendChild(grp); animIn(grp, 'fadeIn'); }
       opSetOpen(true); opTab('op');
@@ -2996,12 +3100,13 @@ html[data-theme=warm] { --c-white:43 39 34; --sl-50:29 26 22; --sl-100:243 234 2
             if (res.thread_id && res.thread_id !== stid) { sideThreadSet(ag, res.thread_id, tkey); if (!ag.base && !ag.key) setThreadTitle(res.thread_id, '@' + ag.label + ' · ' + (question || '意見').slice(0, 20)); }
             const ch = res.choices && res.choices[0] && res.choices[0].message;
             const reply = ch ? (Array.isArray(ch.content) ? ch.content.map(c => c.text ? c.text.value : '').join('\n') : String(ch.content || '')) : '';
-            const card = { name: ag.label, env: agentTag(ag), ask: typedText, prefix: prefixText, text: reply || '（沒有內容）', after: afterCount, ts: Date.now() };
+            const card = { text: reply || '（沒有內容）', pend: 0, err: 0, ts: Date.now() };
+            cardPatch(tkey, cids[gi], card);
             const here = state.viewId === view0;
-            if (here || tkey !== '_new') cardsAdd(card, tkey);
-            if (here) { opFill(grp.querySelectorAll('.opc')[gi], ag.label, card.text); opCountRefresh(); } else late = true;
+            if (here) { opFill(grp.querySelectorAll('.opc')[gi], ag.label, card.text, false, { cid: cids[gi] }); opCountRefresh(); } else late = true;
           } catch (err) {
-            if (state.viewId === view0) opFill(grp.querySelectorAll('.opc')[gi], ag.label, '呼叫失敗：' + err.message, true);
+            cardPatch(tkey, cids[gi], { pend: 0, err: 1, text: '呼叫失敗：' + err.message, ts: Date.now() });
+            if (state.viewId === view0) opFill(grp.querySelectorAll('.opc')[gi], ag.label, '呼叫失敗：' + err.message, true, { cid: cids[gi] });
             else showToast('@' + ag.label + ' 呼叫失敗：' + err.message, 'error');
           }
         }));
@@ -3617,6 +3722,18 @@ html[data-theme=warm] { --c-white:43 39 34; --sl-50:29 26 22; --sl-100:243 234 2
         if (state.currentThreadId) loadMessages(state.currentThreadId);
         showToast('已還原所有隱藏的問答', 'success');
       });
+    })();
+
+    // v16.3：版本紀錄預設摺疊
+    (function initChangelog() {
+      const box = document.getElementById('changelog'); if (!box) return;
+      const h = box.querySelector('h3'), list = box.children[1]; if (!h || !list) return;
+      box.classList.add('cl-collapsed');
+      const btn = document.createElement('span'); btn.className = 'cl-caret'; btn.innerHTML = '<i class="fa-solid fa-chevron-down"></i>';
+      h.appendChild(btn); h.classList.add('cl-head'); h.setAttribute('role', 'button'); h.tabIndex = 0;
+      const toggle = () => { const on = box.classList.toggle('cl-collapsed'); btn.innerHTML = '<i class="fa-solid fa-chevron-' + (on ? 'down' : 'up') + '"></i>'; };
+      h.addEventListener('click', toggle);
+      h.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(); } });
     })();
 
     (function initOpPanel() {
