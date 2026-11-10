@@ -694,6 +694,18 @@ html[data-theme=warm] { --c-white:43 39 34; --sl-50:29 26 22; --sl-100:243 234 2
     .th-pick .sw { display: inline-flex; width: 26px; height: 18px; border-radius: 5px; overflow: hidden; border: 1px solid rgba(128,128,128,.35); }
     .th-pick .sw i { flex: 1; display: block; }
     #hidden-restore:disabled { opacity: .45; cursor: default; }
+    /* ===== v16.2：手機輸入列對齊、對話目錄編號 ===== */
+    .sheet-item { display: flex; align-items: baseline; gap: 9px; }
+    .sh-no { flex: none; min-width: 1.4em; text-align: right; font-size: 12px; font-variant-numeric: tabular-nums; color: rgb(var(--sl-400)); }
+    .sheet-item.active .sh-no { color: rgb(var(--pr-500)); }
+    .sh-tx { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    @media (max-width: 767px) {
+      #chat-section .input-bar > div.relative.flex { align-items: center; gap: 6px; padding: 6px 6px 6px 6px; }
+      #chat-section .input-bar > div.relative.flex > button { align-self: center; }
+      #tool-more { width: 40px; height: 40px; padding: 0; display: inline-flex; align-items: center; justify-content: center; font-size: 17px; }
+      #user-input { padding-top: 9px; padding-bottom: 9px; line-height: 1.45; }
+      #send-btn { align-self: center; margin-bottom: 0; width: 38px; height: 38px; }
+    }
   </style>
 </head>
 <body class="h-full bg-slate-50 text-slate-800 dark:bg-slate-900 dark:text-slate-200 overflow-hidden selection:bg-primary-100 selection:text-primary-700">
@@ -929,8 +941,10 @@ html[data-theme=warm] { --c-white:43 39 34; --sl-50:29 26 22; --sl-100:243 234 2
         </div>
 
         <div id="changelog" class="mt-8 pt-7 border-t border-slate-200 dark:border-slate-700 pb-6 text-sm text-slate-600 dark:text-slate-300">
-          <h3 class="font-semibold text-slate-800 dark:text-slate-100 mb-2">版本紀錄 <span class="text-xs font-normal text-slate-400">目前版本 v16.1</span></h3>
+          <h3 class="font-semibold text-slate-800 dark:text-slate-100 mb-2">版本紀錄 <span class="text-xs font-normal text-slate-400">目前版本 v16.2</span></h3>
           <div class="space-y-3">
+            <div><div class="font-medium text-slate-700 dark:text-slate-200">v16.2 <span class="text-xs text-slate-400">2026-11-10</span></div>
+              <ul class="list-disc pl-5 space-y-0.5"><li>手機版輸入列的「＋」與文字垂直對齊；輸入框提示在窄螢幕只顯示「輸入訊息…」，不再被截斷</li><li>「對話目錄」每一則提問加上編號，右側的定位點提示也帶編號</li></ul></div>
             <div><div class="font-medium text-slate-700 dark:text-slate-200">v16.1 <span class="text-xs text-slate-400">2026-11-10</span></div>
               <ul class="list-disc pl-5 space-y-0.5"><li>手機版：附加檔案／拍照／報表模式／呼叫 Agent 收進一顆「＋」鈕，點開有展開動畫</li><li>手機版 Enter 不再送出訊息，只有按送出鈕才送（桌機維持設定頁的選擇）</li><li>意見面板支援手勢：在對話區左滑叫出、在面板上右滑收起（小於 1280px 時）</li><li>設定頁新增「外觀」可直接切換深色／明亮／跟隨系統（手機上看不到左側導覽列也能切）</li><li>「意見」「輸入訊息…」等文字不再換行跑版，螢幕太窄時只留圖示</li><li>對話清單加上編號；設定頁新增「隱藏的問答」可一次全部還原</li></ul></div>
             <div><div class="font-medium text-slate-700 dark:text-slate-200">v16.0 <span class="text-xs text-slate-400">2026-11-10</span></div>
@@ -1520,6 +1534,7 @@ html[data-theme=warm] { --c-white:43 39 34; --sl-50:29 26 22; --sl-100:243 234 2
 
     // v14.2: API 沒有取消端點 → 不提供停止；處理中顯示狀態列與計時，送出鈕暫時停用
     const SEND_PH_DEFAULT = els.userInput.getAttribute('placeholder') || '';
+    window.addEventListener('resize', () => { try { if (!document.querySelector('.input-bar')) return; els.userInput.placeholder = sendPh(); } catch (e) {} });
     const runUi = { t0: 0, timer: null };
     function fmtElapsed(s) { return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0'); }
     function renderRunStatus() {
@@ -1548,7 +1563,7 @@ html[data-theme=warm] { --c-white:43 39 34; --sl-50:29 26 22; --sl-100:243 234 2
       b.disabled = on;
       b.title = on ? '此對話處理中…' : '送出 (Enter)';
       b.setAttribute('aria-label', on ? '處理中' : '送出');
-      els.userInput.placeholder = on ? '此對話的 Agent 處理中…可先輸入下一則，或切到其他對話提問' : SEND_PH_DEFAULT;
+      els.userInput.placeholder = on ? (window.innerWidth < 768 ? 'Agent 處理中…可先輸入下一則' : '此對話的 Agent 處理中…可先輸入下一則，或切到其他對話提問') : sendPh();
       if (on) {
         if (was && runUi.t0 === t0 && runUi.timer) return;
         clearInterval(runUi.timer);
@@ -3245,9 +3260,12 @@ html[data-theme=warm] { --c-white:43 39 34; --sl-50:29 26 22; --sl-100:243 234 2
     });
 
     function getSendMode() { try { return localStorage.getItem('sendMode') === 'mod' ? 'mod' : 'enter'; } catch (e) { return 'enter'; } }
+    function sendPh() {
+      if (window.innerWidth < 768) return '輸入訊息…';
+      return getSendMode() === 'mod' ? '輸入訊息…（Enter 換行，⌘/Ctrl+Enter 送出）' : '輸入訊息…（Enter 送出，Shift+Enter 換行）';
+    }
     function applySendMode() {
-      const mod = getSendMode() === 'mod';
-      els.userInput.placeholder = mod ? '輸入訊息... (Enter 換行，⌘/Ctrl+Enter 送出)' : '輸入訊息... (Enter 送出，Shift+Enter 換行)';
+      els.userInput.placeholder = sendPh();
       document.querySelectorAll('input[name="send-mode"]').forEach(r => { r.checked = r.value === getSendMode(); });
     }
     document.querySelectorAll('input[name="send-mode"]').forEach(r => r.addEventListener('change', () => {
@@ -3721,12 +3739,16 @@ html[data-theme=warm] { --c-white:43 39 34; --sl-50:29 26 22; --sl-100:243 234 2
       rail.dots.innerHTML = ''; rail.list.innerHTML = '';
       railItems.forEach((el, i) => {
         const label = el.dataset.label || ('提問 ' + (i + 1));
-        const dot = document.createElement('button'); dot.type = 'button'; dot.className = 'rail-dot'; dot.setAttribute('aria-label', label);
+        const nLabel = (i + 1) + '. ' + label;
+        const dot = document.createElement('button'); dot.type = 'button'; dot.className = 'rail-dot'; dot.setAttribute('aria-label', nLabel);
         dot.addEventListener('click', () => jumpTo(el));
-        dot.addEventListener('mouseenter', () => showRailTip(dot, label)); dot.addEventListener('mouseleave', hideRailTip);
-        dot.addEventListener('focus', () => showRailTip(dot, label)); dot.addEventListener('blur', hideRailTip);
+        dot.addEventListener('mouseenter', () => showRailTip(dot, nLabel)); dot.addEventListener('mouseleave', hideRailTip);
+        dot.addEventListener('focus', () => showRailTip(dot, nLabel)); dot.addEventListener('blur', hideRailTip);
         rail.dots.appendChild(dot);
-        const item = document.createElement('button'); item.type = 'button'; item.className = 'sheet-item'; item.textContent = label;
+        const item = document.createElement('button'); item.type = 'button'; item.className = 'sheet-item';
+        const no = document.createElement('span'); no.className = 'sh-no'; no.textContent = (i + 1);
+        const tx = document.createElement('span'); tx.className = 'sh-tx'; tx.textContent = label;
+        item.appendChild(no); item.appendChild(tx);
         item.addEventListener('click', () => { closeSheet(); jumpTo(el); });
         rail.list.appendChild(item);
       });
