@@ -646,6 +646,54 @@ html[data-theme=warm] { --c-white:43 39 34; --sl-50:29 26 22; --sl-100:243 234 2
     .prev-btn { border-color: rgb(var(--sl-300)); }
     .rp { --acc: #8E6A22; --info: #4C5AA8; }
     html.dark .rp { --bg:#1C2023; --card:#23282B; --bd:#343A3E; --tx:#E7EAEB; --mut:#9EA6AB; --acc:#D9B172; --info:#8E9BD6; --hd:#262B2F; }
+    /* ===== v16.1：手機工具鈕、文字不換行、對話編號 ===== */
+    #tool-group { display: contents; }
+    #tool-more { display: none; }
+    #tool-more.on { color: rgb(var(--pr-500)); }
+    #tool-more i { transition: transform .2s ease; }
+    #tool-more.on i { transform: rotate(45deg); }
+    @media (max-width: 767px) {
+      #tool-more { display: inline-flex; }
+      #tool-group { display: flex; position: absolute; left: 4px; bottom: calc(100% + 10px); flex-direction: column; align-items: stretch; gap: 2px; padding: 6px; min-width: 11rem;
+        background: rgb(var(--c-white)); border: 1px solid rgb(var(--sl-200)); border-radius: 14px; box-shadow: 0 10px 30px rgba(0,0,0,.18);
+        transform-origin: bottom left; transform: scale(.94) translateY(8px); opacity: 0; pointer-events: none; transition: transform .18s ease, opacity .18s ease; z-index: 20; }
+      html.dark #tool-group { background: rgb(var(--sl-800)); border-color: rgb(var(--sl-700)); box-shadow: 0 10px 30px rgba(0,0,0,.5); }
+      #tool-group.open { transform: none; opacity: 1; pointer-events: auto; }
+      #tool-group > button { display: flex; align-items: center; gap: 11px; width: 100%; padding: 10px 11px; border-radius: 10px; font-size: 14px; color: rgb(var(--sl-600)); white-space: nowrap; }
+      html.dark #tool-group > button { color: rgb(var(--sl-300)); }
+      #tool-group > button:active { background: rgba(128,128,128,.14); }
+      #tool-group > button::after { content: attr(data-label); }
+      #tool-group > button i { width: 18px; text-align: center; font-size: 15px; }
+      #tool-group.open > button { animation: toolIn .22s ease both; }
+      #tool-group.open > button:nth-child(2) { animation-delay: .03s; }
+      #tool-group.open > button:nth-child(3) { animation-delay: .06s; }
+      #tool-group.open > button:nth-child(4) { animation-delay: .09s; }
+      #tool-group.open > button:nth-child(5) { animation-delay: .12s; }
+      @keyframes toolIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+      @media (pointer: coarse) { #camera-btn { display: flex; } }
+    }
+
+    /* 文字一律不換行，太窄就只留圖示 */
+    #op-toggle, .op-tab, .op-up, .op-files-bar button, #new-thread-btn, .opc-a button, .th-pick { white-space: nowrap; }
+    #op-toggle span { overflow: hidden; text-overflow: ellipsis; }
+    @media (max-width: 480px) { #op-toggle span { display: none; } #op-toggle { padding: 0 9px; } }
+    #user-input::placeholder { white-space: nowrap; text-overflow: ellipsis; overflow: hidden; }
+    #chat-head { gap: 8px; }
+    @media (max-width: 480px) { #chat-head { padding: 0 8px 0 10px; } #env-chip { display: none !important; } }
+
+    /* 對話清單：編號 */
+    .th-no { position: absolute; left: 6px; top: 50%; transform: translateY(-50%); width: 18px; text-align: right; font-size: 11.5px; font-variant-numeric: tabular-nums; color: rgb(var(--sl-400)); }
+    #threads-list > div[role=button] { padding-left: 30px; }
+
+    /* 設定頁的外觀選擇 */
+    .th-pick { display: inline-flex; align-items: center; gap: 9px; padding: 8px 12px; border-radius: 11px; border: 1px solid rgb(var(--sl-200)); font-size: 13.5px; color: rgb(var(--sl-600)); }
+    html.dark .th-pick { border-color: rgb(var(--sl-700)); color: rgb(var(--sl-300)); }
+    .th-pick:hover { background: rgba(128,128,128,.08); }
+    .th-pick.on { border-color: rgb(var(--pr-500)); background: rgb(var(--pr-50)); color: rgb(var(--pr-700)); font-weight: 500; }
+    html.dark .th-pick.on { color: rgb(var(--pr-500)); }
+    .th-pick .sw { display: inline-flex; width: 26px; height: 18px; border-radius: 5px; overflow: hidden; border: 1px solid rgba(128,128,128,.35); }
+    .th-pick .sw i { flex: 1; display: block; }
+    #hidden-restore:disabled { opacity: .45; cursor: default; }
   </style>
 </head>
 <body class="h-full bg-slate-50 text-slate-800 dark:bg-slate-900 dark:text-slate-200 overflow-hidden selection:bg-primary-100 selection:text-primary-700">
@@ -732,13 +780,16 @@ html[data-theme=warm] { --c-white:43 39 34; --sl-50:29 26 22; --sl-100:243 234 2
             <div id="quote-tray" class="hidden max-w-4xl mx-auto mb-2 flex-col gap-1.5 px-3 py-2 rounded-lg bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-200 dark:border-indigo-900/50 text-xs text-indigo-900 dark:text-indigo-100"></div>
             <div id="selected-files-area" class="flex flex-wrap gap-2 mb-2 empty:hidden"></div>
             <div class="relative max-w-4xl mx-auto flex gap-3 items-end bg-slate-100 dark:bg-slate-700/50 p-2 rounded-2xl border border-transparent focus-within:border-primary-500 focus-within:bg-white dark:focus-within:bg-slate-800 transition-all shadow-inner">
-              <button id="attach-btn" type="button" class="p-3 text-slate-500 hover:text-primary-600 dark:text-slate-400 dark:hover:text-primary-400 self-end transition-colors" title="上傳檔案並附加到訊息 (也可拖曳或貼上)" aria-label="附加檔案"><i class="fa-solid fa-paperclip"></i></button>
+              <button id="tool-more" type="button" class="p-3 text-slate-500 self-end" title="更多工具" aria-label="更多工具" aria-expanded="false"><i class="fa-solid fa-plus"></i></button>
+              <div id="tool-group">
+              <button data-label="附加檔案" id="attach-btn" type="button" class="p-3 text-slate-500 hover:text-primary-600 dark:text-slate-400 dark:hover:text-primary-400 self-end transition-colors" title="上傳檔案並附加到訊息 (也可拖曳或貼上)" aria-label="附加檔案"><i class="fa-solid fa-paperclip"></i></button>
               <input type="file" id="chat-file-input" class="hidden" multiple />
-              <button id="camera-btn" type="button" class="p-3 text-slate-500 hover:text-primary-600 dark:text-slate-400 self-end transition-colors" title="拍照並附加" aria-label="拍照並附加"><i class="fa-solid fa-camera"></i></button>
+              <button data-label="拍照" id="camera-btn" type="button" class="p-3 text-slate-500 hover:text-primary-600 dark:text-slate-400 self-end transition-colors" title="拍照並附加" aria-label="拍照並附加"><i class="fa-solid fa-camera"></i></button>
               <input type="file" id="camera-input" accept="image/*" capture="environment" class="hidden" />
-              <button id="report-btn" type="button" class="p-3 text-slate-500 hover:text-primary-600 dark:text-slate-400 self-end transition-colors" title="報表模式：要求 agent 以儀表板格式回覆，前端自動排版" aria-label="報表模式" aria-pressed="false"><i class="fa-solid fa-chart-line"></i></button>
-              <button id="mention-btn" type="button" class="p-3 text-slate-500 hover:text-primary-600 dark:text-slate-400 self-end transition-colors" title="呼叫其他 Agent 給意見（@）" aria-label="呼叫其他 Agent"><i class="fa-solid fa-at"></i></button>
-              <textarea id="user-input" rows="1" class="flex-1 bg-transparent border-none focus:ring-0 text-slate-800 dark:text-slate-100 placeholder-slate-400 resize-none py-3 px-2 max-h-40" placeholder="輸入訊息... (Shift+Enter 換行)"></textarea>
+              <button data-label="報表模式" id="report-btn" type="button" class="p-3 text-slate-500 hover:text-primary-600 dark:text-slate-400 self-end transition-colors" title="報表模式：要求 agent 以儀表板格式回覆，前端自動排版" aria-label="報表模式" aria-pressed="false"><i class="fa-solid fa-chart-line"></i></button>
+              <button data-label="呼叫 Agent" id="mention-btn" type="button" class="p-3 text-slate-500 hover:text-primary-600 dark:text-slate-400 self-end transition-colors" title="呼叫其他 Agent 給意見（@）" aria-label="呼叫其他 Agent"><i class="fa-solid fa-at"></i></button>
+              </div>
+              <textarea id="user-input" rows="1" class="flex-1 bg-transparent border-none focus:ring-0 text-slate-800 dark:text-slate-100 placeholder-slate-400 resize-none py-3 px-2 max-h-40" placeholder="輸入訊息…"></textarea>
               <button id="send-btn" class="p-3 bg-primary-600 text-white rounded-xl shadow-md hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all active:scale-95 self-end">
                 <i class="fa-solid fa-paper-plane"></i>
               </button>
@@ -775,7 +826,11 @@ html[data-theme=warm] { --c-white:43 39 34; --sl-50:29 26 22; --sl-100:243 234 2
           <button type="button" aria-label="關閉" class="w-9 h-9 -mr-2 rounded-full text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors" onclick="switchView('chat')"><i class="fa-solid fa-xmark"></i></button>
         </div>
         <div id="set-body" class="flex-1 overflow-y-auto px-5 py-6">
-        <div class="space-y-4">
+        <div class="space-y-3 mb-8">
+          <h3 class="text-[13px] font-semibold text-slate-500 dark:text-slate-400">外觀</h3>
+          <div id="theme-row" class="flex flex-wrap gap-2"></div>
+        </div>
+        <div class="space-y-4 pt-7 border-t border-slate-200 dark:border-slate-700">
           <h3 class="text-[13px] font-semibold text-slate-500 dark:text-slate-400">連線</h3>
           <div class="space-y-4">
             <div>
@@ -864,9 +919,20 @@ html[data-theme=warm] { --c-white:43 39 34; --sl-50:29 26 22; --sl-100:243 234 2
           </details>
         </div>
 
+        <div id="hidden-card" class="mt-8 pt-7 border-t border-slate-200 dark:border-slate-700 space-y-3">
+          <h3 class="font-semibold text-slate-800 dark:text-slate-100">隱藏的問答</h3>
+          <p class="text-xs text-slate-500 dark:text-slate-400">用訊息上的眼睛鈕隱藏的問答只是本機畫面整理，Agent 的上下文不變。被隱藏的位置會留下一條灰色的「已隱藏一組問答」，點它的「還原」就會回來；找不到的話可以在這裡一次還原。</p>
+          <div class="flex items-center gap-3">
+            <span id="hidden-count" class="text-sm text-slate-600 dark:text-slate-300"></span>
+            <button id="hidden-restore" type="button" class="px-3 py-2 text-sm rounded-lg border border-slate-300 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-700">全部還原</button>
+          </div>
+        </div>
+
         <div id="changelog" class="mt-8 pt-7 border-t border-slate-200 dark:border-slate-700 pb-6 text-sm text-slate-600 dark:text-slate-300">
-          <h3 class="font-semibold text-slate-800 dark:text-slate-100 mb-2">版本紀錄 <span class="text-xs font-normal text-slate-400">目前版本 v16.0</span></h3>
+          <h3 class="font-semibold text-slate-800 dark:text-slate-100 mb-2">版本紀錄 <span class="text-xs font-normal text-slate-400">目前版本 v16.1</span></h3>
           <div class="space-y-3">
+            <div><div class="font-medium text-slate-700 dark:text-slate-200">v16.1 <span class="text-xs text-slate-400">2026-11-10</span></div>
+              <ul class="list-disc pl-5 space-y-0.5"><li>手機版：附加檔案／拍照／報表模式／呼叫 Agent 收進一顆「＋」鈕，點開有展開動畫</li><li>手機版 Enter 不再送出訊息，只有按送出鈕才送（桌機維持設定頁的選擇）</li><li>意見面板支援手勢：在對話區左滑叫出、在面板上右滑收起（小於 1280px 時）</li><li>設定頁新增「外觀」可直接切換深色／明亮／跟隨系統（手機上看不到左側導覽列也能切）</li><li>「意見」「輸入訊息…」等文字不再換行跑版，螢幕太窄時只留圖示</li><li>對話清單加上編號；設定頁新增「隱藏的問答」可一次全部還原</li></ul></div>
             <div><div class="font-medium text-slate-700 dark:text-slate-200">v16.0 <span class="text-xs text-slate-400">2026-11-10</span></div>
               <ul class="list-disc pl-5 space-y-0.5"><li><b>改名為 Counsel</b>，字標與介面重做：石墨底色的「深色」與暖白底色的「明亮」兩種主題（原本的米黃／豆沙綠／夜間暖光併入這兩種），強調色為黃銅</li><li><b>三欄工作台</b>：左側 icon 導覽列、對話清單、對話、右側「意見」面板。@Agent 的意見不再插在對話流裡，改成常駐面板，處理中會顯示骨架</li><li>你的訊息改為實心色塊、Agent 回覆加上名稱標籤，兩邊一眼分得出來；內文字級加大</li><li>檔案管理庫從側欄移到意見面板的「檔案」分頁（平台沒有下載端點，只能上傳／查看／刪除）</li></ul></div>
             <div><div class="font-medium text-slate-700 dark:text-slate-200">v15.1 <span class="text-xs text-slate-400">2026-11-09</span></div>
@@ -1052,6 +1118,7 @@ html[data-theme=warm] { --c-white:43 39 34; --sl-50:29 26 22; --sl-100:243 234 2
       if (setTimer) { clearTimeout(setTimer); setTimer = null; }
       if (viewName === 'settings') {
         set.classList.remove('hidden');
+        try { renderThemeRow(); renderHiddenCard(); } catch (e) {}
         requestAnimationFrame(() => set.classList.add('open'));
       } else {
         set.classList.remove('open');
@@ -1204,14 +1271,14 @@ html[data-theme=warm] { --c-white:43 39 34; --sl-50:29 26 22; --sl-100:243 234 2
       const hdr = (txt) => { const h = document.createElement('div'); h.className = 'px-2 pt-2 pb-1 text-xs font-medium text-slate-400 dark:text-slate-500'; h.textContent = txt; els.threadsList.appendChild(h); };
       if (pinned.length) hdr('已釘選');
       const rows = pinned.map(t => [t, true]).concat(rest.map(t => [t, false]));
-      let restHdr = false;
+      let restHdr = false, thNo = 0;
       rows.forEach(([thread, isPin]) => {
         if (!isPin && pinned.length && !restHdr) { hdr('全部對話'); restHdr = true; }
         const title = threadDisplayTitle(thread.id);
         const el = document.createElement('div');
         el.setAttribute('role', 'button'); el.tabIndex = 0; el.dataset.id = thread.id; if (isPin) el.dataset.pinned = '1';
         el.className = `w-full text-left py-2.5 pl-6 pr-24 lg:pr-3 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 text-sm transition-colors mb-1 group relative cursor-pointer ${state.currentThreadId === thread.id ? 'bg-primary-50 dark:bg-slate-700 border-l-4 border-primary-500' : ''}`;
-        el.innerHTML = `<div class="flex items-center gap-1.5 min-w-0">${isPin ? '<i class="fa-solid fa-thumbtack text-xs text-primary-600 shrink-0"></i>' : ''}<div class="thread-title flex-1 min-w-0 text-slate-700 dark:text-slate-300 truncate font-medium">${title ? escapeHtml(title) : '未命名對話'}</div></div><div class="absolute right-2 top-1/2 -translate-y-1/2 flex items-center opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity"><span class="pin-thread-btn p-2 ${isPin ? 'text-primary-600' : 'text-slate-400 hover:text-primary-600'} cursor-pointer" title="${isPin ? '取消釘選' : '釘選到最上方'}"><i class="fa-solid fa-thumbtack"></i></span><span class="rename-thread-btn p-2 text-slate-400 hover:text-primary-600 cursor-pointer" title="重新命名"><i class="fa-regular fa-pen-to-square"></i></span><span class="delete-thread-btn p-2 text-red-400 hover:text-red-600 cursor-pointer" title="刪除"><i class="fa-regular fa-trash-can"></i></span></div>`;
+        el.innerHTML = `<span class="th-no">${++thNo}</span><div class="flex items-center gap-1.5 min-w-0">${isPin ? '<i class="fa-solid fa-thumbtack text-xs text-primary-600 shrink-0"></i>' : ''}<div class="thread-title flex-1 min-w-0 text-slate-700 dark:text-slate-300 truncate font-medium">${title ? escapeHtml(title) : '未命名對話'}</div></div><div class="absolute right-2 top-1/2 -translate-y-1/2 flex items-center opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity"><span class="pin-thread-btn p-2 ${isPin ? 'text-primary-600' : 'text-slate-400 hover:text-primary-600'} cursor-pointer" title="${isPin ? '取消釘選' : '釘選到最上方'}"><i class="fa-solid fa-thumbtack"></i></span><span class="rename-thread-btn p-2 text-slate-400 hover:text-primary-600 cursor-pointer" title="重新命名"><i class="fa-regular fa-pen-to-square"></i></span><span class="delete-thread-btn p-2 text-red-400 hover:text-red-600 cursor-pointer" title="刪除"><i class="fa-regular fa-trash-can"></i></span></div>`;
         el.onclick = (e) => {
           if (e.target.closest('.thread-title-input')) return;
           if (e.target.closest('.pin-thread-btn')) togglePin(thread.id);
@@ -3122,6 +3189,7 @@ html[data-theme=warm] { --c-white:43 39 34; --sl-50:29 26 22; --sl-100:243 234 2
     els.userInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') {
         // 輸入法選字/確認時的 Enter 不送出（避免送出注音/拼音預覽並在 commit 後把文字又寫回輸入框）
         if (e.isComposing || imeComposing || e.keyCode === 229 || Date.now() - imeLastEnd < 80) return;
+        if (window.innerWidth < 768 && !(e.metaKey || e.ctrlKey)) return;   // v16.1：手機只用送出鈕
         const shouldSend = getSendMode() === 'mod' ? (e.metaKey || e.ctrlKey) : !e.shiftKey;
         if (shouldSend) { e.preventDefault(); if (!e.repeat) sendMessage(); }
       } setTimeout(() => { els.userInput.style.height = 'auto'; els.userInput.style.height = Math.min(els.userInput.scrollHeight, 160) + 'px'; }, 0); });
@@ -3469,6 +3537,65 @@ html[data-theme=warm] { --c-white:43 39 34; --sl-50:29 26 22; --sl-100:243 234 2
     }
     setInterval(() => { if (psOn() && !psBusy && rpLs('psyncSig') && psSig(psBuild()) !== rpLs('psyncSig')) psMaybePush(); }, 15000);
     document.addEventListener('visibilitychange', () => { if (!document.hidden && psOn()) psPullThrottled(); });
+    // v16.1：手機版多合一工具鈕
+    (function initToolMore() {
+      const more = document.getElementById('tool-more'), grp = document.getElementById('tool-group');
+      if (!more || !grp) return;
+      const setOpen = (on) => { grp.classList.toggle('open', on); more.setAttribute('aria-expanded', on ? 'true' : 'false'); more.classList.toggle('on', on); };
+      more.addEventListener('click', (e) => { e.stopPropagation(); setOpen(!grp.classList.contains('open')); });
+      grp.addEventListener('click', (e) => { if (e.target.closest('button')) setTimeout(() => setOpen(false), 10); }, true);
+      document.addEventListener('click', (e) => { if (!grp.contains(e.target) && e.target !== more) setOpen(false); });
+      document.addEventListener('keydown', (e) => { if (e.key === 'Escape') setOpen(false); });
+    })();
+
+    // v16.1：手機左滑叫出意見面板、右滑收起
+    (function initOpSwipe() {
+      const sec = document.getElementById('chat-section'), p = document.getElementById('op-panel');
+      if (!sec || !p) return;
+      let x0 = null, y0 = null, t0 = 0;
+      const skip = (el) => !!(el && el.closest && el.closest('pre, table, .rp, .canvas-card, input, textarea'));
+      const start = (e) => { if (window.innerWidth >= 1280 || e.touches.length !== 1 || skip(e.target)) { x0 = null; return; } const t = e.touches[0]; x0 = t.clientX; y0 = t.clientY; t0 = Date.now(); };
+      const end = (e) => {
+        if (x0 == null) return; const t = e.changedTouches[0], dx = t.clientX - x0, dy = t.clientY - y0, dt = Date.now() - t0; x0 = null;
+        if (dt > 700 || Math.abs(dx) < 60 || Math.abs(dy) > 48) return;
+        const open = p.classList.contains('open');
+        if (dx < 0 && !open) opSetOpen(true); else if (dx > 0 && open) opSetOpen(false);
+      };
+      [sec, p].forEach(el => { el.addEventListener('touchstart', start, { passive: true }); el.addEventListener('touchend', end, { passive: true }); });
+    })();
+
+    // v16.1：設定頁的外觀切換與「隱藏的問答」
+    function renderThemeRow() {
+      const box = document.getElementById('theme-row'); if (!box) return;
+      const cur = curTheme();
+      box.innerHTML = '';
+      THEMES.forEach(t => {
+        const b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'th-pick' + (t.id === cur ? ' on' : '');
+        b.innerHTML = '<span class="sw"><i style="background:' + t.sw[0] + '"></i><i style="background:' + t.sw[2] + '"></i></span><span class="nm">' + t.name + '</span>';
+        b.onclick = () => { applyTheme(t.id); renderThemeRow(); };
+        box.appendChild(b);
+      });
+    }
+    function hiddenStats() { const m = readJSON('hiddenMsgs'); let n = 0; Object.keys(m).forEach(k => { n += (m[k] || []).length; }); return n; }
+    function renderHiddenCard() {
+      const el = document.getElementById('hidden-count'); if (!el) return;
+      const n = hiddenStats();
+      el.textContent = n ? ('目前隱藏 ' + n + ' 組問答') : '目前沒有隱藏的問答';
+      const b = document.getElementById('hidden-restore'); if (b) b.disabled = !n;
+    }
+    (function initExtras() {
+      renderThemeRow(); renderHiddenCard();
+      const b = document.getElementById('hidden-restore');
+      if (b) b.addEventListener('click', () => {
+        writeJSON('hiddenMsgs', {});
+        renderHiddenCard();
+        if (state.currentThreadId) loadMessages(state.currentThreadId);
+        showToast('已還原所有隱藏的問答', 'success');
+      });
+    })();
+
     (function initOpPanel() {
       const p = document.getElementById('op-panel'); if (!p) return;
       document.querySelectorAll('.op-tab').forEach(b => b.addEventListener('click', () => opTab(b.dataset.t)));
