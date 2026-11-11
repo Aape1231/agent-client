@@ -720,6 +720,10 @@ html[data-theme=warm] { --c-white:43 39 34; --sl-50:29 26 22; --sl-100:243 234 2
     .cl-caret { margin-left: auto; font-size: 12px; color: rgb(var(--sl-400)); }
     #changelog.cl-collapsed > div { display: none; }
     @media (pointer: coarse) { .opg-x { opacity: .7; } }
+    /* v16.4：跨對話記憶的 Agent 列 */
+    #roster-list > div.mem-global { border-color: rgb(var(--pr-500) / .55); }
+    #roster-list > div.mem-global [data-role="meminfo"] { color: rgb(var(--pr-700)); }
+    html.dark #roster-list > div.mem-global [data-role="meminfo"] { color: rgb(var(--pr-500)); }
   </style>
 </head>
 <body class="h-full bg-slate-50 text-slate-800 dark:bg-slate-900 dark:text-slate-200 overflow-hidden selection:bg-primary-100 selection:text-primary-700">
@@ -955,8 +959,10 @@ html[data-theme=warm] { --c-white:43 39 34; --sl-50:29 26 22; --sl-100:243 234 2
         </div>
 
         <div id="changelog" class="mt-8 pt-7 border-t border-slate-200 dark:border-slate-700 pb-6 text-sm text-slate-600 dark:text-slate-300">
-          <h3 class="font-semibold text-slate-800 dark:text-slate-100 mb-2">版本紀錄 <span class="text-xs font-normal text-slate-400">目前版本 v16.3</span></h3>
+          <h3 class="font-semibold text-slate-800 dark:text-slate-100 mb-2">版本紀錄 <span class="text-xs font-normal text-slate-400">目前版本 v16.4</span></h3>
           <div class="space-y-3">
+            <div><div class="font-medium text-slate-700 dark:text-slate-200">v16.4 <span class="text-xs text-slate-400">2026-11-11</span></div>
+              <ul class="list-disc pl-5 space-y-0.5"><li><b>主題 Agent</b>：名單每一列新增「記憶範圍」。預設「只在這個對話」（與先前相同）；改成「跨對話」後，該 Agent 在所有對話共用同一條側對話，會記得你在別的對話跟它說過什麼</li><li>每一列可「清空記憶」（只是本客戶端不再接續，平台上的側對話仍在）；跨對話模式的列會以強調色標示並顯示目前狀態</li><li>名稱含空白或 @ 時，直接顯示實際會用的 <code>@名稱</code> 並提供一鍵修正；名稱或 Assistant ID 未填會提示該列不會出現在 @ 選單</li></ul></div>
             <div><div class="font-medium text-slate-700 dark:text-slate-200">v16.3 <span class="text-xs text-slate-400">2026-11-10</span></div>
               <ul class="list-disc pl-5 space-y-0.5"><li><b>@Agent 失敗或中斷不再消失</b>：送出時就先寫入一張「處理中」的意見卡，成功才換成回覆；失敗、逾時或等待中被重新整理，重新載入後會看到「未完成／失敗」並附<b>重試</b>（沿用原本的引用與要求，不用重打）</li><li>意見卡右上角新增刪除鈕，提問那一行可刪整組；刪除只影響這台裝置的顯示，平台上的側對話不受影響，也不會在換裝置時被重建回來</li><li>設定頁的版本紀錄預設摺疊</li><li>側欄不再列出「myagent-sync」同步用對話（原本只隱藏目前這一個，舊的殘留會跑出來）</li></ul></div>
             <div><div class="font-medium text-slate-700 dark:text-slate-200">v16.2 <span class="text-xs text-slate-400">2026-11-10</span></div>
@@ -2554,7 +2560,7 @@ html[data-theme=warm] { --c-white:43 39 34; --sl-50:29 26 22; --sl-100:243 234 2
     function rosterEntry(r) {
       const env = r.env || 'main';
       const base = env === 'main' ? '' : env === 'custom' ? String(r.custom || '').trim().replace(/\/+$/, '') : AGENT_ENVS[env] || '';
-      return { uid: r.uid, name: String(r.name || '').replace(/[\s@]/g, ''), id: String(r.id || '').trim(), instr: String(r.instr || ''), env, base, key: String(r.key || '').trim(), label: '' };
+      return { uid: r.uid, name: String(r.name || '').replace(/[\s@]/g, ''), id: String(r.id || '').trim(), instr: String(r.instr || ''), env, base, key: String(r.key || '').trim(), mem: r.mem === 'global' ? 'global' : 'thread', label: '' };
     }
     // 只取「已啟用且名稱／ID 皆有填」的項目
     function rosterGet() {
@@ -2604,20 +2610,64 @@ html[data-theme=warm] { --c-white:43 39 34; --sl-50:29 26 22; --sl-100:243 234 2
             '<div class="flex gap-2"><select data-k="env" class="' + cls + ' !w-auto shrink-0"><option value="main">環境：同主設定</option><option value="sbx">環境：Sandbox (SBX)</option><option value="prd">環境：Production (PRD)</option><option value="custom">環境：自訂 URL…</option></select><input data-k="custom" class="' + cls + ' font-mono" placeholder="https://…/public/kits/openai" /></div>' +
             '<input data-k="key" type="password" autocomplete="off" class="' + cls + ' font-mono" placeholder="API Key（留空＝使用主設定的 Key）" />' +
             '<input data-k="instr" class="' + cls + '" placeholder="角色說明（選填，會附加在每次呼叫前，例如：你是資深審查員，請指出風險與遺漏）" />' +
+            '<div class="flex flex-wrap items-center gap-2"><select data-k="mem" class="' + cls + ' !w-auto shrink-0"><option value="thread">記憶：只在這個對話</option><option value="global">記憶：跨對話（主題記憶）</option></select>' +
+            '<button type="button" data-act="memclear" class="px-2.5 py-1 text-xs rounded-md border border-slate-300 dark:border-slate-600 hover:bg-white dark:hover:bg-slate-700">清空記憶</button>' +
+            '<span data-role="meminfo" class="text-xs text-slate-500 min-w-0 truncate"></span></div>' +
+            '<div data-role="namewarn" class="text-xs text-amber-600 dark:text-amber-400"></div>' +
             '<div class="flex items-center gap-2"><button type="button" data-act="test" class="px-2.5 py-1 text-xs rounded-md border border-slate-300 dark:border-slate-600 hover:bg-white dark:hover:bg-slate-700">測試連線</button><span data-role="tst" class="text-xs text-slate-500 min-w-0"></span></div>';
           const custom = d.querySelector('[data-k="custom"]');
           const syncCustom = () => { custom.style.display = (r.env === 'custom') ? '' : 'none'; };
+          const nw = d.querySelector('[data-role="namewarn"]'), mi = d.querySelector('[data-role="meminfo"]');
+          const refreshRow = () => {
+            const ag = rosterEntry(r), raw = String(r.name || '');
+            nw.innerHTML = '';
+            if (!ag.name || !ag.id) {
+              nw.textContent = '名稱或 Assistant ID 還沒填，這一列不會出現在 @ 選單。';
+            } else if (/[\s@]/.test(raw)) {
+              nw.innerHTML = '名稱有空白或 @，實際會以 <b>@' + escapeHtml(ag.name) + '</b> 呼叫。';
+              const fix = document.createElement('button');
+              fix.type = 'button'; fix.className = 'ml-2 underline hover:no-underline';
+              fix.textContent = '改成這個';
+              fix.onclick = () => { r.name = ag.name; persist(); draw(); };
+              nw.appendChild(fix);
+            }
+            const n = memCount(ag);
+            mi.textContent = ag.mem === 'global'
+              ? (n ? '這個 Agent 在所有對話共用一條記憶（已建立）' : '這個 Agent 在所有對話共用一條記憶（尚未建立，下次 @ 時開始）')
+              : (n ? ('目前在 ' + n + ' 個對話各自有記憶') : '每個對話各自獨立，尚無記憶');
+          };
           const warn = d.querySelector('[data-role="dupwarn"]');
           warns.push({ r, el: warn });
           const on = d.querySelector('[data-k="on"]'); on.checked = !r.off;
           on.addEventListener('change', () => { r.off = !on.checked; persist(); d.classList.toggle('opacity-60', !!r.off); });
           d.querySelectorAll('[data-k]').forEach(inp => {
             if (inp.dataset.k === 'on') return;
-            inp.value = r[inp.dataset.k] || (inp.dataset.k === 'env' ? 'main' : '');
-            const h = () => { r[inp.dataset.k] = inp.value; persist(); if (inp.dataset.k === 'env') syncCustom(); if (inp.dataset.k === 'name') refreshWarns(); };
+            inp.value = r[inp.dataset.k] || (inp.dataset.k === 'env' ? 'main' : inp.dataset.k === 'mem' ? 'thread' : '');
+            const h = () => {
+              if (inp.dataset.k === 'mem' && inp.value === 'global') {
+                const ok = confirm('改成「跨對話記憶」後，這個 Agent 在每個對話都接同一條側對話：\n\n· 它會記得你在其他對話跟它說過的事\n· 那條對話只會越來越長，每次呼叫的 token 與等待時間都會跟著增加\n· 不同客戶／主題的內容會混在一起，建議這個 Agent 只綁一個主題\n· 換裝置時，這個 Agent 的意見卡不會自動重建\n\n要改嗎？');
+                if (!ok) { inp.value = r.mem || 'thread'; return; }
+              }
+              r[inp.dataset.k] = inp.value; persist();
+              if (inp.dataset.k === 'env') syncCustom();
+              if (inp.dataset.k === 'name') refreshWarns();
+              if (inp.dataset.k === 'name' || inp.dataset.k === 'id' || inp.dataset.k === 'mem') refreshRow();
+              if (inp.dataset.k === 'mem') d.classList.toggle('mem-global', inp.value === 'global');
+            };
             inp.addEventListener(inp.tagName === 'SELECT' ? 'change' : 'input', h);
           });
-          syncCustom();
+          syncCustom(); refreshRow();
+          d.classList.toggle('mem-global', r.mem === 'global');
+          d.querySelector('[data-act="memclear"]').onclick = () => {
+            const ag = rosterEntry(r); const n = memCount(ag);
+            if (!n) return showToast('這個 Agent 目前沒有記憶', 'info');
+            const msg = ag.mem === 'global'
+              ? '清空「' + ag.name + '」的主題記憶？下次 @ 它會從空白開始。'
+              : '清空「' + ag.name + '」在所有對話裡的記憶（共 ' + n + ' 個對話）？每個對話下次 @ 它都會從空白開始。';
+            if (!confirm(msg + '\n\n（平台上原本的側對話不會被刪除，只是這個客戶端不再接續它；已經收到的意見卡也不受影響）')) return;
+            const done = memClear(ag); refreshRow();
+            showToast('已清空 ' + done + ' 條記憶', 'success');
+          };
           d.querySelector('[data-act="del"]').onclick = () => { rows.splice(i, 1); persist(); draw(); };
           d.querySelector('[data-act="dup"]').onclick = () => { rows.splice(i + 1, 0, Object.assign({}, r, { uid: newUid() })); persist(); draw(i + 1); };
           const tst = d.querySelector('[data-role="tst"]');
@@ -2730,9 +2780,20 @@ html[data-theme=warm] { --c-white:43 39 34; --sl-50:29 26 22; --sl-100:243 234 2
       arr[i] = Object.assign({}, arr[i], patch); m[key] = arr; writeJSON('agentCards', m); return arr[i];
     }
     function cardsAdd(c, key) { const m = readJSON('agentCards'), k = key || cardsKey(); (m[k] = m[k] || []).push(c); if (m[k].length > 60) m[k].shift(); writeJSON('agentCards', m); }
-    const sideKey = (ag) => ag.uid || (ag.id + '@' + (ag.base || 'main'));
-    function sideThreadGet(ag, key) { return (readJSON('agentSideThreads')[key || cardsKey()] || {})[sideKey(ag)] || ''; }
-    function sideThreadSet(ag, tid, key) { const m = readJSON('agentSideThreads'), k = key || cardsKey(); (m[k] = m[k] || {})[sideKey(ag)] = tid; writeJSON('agentSideThreads', m); }
+    // 宣告成 function（會提升），因為名單 UI 在載入時就會用到
+    function sideKey(ag) { return ag.uid || (ag.id + '@' + (ag.base || 'main')); }
+    // v16.4：mem='global' 的 Agent 不分主對話，固定接同一條側 thread（主題記憶）
+    function memBucketName() { return '_global'; }
+    function sideBucket(ag, key) { return (ag && ag.mem === 'global') ? memBucketName() : (key || cardsKey()); }
+    function sideThreadGet(ag, key) { return (readJSON('agentSideThreads')[sideBucket(ag, key)] || {})[sideKey(ag)] || ''; }
+    function sideThreadSet(ag, tid, key) { const m = readJSON('agentSideThreads'), k = sideBucket(ag, key); (m[k] = m[k] || {})[sideKey(ag)] = tid; writeJSON('agentSideThreads', m); }
+    function memCount(ag) { const m = readJSON('agentSideThreads'); const k = sideKey(ag); return Object.keys(m).filter(b => m[b] && m[b][k]).length; }
+    function memClear(ag) {
+      const m = readJSON('agentSideThreads'), k = sideKey(ag); let n = 0;
+      const buckets = ag.mem === 'global' ? [memBucketName()] : Object.keys(m).filter(b => b !== memBucketName());
+      buckets.forEach(b => { if (m[b] && m[b][k]) { delete m[b][k]; n++; } });
+      writeJSON('agentSideThreads', m); return n;
+    }
     function makeLocalAsk(text, prefixText) {
       const prev = state.loadingHistory; state.loadingHistory = true;
       const d = appendMessage('user', (prefixText || '') + text); state.loadingHistory = prev;
